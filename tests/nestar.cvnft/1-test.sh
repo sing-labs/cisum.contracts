@@ -43,14 +43,11 @@ mpush $nestar_token setartist '["'"${artister_owner}"'", true]' -p $nestar_token
 mpush $nestar_token transfer '["'"${issuer_owner}"'", "gahbnbehaskk", "500.0 NESTAR", "airdrop"]' -p $issuer_owner
 
 
-mpush nestar.test4 transfer '["mywallet2","ipowner.111","500 NESTAR","airdrop"]' -p mywallet2
-
-mcli get account mywallet2
-
-
-
 # 6) 用户给艺人打赏（需艺人已白名单）
 mpush $nestar_token transfer '["ipowner.111", "'"${issuer_owner}"'", "100 NESTAR", "tip"]' -p ipowner.111
 
 
+
+#设置cisum 转化为 NESTAR 的汇率
+mpush $nestar_token setrate '["100"]' -p $nestar_token
 
