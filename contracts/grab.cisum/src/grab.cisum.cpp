@@ -56,7 +56,7 @@ void grab_cisum::addrushsale(   nsymbol        show_id,
                                 nsymbol        ticket_id,
                                 time_point     started_at,
                                 time_point     ended_at,
-                                nasset          price,
+                                nasset         price,
                                 uint32_t       max_grabs_per_user,
                                 uint32_t       win_ratio,
                                 uint32_t       total_tickets)
@@ -70,7 +70,7 @@ void grab_cisum::addrushsale(   nsymbol        show_id,
     CHECKC(price.amount > 0, err::INVALID_FORMAT, "price must be positive");
     // TODO: check price.symbol is valid?? price.symbol.is_valid()?
 
-    CHECKC(win_ratio <= RATIO_BOOST, err::INVALID_FORMAT, "win_ratio must be less than " + std::to_string(RATIO_BOOST));
+    CHECKC(win_ratio <= RATIO_BOOST, err::INVALID_FORMAT, "win_ratio can not larger than " + std::to_string(RATIO_BOOST));
 
     auto now = current_time_point();
     _gstate.last_rush_sale_id++;
@@ -198,6 +198,43 @@ void grab_cisum::delusers( uint64_t rush_sale_id, uint32_t max_count ) {
         count++;
     }
     CHECKC( count > 0, err::NONE_DELETED, "no users deleted" );
+}
+
+void grab_cisum::updrushsale(   uint64_t rush_sale_id,
+                                std::optional<uint32_t> win_ratio,
+                                std::optional<uint32_t> total_tickets,
+                                std::optional<time_point> ended_at
+  ) {
+    require_auth(get_self());
+
+    auto now = current_time_point();
+
+    rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
+    auto rs_itr = rs_idx.find(rush_sale_id);
+    CHECKC( rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found! id: " + std::to_string(rush_sale_id) )
+
+    // perform checks
+    if (win_ratio.has_value()) {
+        CHECKC(win_ratio.value() <= RATIO_BOOST, err::INVALID_FORMAT, "win_ratio can not larger than " + std::to_string(RATIO_BOOST));
+    }
+    if (total_tickets.has_value()) {
+        CHECKC(total_tickets.value() >= rs_itr->sold_tickets, err::EXCEED_LIMIT, "total_tickets cannot be less than already sold tickets");
+    }
+    if (ended_at.has_value()) {
+        CHECKC( rs_itr->started_at < ended_at.value(), err::INVALID_TIME, "ended_at must be greater than started_at");
+        CHECKC( now < ended_at.value(), err::INVALID_TIME, "ended_at must be greater than current time");
+    }
+
+    rs_idx.modify(rs_itr, same_payer, [&](auto& r){
+        if (win_ratio.has_value()) r.win_ratio = win_ratio.value();
+        if (total_tickets.has_value()) {
+            r.total_tickets = total_tickets.value();
+            // adjust available tickets accordingly
+            r.available_tickets = r.total_tickets - r.sold_tickets;
+        }
+        if (ended_at.has_value()) r.ended_at = ended_at.value();
+        r.updated_at = now;
+    });
 }
 
 } /// namespace flon

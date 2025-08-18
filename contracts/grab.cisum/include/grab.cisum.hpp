@@ -3,6 +3,7 @@
 #include <eosio/eosio.hpp>
 #include <eosio/asset.hpp>
 #include <eosio/time.hpp>
+#include <optional>
 #include <string>
 
 #include "grab.cisum.db.hpp"
@@ -40,6 +41,13 @@ public:
   void delrushsale( uint64_t rush_sale_id, bool forced );
 
   [[eosio::action]]
+  void updrushsale( uint64_t rush_sale_id,
+                    std::optional<uint32_t> win_ratio,
+                    std::optional<uint32_t> total_tickets,
+                    std::optional<time_point> ended_at
+  );
+
+  [[eosio::action]]
   void delusers( uint64_t rush_sale_id, uint32_t max_count );
 
   [[eosio::on_notify("nestar.cisum::transfer")]]
@@ -47,6 +55,8 @@ public:
 
   // -------- Inline wrappers --------
   using addrushsale_action        = eosio::action_wrapper<"addrushsale"_n,        &grab_cisum::addrushsale>;
+  using delrushsale_action        = eosio::action_wrapper<"delrushsale"_n,        &grab_cisum::delrushsale>;
+  using updrushsale_action        = eosio::action_wrapper<"updrushsale"_n,        &grab_cisum::updrushsale>;
 
 private:
   // 全局
