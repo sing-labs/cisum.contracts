@@ -173,12 +173,6 @@ void grab_cisum::delrushsale( uint64_t rush_sale_id, bool forced ) {
         CHECKC( !is_grabbing, err::STATUS_MISMATCH, "rush sale is in the grabbing status, can not be deleted! id:" + std::to_string(rush_sale_id) );
     }
 
-    // erase users in the scope of this rush_sale
-    users::idx_t user_idx(get_self(), rush_sale_id);
-    for (auto uitr = user_idx.begin(); uitr != user_idx.end(); ) {
-        uitr = user_idx.erase(uitr);
-    }
-
     rs_idx.erase(rs_itr);
 }
 
