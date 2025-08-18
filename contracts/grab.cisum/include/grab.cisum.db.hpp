@@ -80,7 +80,7 @@ TBL rush_sale {
    nsymbol        ticket_id;
    time_point     started_at;
    time_point     ended_at;
-   nasset         price;
+   asset         price;
    uint32_t       max_grabs_per_user;
    uint32_t       win_ratio;              // boost 10000, <= 10000
    uint32_t       total_tickets;

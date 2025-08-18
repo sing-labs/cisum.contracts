@@ -31,7 +31,7 @@ public:
                       nsymbol        ticket_id,
                       time_point     started_at,
                       time_point     ended_at,
-                      nasset         price,
+                      asset          price,
                       uint32_t       max_grabs_per_user,
                       uint32_t       win_ratio,
                       uint32_t       total_tickets
@@ -51,7 +51,7 @@ public:
   void delusers( uint64_t rush_sale_id, uint32_t max_count );
 
   [[eosio::on_notify("nestar.cisum::transfer")]]
-  void on_transfer(const name& from, const name& to, const nasset& quantity, const string& memo);
+  void on_transfer(const name& from, const name& to, const asset& quantity, const string& memo);
 
   // -------- Inline wrappers --------
   using addrushsale_action        = eosio::action_wrapper<"addrushsale"_n,        &grab_cisum::addrushsale>;
