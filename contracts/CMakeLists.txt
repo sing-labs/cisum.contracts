@@ -50,6 +50,8 @@ set(VOTING_ICON_URI "voting.png#db28cd3db6e62d4509af3644ce7d377329482a14bb4bfaca
 #add_subdirectory(cisum.ntoken)
 add_subdirectory(sbt.cvnft)
 add_subdirectory(nestar.cisum)
+add_subdirectory(grab.cisum)
+
 if(BUILD_TESTS)
   add_subdirectory(test_contracts)
 endif()
