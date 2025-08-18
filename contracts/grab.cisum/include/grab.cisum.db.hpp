@@ -6,6 +6,7 @@
 #include <eosio/singleton.hpp>
 #include <string>
 #include <set>
+#include <nasset.hpp>
 
 using std::set;
 using std::string;
@@ -55,7 +56,7 @@ enum class err: uint8_t {
 
 static constexpr symbol_code NESTAR_SYMBOL_CODE  = symbol_code("NESTAR");
 static constexpr symbol NESTAR_SYMBOL            = symbol(NESTAR_SYMBOL_CODE, 1); // TODO: precision == 1???
-static constexpr name   NESTAR_CONTRACT = "nestar.cisum"_n;
+static constexpr name   NESTAR_CONTRACT          = "nestar.cisum"_n;
 
 #define TBL struct [[eosio::table, eosio::contract("grab.cisum")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("grab.cisum")]]
@@ -69,9 +70,6 @@ NTBL("global") global_t {
 
 typedef eosio::singleton< "global"_n, global_t > global_singleton;
 
-typedef uint64_t nsymbol; // TODO: nsymbol
-typedef uint64_t nasset; // TODO: nasset
-
 // scope: self
 TBL rush_sale {
    uint64_t       id; // auto increment, PK
@@ -79,7 +77,7 @@ TBL rush_sale {
    nsymbol        ticket_id;
    time_point     started_at;
    time_point     ended_at;
-   asset          price;
+   nasset         price;
    uint32_t       max_grabs_per_user;
    uint32_t       win_ratio;              // boost 10000, <= 10000
    uint32_t       total_tickets;

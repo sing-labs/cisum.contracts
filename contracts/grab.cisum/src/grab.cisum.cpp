@@ -50,7 +50,6 @@ void grab_cisum::on_transfer( const name& from, const name& to, const nasset& qu
     auto now = current_time_point();
     CHECKC( memo_params[0] == "grab",           err::INVALID_FORMAT,    "memo must start with 'grab'" )
     CHECKC (memo_params.size() == 2,            err::INVALID_FORMAT,    "ontransfer: params size must be equal to 2" )
-    // CHECKC(quantity.symbol == NESTAR_SYMBOL,    err::SYMBOL_MISMATCH,   "symbol or precision mismatch");
 
     auto rush_sale_id       = std::stoul(string(memo_params[1]));
     rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), rush_sale_id);
@@ -63,7 +62,8 @@ void grab_cisum::on_transfer( const name& from, const name& to, const nasset& qu
     ASSERT( rs_itr->total_tickets == rs_itr->available_tickets + rs_itr->sold_tickets)
 
     // TODO: only allow grab once at a time?
-    // CHECKC( quantity == rs_itr.price, err::QUANTITY_MISMATCH, "quantity must be equal to rush sale price" )
+    CHECKC(quantity.symbol == rs_itr->price.symbol,    err::SYMBOL_MISMATCH,   "symbol or precision mismatch");
+    CHECKC( quantity == rs_itr->price, err::QUANTITY_MISMATCH, "quantity must be equal to rush sale price" )
 
     users::idx_t user_idx(get_self(), rush_sale_id);
     auto user_itr = user_idx.find(from.value);
