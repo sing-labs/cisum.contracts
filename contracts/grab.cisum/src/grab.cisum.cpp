@@ -24,19 +24,45 @@ std::vector<std::string> split(const std::string& s, const std::string& delimite
     return result;
 }
 
-void grab_cisum::addrushsale( nsymbol        show_id,
-                        nsymbol        ticket_id,
-                        time_point     started_at,
-                        time_point     ended_at,
-                        asset          price,
-                        uint32_t       max_grabs_per_user,
-                        uint32_t       win_ratio,
-                        uint32_t       total_tickets)
+void grab_cisum::addrushsale(   nsymbol        show_id,
+                                nsymbol        ticket_id,
+                                time_point     started_at,
+                                time_point     ended_at,
+                                nasset          price,
+                                uint32_t       max_grabs_per_user,
+                                uint32_t       win_ratio,
+                                uint32_t       total_tickets)
 {
     require_auth(get_self());
-    // TODO: ...
-    // CHECKC(is_account(issuer), err::ACCOUNT_INVALID, "issuer account not exist");
-    // _gstate.issuer = issuer;
+    // TODO: check show_id valid?
+    // TODO: check ticket_id valid?
+    // check started_at < ended_at
+    CHECKC(started_at < ended_at, err::INVALID_TIME, "started_at must be less than ended_at");
+    // TODO: need to check price.amount > 0?
+    CHECKC(price.amount > 0, err::INVALID_FORMAT, "price must be positive");
+    // TODO: check price.symbol is valid?? price.symbol.is_valid()?
+
+    CHECKC(win_ratio <= RATIO_BOOST, err::INVALID_FORMAT, "win_ratio must be less than " + std::to_string(RATIO_BOOST));
+
+    auto now = current_time_point();
+    _gstate.last_rush_sale_id++;
+    rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
+    rs_idx.emplace(get_self(), [&](auto& rs){
+        rs.id = _gstate.last_rush_sale_id;
+        rs.show_id = show_id;
+        rs.ticket_id = ticket_id;
+        rs.started_at = started_at;
+        rs.ended_at = ended_at;
+        rs.price = price;
+        rs.max_grabs_per_user = 1;
+        rs.win_ratio = win_ratio;
+        rs.total_tickets = total_tickets;
+        rs.available_tickets = total_tickets;
+        rs.sold_tickets = 0;
+        rs.total_grabs = 0;
+        rs.created_at = now;
+        rs.updated_at = now;
+    });
 }
 
 void grab_cisum::on_transfer( const name& from, const name& to, const nasset& quantity, const string& memo) {
@@ -52,7 +78,7 @@ void grab_cisum::on_transfer( const name& from, const name& to, const nasset& qu
     CHECKC (memo_params.size() == 2,            err::INVALID_FORMAT,    "ontransfer: params size must be equal to 2" )
 
     auto rush_sale_id       = std::stoul(string(memo_params[1]));
-    rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), rush_sale_id);
+    rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
     auto rs_itr = rs_idx.find(rush_sale_id);
     CHECKC( rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found! id: " + std::to_string(rush_sale_id) )
 

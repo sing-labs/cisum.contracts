@@ -30,7 +30,7 @@ public:
                       nsymbol        ticket_id,
                       time_point     started_at,
                       time_point     ended_at,
-                      asset          price,
+                      nasset         price,
                       uint32_t       max_grabs_per_user,
                       uint32_t       win_ratio,
                       uint32_t       total_tickets

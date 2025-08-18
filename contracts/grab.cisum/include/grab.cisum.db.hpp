@@ -51,8 +51,11 @@ enum class err: uint8_t {
    DID_PACK_SYMBOL_ERR    = 26,
    STATUS_MISMATCH        = 27,
    EXCEED_LIMIT           = 28,
-   QUANTITY_MISMATCH      = 29
+   QUANTITY_MISMATCH      = 29,
+   INVALID_TIME           = 30
 };
+
+static constexpr uint32_t RATIO_BOOST = 10000;
 
 static constexpr symbol_code NESTAR_SYMBOL_CODE  = symbol_code("NESTAR");
 static constexpr symbol NESTAR_SYMBOL            = symbol(NESTAR_SYMBOL_CODE, 1); // TODO: precision == 1???
