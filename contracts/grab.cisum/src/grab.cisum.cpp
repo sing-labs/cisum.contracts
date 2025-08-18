@@ -158,5 +158,46 @@ void grab_cisum::on_transfer( const name& from, const name& to, const nasset& qu
     });
 }
 
+void grab_cisum::delrushsale( uint64_t rush_sale_id, bool forced ) {
+    require_auth(get_self());
+
+    rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
+    auto rs_itr = rs_idx.find(rush_sale_id);
+    CHECKC( rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found! id: " + std::to_string(rush_sale_id) )
+
+    auto now = current_time_point();
+    // If not forced, prevent deletion when there are grabs or sold tickets
+    if (!forced) {
+        bool is_grabbing = now >= rs_itr->started_at && now <= rs_itr->ended_at && rs_itr->available_tickets > 0;
+        CHECKC( !is_grabbing, err::STATUS_MISMATCH, "rush sale is in the grabbing status, can not be deleted! id:" + std::to_string(rush_sale_id) );
+    }
+
+    // erase users in the scope of this rush_sale
+    users::idx_t user_idx(get_self(), rush_sale_id);
+    for (auto uitr = user_idx.begin(); uitr != user_idx.end(); ) {
+        uitr = user_idx.erase(uitr);
+    }
+
+    rs_idx.erase(rs_itr);
+}
+
+void grab_cisum::delusers( uint64_t rush_sale_id, uint32_t max_count ) {
+    require_auth(get_self());
+
+    CHECKC( max_count > 0, err::NOT_POSITIVE, "max_count must be positive" );
+
+    rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
+    auto rs_itr = rs_idx.find(rush_sale_id);
+    CHECKC( rs_itr == rs_idx.end(), err::NONE_DELETED, "rush sale must be deleted first" );
+
+    users::idx_t user_idx(get_self(), rush_sale_id);
+    auto user_itr = user_idx.begin();
+    uint32_t count = 0;
+    for (; count < max_count && user_itr != user_idx.end(); ) {
+        user_itr = user_idx.erase(user_itr);
+        count++;
+    }
+    CHECKC( count > 0, err::NONE_DELETED, "no users deleted" );
+}
 
 } /// namespace flon

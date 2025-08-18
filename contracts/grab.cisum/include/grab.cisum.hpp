@@ -36,6 +36,12 @@ public:
                       uint32_t       total_tickets
    );
 
+  [[eosio::action]]
+  void delrushsale( uint64_t rush_sale_id, bool forced );
+
+  [[eosio::action]]
+  void delusers( uint64_t rush_sale_id, uint32_t max_count );
+
   [[eosio::on_notify("nestar.cisum::transfer")]]
   void on_transfer(const name& from, const name& to, const nasset& quantity, const string& memo);
 
