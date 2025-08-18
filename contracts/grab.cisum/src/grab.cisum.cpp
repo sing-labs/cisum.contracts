@@ -155,6 +155,7 @@ void grab_cisum::on_transfer( const name& from, const name& to, const nasset& qu
         r.sold_tickets += sold_tickets;
         ASSERT(r.sold_tickets <= r.total_tickets);
         r.available_tickets = r.total_tickets - r.sold_tickets;
+        r.updated_at = now;
     });
 }
 
