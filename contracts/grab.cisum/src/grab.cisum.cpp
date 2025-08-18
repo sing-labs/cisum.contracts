@@ -2,6 +2,9 @@
 #include <eosio/asset.hpp>
 #include <eosio/system.hpp>
 #include <eosio/time.hpp>
+#include <eosio/transaction.hpp>
+#include <eosio/crypto.hpp>
+#include <cstring>
 // #include <utils.hpp>
 #include "grab.cisum.hpp"
 #include <string>
@@ -22,6 +25,31 @@ std::vector<std::string> split(const std::string& s, const std::string& delimite
     }
     result.emplace_back(s.substr(pos_start));
     return result;
+}
+
+// generate a pseudo-random number in [1, range] using available on-chain entropy
+static uint32_t get_random(const name& account, uint32_t range) {
+    // Use transaction ID and current time for pseudo-randomness
+    // Use tapos block prefix and current time, then XOR to form a seed
+    uint32_t tapos = tapos_block_prefix();
+    uint32_t timestamp = current_time_point().sec_since_epoch();
+    uint64_t seed = uint64_t(tapos) ^ uint64_t(timestamp);
+
+    uint64_t acc = account.value;
+    uint32_t adata_size = action_data_size();
+
+    // pack into a buffer: seed, account, action data size
+    char buf[sizeof(seed) + sizeof(acc) + sizeof(adata_size)];
+    size_t offset = 0;
+    std::memcpy(buf + offset, &seed, sizeof(seed)); offset += sizeof(seed);
+    std::memcpy(buf + offset, &acc, sizeof(acc)); offset += sizeof(acc);
+    std::memcpy(buf + offset, &adata_size, sizeof(adata_size)); offset += sizeof(adata_size);
+
+    checksum256 h = sha256(buf, offset);
+    auto arr = h.extract_as_byte_array();
+    uint32_t v = (uint32_t(arr[0]) << 24) | (uint32_t(arr[1]) << 16) | (uint32_t(arr[2]) << 8) | uint32_t(arr[3]);
+    uint32_t r = (v % range) + 1;
+    return r;
 }
 
 void grab_cisum::addrushsale(   nsymbol        show_id,
@@ -75,7 +103,7 @@ void grab_cisum::on_transfer( const name& from, const name& to, const nasset& qu
 
     auto now = current_time_point();
     CHECKC( memo_params[0] == "grab",           err::INVALID_FORMAT,    "memo must start with 'grab'" )
-    CHECKC (memo_params.size() == 2,            err::INVALID_FORMAT,    "ontransfer: params size must be equal to 2" )
+    CHECKC (memo_params.size() >= 2,            err::INVALID_FORMAT,    "ontransfer: params size must lager than 2" )
 
     auto rush_sale_id       = std::stoul(string(memo_params[1]));
     rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
@@ -108,11 +136,11 @@ void grab_cisum::on_transfer( const name& from, const name& to, const nasset& qu
     // TODO: if user win, check by win rate, random number, then allocate tickets to user, and increase user_itr->tickets
     bool sold_tickets = 0;
     if (rs_itr->win_ratio > 0) {
-        // Check if user wins
-        // uint32_t random_number = eosio::random::get_random_number(1, 10000);
-        // if (random_number <= rs_itr->win_ratio) {
-        //     sold_tickets = 1;
-        // }
+        // Check if user wins using on-chain pseudo-random
+        uint32_t random_number = get_random(from, RATIO_BOOST);
+        if (random_number <= rs_itr->win_ratio) {
+            sold_tickets = 1;
+        }
     }
 
     ASSERT(sold_tickets <= 1);
