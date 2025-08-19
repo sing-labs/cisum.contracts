@@ -48,9 +48,12 @@ set(VOTING_ICON_URI "voting.png#db28cd3db6e62d4509af3644ce7d377329482a14bb4bfaca
 #add_subdirectory(did.ntoken)
 #add_subdirectory(blindboxgame)
 #add_subdirectory(cisum.ntoken)
-add_subdirectory(sbt.cvnft)
-add_subdirectory(nestar.cisum)
-add_subdirectory(grab.cisum)
+#add_subdirectory(sbt.cvnft)
+add_subdirectory(nestar.token)
+add_subdirectory(artist.cisum)
+add_subdirectory(cvbadgestore)
+
+
 
 if(BUILD_TESTS)
   add_subdirectory(test_contracts)
