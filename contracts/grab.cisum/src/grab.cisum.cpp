@@ -101,7 +101,7 @@ void grab_cisum::addrushsale(   nsymbol        show_id,
 }
 
 void grab_cisum::on_transfer( const name& from, const name& to, const asset& quantity, const string& memo) {
-    if (get_first_receiver() != POINT_CONTRACT || from == get_self() || to != get_self()) return;
+    if (get_first_receiver() != _gstate.point_contract || from == get_self() || to != get_self()) return;
 
     require_auth( from );
 
@@ -237,6 +237,12 @@ void grab_cisum::updrushsale(   uint64_t rush_sale_id,
         if (ended_at.has_value()) r.ended_at = ended_at.value();
         r.updated_at = now;
     });
+}
+
+void grab_cisum::cfgpoint(const eosio::name& new_point_contract) {
+    require_auth(_gstate.admin);
+    CHECKC(is_account(new_point_contract), err::ACCOUNT_INVALID, "point_contract must be a valid account");
+    _gstate.point_contract = new_point_contract;
 }
 
 } /// namespace flon

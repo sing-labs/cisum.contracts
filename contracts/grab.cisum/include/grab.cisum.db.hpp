@@ -59,7 +59,7 @@ static constexpr uint32_t RATIO_BOOST = 10000;
 
 static constexpr symbol_code POINT_SYMBOL_CODE  = symbol_code("NESTAR");
 static constexpr symbol POINT_SYMBOL            = symbol(POINT_SYMBOL_CODE, 4);
-static constexpr name   POINT_CONTRACT          = "nestar.token"_n;
+static constexpr name   POINT_CONTRACT_DEFAULT  = "nestar.token"_n;
 
 #define TBL struct [[eosio::table, eosio::contract("grab.cisum")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("grab.cisum")]]
@@ -68,8 +68,9 @@ static constexpr name   POINT_CONTRACT          = "nestar.token"_n;
 NTBL("global") global_t {
    uint64_t       last_rush_sale_id;
    eosio::name    admin;
+   eosio::name    point_contract = POINT_CONTRACT_DEFAULT;
 
-   EOSLIB_SERIALIZE(global_t, (last_rush_sale_id)(admin))
+   EOSLIB_SERIALIZE(global_t, (last_rush_sale_id)(admin)(point_contract))
 };
 
 typedef eosio::singleton< "global"_n, global_t > global_singleton;

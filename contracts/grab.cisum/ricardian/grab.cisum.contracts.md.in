@@ -44,4 +44,12 @@ spec_version: "0.2.0"
 title: Grab Sale Ticket
 summary: 'Handle incoming token transfer for grabbing tickets.'
 ---
-Triggered automatically when tokens are transferred from nestar.cisum. Handles ticket grabbing logic for users. Memo format must be "grab:<rush_sale_id>". Only valid during rush sale period.
+Triggered automatically when tokens are transferred from point contract. Handles ticket grabbing logic for users. Memo format must be "grab:<rush_sale_id>". Only valid during rush sale period.
+
+<h1 class="contract">cfgpoint</h1>
+---
+spec_version: "0.2.0"
+title: Configure Point Contract
+summary: 'Update the point contract address used for ticket payments.'
+---
+Admin can update the point contract address (e.g., nestar.token) used for ticket payments. Only admin can call this action. Useful for integration or migration to a new token contract.

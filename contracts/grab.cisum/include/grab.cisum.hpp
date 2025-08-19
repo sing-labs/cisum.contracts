@@ -106,6 +106,16 @@ public:
   [[eosio::on_notify("*::transfer")]]
   void on_transfer(const name& from, const name& to, const asset& quantity, const string& memo);
 
+  /**
+   * Configure the point contract infomation.
+   * Only admin can call this action.
+   * Only for test
+   *
+   * @param new_point_contract   The new point contract account name.
+   */
+  [[eosio::action]]
+  void cfgpoint(const eosio::name& new_point_contract);
+
   // -------- Inline wrappers --------
   using addrushsale_action        = eosio::action_wrapper<"addrushsale"_n,        &grab_cisum::addrushsale>;
   using delrushsale_action        = eosio::action_wrapper<"delrushsale"_n,        &grab_cisum::delrushsale>;
