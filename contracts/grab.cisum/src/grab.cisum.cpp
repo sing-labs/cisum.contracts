@@ -52,16 +52,23 @@ static uint32_t get_random(const name& account, uint32_t range) {
     return r;
 }
 
+void grab_cisum::init(const name& admin) {
+    require_auth(get_self());
+    CHECKC(is_account(admin), err::ACCOUNT_INVALID, "admin must be a valid account");
+    _gstate.admin = admin;
+    // _gstate saved in ~grab_cisum()
+}
+
 void grab_cisum::addrushsale(   nsymbol        show_id,
                                 nsymbol        ticket_id,
                                 time_point     started_at,
                                 time_point     ended_at,
-                                asset          price,
+                                asset         price,
                                 uint32_t       max_grabs_per_user,
                                 uint32_t       win_ratio,
                                 uint32_t       total_tickets)
 {
-    require_auth(get_self());
+    require_auth(_gstate.admin);
     // TODO: check show_id valid?
     // TODO: check ticket_id valid?
     // check started_at < ended_at
@@ -160,7 +167,7 @@ void grab_cisum::on_transfer( const name& from, const name& to, const asset& qua
 }
 
 void grab_cisum::delrushsale( uint64_t rush_sale_id, bool forced ) {
-    require_auth(get_self());
+    require_auth(_gstate.admin);
 
     rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
     auto rs_itr = rs_idx.find(rush_sale_id);
@@ -177,7 +184,7 @@ void grab_cisum::delrushsale( uint64_t rush_sale_id, bool forced ) {
 }
 
 void grab_cisum::delusers( uint64_t rush_sale_id, uint32_t max_count ) {
-    require_auth(get_self());
+    require_auth(_gstate.admin);
 
     CHECKC( max_count > 0, err::NOT_POSITIVE, "max_count must be positive" );
 
@@ -199,9 +206,8 @@ void grab_cisum::updrushsale(   uint64_t rush_sale_id,
                                 std::optional<uint32_t> win_ratio,
                                 std::optional<uint32_t> total_tickets,
                                 std::optional<time_point> ended_at
-  ) {
-    require_auth(get_self());
-
+    ) {
+        require_auth(_gstate.admin);
     auto now = current_time_point();
 
     rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);

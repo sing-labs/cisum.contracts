@@ -67,8 +67,9 @@ static constexpr name   NESTAR_CONTRACT          = "nestar.cisum"_n;
 
 NTBL("global") global_t {
    uint64_t       last_rush_sale_id;
+   eosio::name    admin;
 
-   EOSLIB_SERIALIZE(global_t, (last_rush_sale_id))
+   EOSLIB_SERIALIZE(global_t, (last_rush_sale_id)(admin))
 };
 
 typedef eosio::singleton< "global"_n, global_t > global_singleton;

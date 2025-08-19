@@ -27,6 +27,9 @@ public:
   ~grab_cisum() { _global.set(_gstate, get_self()); }
 
   [[eosio::action]]
+  void init(const eosio::name& admin);
+
+  [[eosio::action]]
   void addrushsale(   nsymbol        show_id,
                       nsymbol        ticket_id,
                       time_point     started_at,
