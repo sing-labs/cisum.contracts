@@ -58,7 +58,7 @@ enum class err: uint8_t {
 static constexpr uint32_t RATIO_BOOST = 10000;
 
 static constexpr symbol_code POINT_SYMBOL_CODE  = symbol_code("NESTAR");
-static constexpr symbol POINT_SYMBOL            = symbol(POINT_SYMBOL_CODE, 1); // TODO: precision == 1???
+static constexpr symbol POINT_SYMBOL            = symbol(POINT_SYMBOL_CODE, 4);
 static constexpr name   POINT_CONTRACT          = "nestar.token"_n;
 
 #define TBL struct [[eosio::table, eosio::contract("grab.cisum")]]
@@ -75,13 +75,13 @@ NTBL("global") global_t {
 typedef eosio::singleton< "global"_n, global_t > global_singleton;
 
 // scope: self
-TBL rush_sale {
+NTBL("rushsales") rush_sale {
    uint64_t       id; // auto increment, PK
    nsymbol        show_id;
    nsymbol        ticket_id;
    time_point     started_at;
    time_point     ended_at;
-   asset         price;
+   asset          price;
    uint32_t       max_grabs_per_user;
    uint32_t       win_ratio;              // boost 10000, <= 10000
    uint32_t       total_tickets;
@@ -93,22 +93,22 @@ TBL rush_sale {
 
    uint64_t primary_key() const { return id; }
 
-   typedef eosio::multi_index<"rushsale"_n, rush_sale> idx_t;
+   typedef eosio::multi_index<"rushsales"_n, rush_sale> idx_t;
 
-   EOSLIB_SERIALIZE(rush_sale, (show_id)(ticket_id)(started_at)(ended_at)(price)(max_grabs_per_user)(win_ratio)(total_tickets)(available_tickets)(sold_tickets)(total_grabs)(created_at)(updated_at))
+   EOSLIB_SERIALIZE(rush_sale, (id)(show_id)(ticket_id)(started_at)(ended_at)(price)(max_grabs_per_user)(win_ratio)(total_tickets)(available_tickets)(sold_tickets)(total_grabs)(created_at)(updated_at))
 };
 
 // scope: rush_sale_id
-TBL users {
+NTBL("users") user_t {
    eosio::name    account;
    uint32_t       grabs;
    uint32_t       tickets;
 
    uint64_t primary_key() const { return account.value; }
 
-   typedef eosio::multi_index<"stat"_n, users> idx_t;
+   typedef eosio::multi_index<"users"_n, user_t> idx_t;
 
-   EOSLIB_SERIALIZE(users, (account)(grabs)(tickets))
+   EOSLIB_SERIALIZE(user_t, (account)(grabs)(tickets))
 };
 
 } // namespace flon

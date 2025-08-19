@@ -4,8 +4,10 @@
 namespace eosio::testing {
 
 struct contracts {
-   static std::vector<uint8_t> grabcisum_wasm() { return read_wasm("${CMAKE_BINARY_DIR}/contracts/grab.cisum/grab.cisum.wasm"); }
-   static std::vector<char>    grabcisum_abi()  { return read_abi("${CMAKE_BINARY_DIR}/contracts/grab.cisum/grab.cisum.abi"); }
+   static std::vector<uint8_t> grab_cisum_wasm() { return read_wasm("${CMAKE_BINARY_DIR}/contracts/grab.cisum/grab.cisum.wasm"); }
+   static std::vector<char>    grab_cisum_abi()  { return read_abi("${CMAKE_BINARY_DIR}/contracts/grab.cisum/grab.cisum.abi"); }
+   static std::vector<uint8_t> nestar_token_wasm() { return read_wasm("${CMAKE_BINARY_DIR}/contracts/nestar.token/nestar.token.wasm"); }
+   static std::vector<char>    nestar_token_abi()  { return read_abi("${CMAKE_BINARY_DIR}/contracts/nestar.token/nestar.token.abi"); }
 };
 
 } // namespace eosio::testing

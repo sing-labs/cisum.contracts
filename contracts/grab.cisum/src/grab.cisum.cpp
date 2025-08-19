@@ -63,7 +63,7 @@ void grab_cisum::addrushsale(   nsymbol        show_id,
                                 nsymbol        ticket_id,
                                 time_point     started_at,
                                 time_point     ended_at,
-                                asset         price,
+                                asset          price,
                                 uint32_t       max_grabs_per_user,
                                 uint32_t       win_ratio,
                                 uint32_t       total_tickets)
@@ -73,7 +73,7 @@ void grab_cisum::addrushsale(   nsymbol        show_id,
     // TODO: check ticket_id valid?
     // check started_at < ended_at
     CHECKC(started_at < ended_at, err::INVALID_TIME, "started_at must be less than ended_at");
-    CHECKC(price.symbol != POINT_SYMBOL, err::INVALID_FORMAT, "price symbol mismatch");
+    CHECKC(price.symbol == POINT_SYMBOL, err::INVALID_FORMAT, "price symbol mismatch");
     CHECKC(price.amount > 0, err::INVALID_FORMAT, "price must be positive");
     // TODO: check price.symbol is valid?? price.symbol.is_valid()?
 
@@ -127,7 +127,7 @@ void grab_cisum::on_transfer( const name& from, const name& to, const asset& qua
     CHECKC(quantity.symbol == rs_itr->price.symbol,    err::SYMBOL_MISMATCH,   "symbol mismatch");
     CHECKC( quantity == rs_itr->price, err::QUANTITY_MISMATCH, "quantity must be equal to rush sale price" )
 
-    users::idx_t user_idx(get_self(), rush_sale_id);
+    user_t::idx_t user_idx(get_self(), rush_sale_id);
     auto user_itr = user_idx.find(from.value);
 
     //TODO: user should open before grab tickets?
@@ -193,7 +193,7 @@ void grab_cisum::delusers( uint64_t rush_sale_id, uint32_t max_count ) {
     auto rs_itr = rs_idx.find(rush_sale_id);
     CHECKC( rs_itr == rs_idx.end(), err::NONE_DELETED, "rush sale must be deleted first" );
 
-    users::idx_t user_idx(get_self(), rush_sale_id);
+    user_t::idx_t user_idx(get_self(), rush_sale_id);
     auto user_itr = user_idx.begin();
     uint32_t count = 0;
     for (; count < max_count && user_itr != user_idx.end(); ) {
