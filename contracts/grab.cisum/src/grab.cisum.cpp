@@ -141,30 +141,32 @@ void grab_cisum::on_transfer( const name& from, const name& to, const asset& qua
     CHECKC( user_itr->grabs < rs_itr->max_grabs_per_user, err::EXCEED_LIMIT, "user's grabs exceeds max grabs limit of rush sale" )
     ASSERT( user_itr->tickets < rs_itr->total_tickets )
 
-    // TODO: if user win, check by win rate, random number, then allocate tickets to user, and increase user_itr->tickets
-    bool sold_tickets = 0;
+    bool win = false;
     if (rs_itr->win_ratio > 0) {
         // Check if user wins using on-chain pseudo-random
         uint32_t random_number = get_random(from, RATIO_BOOST);
-        if (random_number <= rs_itr->win_ratio) {
-            sold_tickets = 1;
-        }
+        win = random_number <= rs_itr->win_ratio;
     }
-
-    ASSERT(sold_tickets <= 1);
 
     user_idx.modify(user_itr, same_payer, [&](auto& u) {
         u.grabs++;
-        u.tickets += sold_tickets;
+        if (win) u.tickets++;
     });
 
     rs_idx.modify(rs_itr, same_payer, [&](auto& r) {
         r.total_grabs++;
-        r.sold_tickets += sold_tickets;
+        if (win) r.sold_tickets++;
         ASSERT(r.sold_tickets <= r.total_tickets);
         r.available_tickets = r.total_tickets - r.sold_tickets;
         r.updated_at = now;
     });
+
+    notifyticket(from, rush_sale_id, win);
+}
+
+void grab_cisum::notifyticket(const eosio::name& user, uint64_t rush_sale_id, bool won) {
+    require_auth(get_self());
+    require_recipient( user );
 }
 
 void grab_cisum::delrushsale( uint64_t rush_sale_id, bool forced ) {

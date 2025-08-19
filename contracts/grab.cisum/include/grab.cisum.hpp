@@ -107,6 +107,17 @@ public:
   void on_transfer(const name& from, const name& to, const asset& quantity, const string& memo);
 
   /**
+   * Notify user of ticket grab result.
+   * Called internally after on_transfer.
+   *
+   * @param user                The user account.
+   * @param rush_sale_id        The rush sale event id.
+   * @param won                 True if user won the grab, false otherwise.
+   */
+  [[eosio::action]]
+  void notifyticket(const eosio::name& user, uint64_t rush_sale_id, bool won);
+
+  /**
    * Configure the point contract infomation.
    * Only admin can call this action.
    * Only for test

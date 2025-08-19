@@ -53,3 +53,14 @@ title: Configure Point Contract
 summary: 'Update the point contract address used for ticket payments.'
 ---
 Admin can update the point contract address (e.g., nestar.token) used for ticket payments. Only admin can call this action. Useful for integration or migration to a new token contract.
+
+<h1 class="contract">notifyticket</h1>
+---
+spec_version: "0.2.0"
+title: Notify Ticket Purchase Result
+summary: 'Notify user of ticket purchase result after transfer.'
+---
+This action is triggered internally after a user attempts to grab a ticket via transfer. It notifies the user whether the user won the ticket. Parameters:
+* user: The user account.
+* rush_sale_id: The rush sale event id.
+* won: True if user won the grab, false otherwise.
