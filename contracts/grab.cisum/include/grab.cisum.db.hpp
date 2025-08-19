@@ -57,9 +57,9 @@ enum class err: uint8_t {
 
 static constexpr uint32_t RATIO_BOOST = 10000;
 
-static constexpr symbol_code NESTAR_SYMBOL_CODE  = symbol_code("NESTAR");
-static constexpr symbol NESTAR_SYMBOL            = symbol(NESTAR_SYMBOL_CODE, 1); // TODO: precision == 1???
-static constexpr name   NESTAR_CONTRACT          = "nestar.cisum"_n;
+static constexpr symbol_code POINT_SYMBOL_CODE  = symbol_code("NESTAR");
+static constexpr symbol POINT_SYMBOL            = symbol(POINT_SYMBOL_CODE, 1); // TODO: precision == 1???
+static constexpr name   POINT_CONTRACT          = "nestar.token"_n;
 
 #define TBL struct [[eosio::table, eosio::contract("grab.cisum")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("grab.cisum")]]

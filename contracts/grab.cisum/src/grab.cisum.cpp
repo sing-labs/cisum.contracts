@@ -73,7 +73,7 @@ void grab_cisum::addrushsale(   nsymbol        show_id,
     // TODO: check ticket_id valid?
     // check started_at < ended_at
     CHECKC(started_at < ended_at, err::INVALID_TIME, "started_at must be less than ended_at");
-    CHECKC(price.symbol != NESTAR_SYMBOL, err::INVALID_FORMAT, "price symbol mismatch");
+    CHECKC(price.symbol != POINT_SYMBOL, err::INVALID_FORMAT, "price symbol mismatch");
     CHECKC(price.amount > 0, err::INVALID_FORMAT, "price must be positive");
     // TODO: check price.symbol is valid?? price.symbol.is_valid()?
 
@@ -101,7 +101,8 @@ void grab_cisum::addrushsale(   nsymbol        show_id,
 }
 
 void grab_cisum::on_transfer( const name& from, const name& to, const asset& quantity, const string& memo) {
-    if (from == get_self() || to != get_self()) return;
+    if (get_first_receiver() != POINT_CONTRACT || from == get_self() || to != get_self()) return;
+
     require_auth( from );
 
     // memo format: "grab:${id}"

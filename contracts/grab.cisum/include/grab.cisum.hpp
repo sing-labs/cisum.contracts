@@ -96,14 +96,14 @@ public:
 
   /**
    * Handle incoming token transfer for grabbing tickets.
-   * Called automatically on transfer from nestar.cisum.
+   * Called automatically on transfer from POINT_TOKEN.
    *
    * @param from                 Sender account.
    * @param to                   Receiver (contract self).
    * @param quantity             Amount transferred.
    * @param memo                 Memo string, format: "grab:<rush_sale_id>".
    */
-  [[eosio::on_notify("nestar.cisum::transfer")]]
+  [[eosio::on_notify("*::transfer")]]
   void on_transfer(const name& from, const name& to, const asset& quantity, const string& memo);
 
   // -------- Inline wrappers --------
