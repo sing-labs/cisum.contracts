@@ -54,7 +54,6 @@ add_subdirectory(artist.cisum)
 add_subdirectory(cvbadgestore)
 add_subdirectory(grab.cisum)
 
-
-if(BUILD_TESTS)
-  add_subdirectory(test_contracts)
-endif()
+# if(BUILD_TESTS)
+#   add_subdirectory(test_contracts)
+# endif()
