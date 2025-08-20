@@ -30,6 +30,13 @@ public:
   [[eosio::action]] void addshowadm(const name& account);
   [[eosio::action]] void delshowadm(const name& account);
 
+  [[eosio::action]]
+  void addchecker(const uint64_t& show_id, const name& account);
+
+  [[eosio::action]]
+  void delchecker(const uint64_t& show_id, const name& account);
+
+
   // ===== 演出 =====
   [[eosio::action]] void newshow(const name&       category,
                                  const bool&       ticket_transferable,
@@ -84,6 +91,9 @@ private:
   global_singleton _global;
   global_t         _gstate;
 
+  void check_showadm() const;
+
+  void require_issue_auth(uint64_t show_id) const;
 };
 
 } // namespace flon

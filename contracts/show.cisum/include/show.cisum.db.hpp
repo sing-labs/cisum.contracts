@@ -44,7 +44,7 @@ TBL show_t {
    name       category;                             // 类别（自定义：concert/drama/exhibit...）
    bool       ticket_transferable = false;          // 门票是否可转让
    bool       ticket_refundable   = false;          // 门票是否可退票
-   set<name>  ticket_check_admins;                  // 核销员（可选：入场校验）
+   set<name>  ticket_check_admins;                  // 核销员
    name       status = ShowStatus::onshelf;
 
    time_point sale_started_at;                      // 售票开始
@@ -56,7 +56,7 @@ TBL show_t {
 
    uint64_t primary_key() const { return show_id; }
 
-   typedef eosio::multi_index<"shows"_n, show_t> shows;
+   typedef eosio::multi_index<"shows"_n, show_t> showidx;
 
    EOSLIB_SERIALIZE(show_t,
       (show_id)(category)
@@ -86,7 +86,7 @@ TBL ticket_t {
 
    uint64_t primary_key() const { return ticket_id; }
 
-   typedef eosio::multi_index<"tickets"_n, ticket_t> tickets;
+   typedef eosio::multi_index<"tickets"_n, ticket_t> ticketidx;
 
    EOSLIB_SERIALIZE(ticket_t,
       (ticket_id)(prerequisite_ticket_id)

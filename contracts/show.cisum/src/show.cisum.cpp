@@ -9,6 +9,39 @@ namespace flon {
 
 static inline time_point nowtp() { return current_time_point(); }
 
+// 仅允许 show_admin 白名单中的任意一个账户签名
+void show::check_showadm() const {
+    check(!_gstate.show_admin.empty(), "no show admins configured");
+    bool authorized = false;
+    for (const auto& account : _gstate.show_admin) {
+            if (has_auth(account)) {
+                require_auth(account);
+                authorized = true;
+                break;
+            }
+        }
+    check(authorized, "missing required authority of admin or show_admin");
+}
+
+void show::require_issue_auth(uint64_t show_id) const {
+    // 1) 超管直接通过
+    if (has_auth(_gstate.admin)) { require_auth(_gstate.admin); return; }
+    // 2) 全局演出管理员白名单任一账户签名也通过
+    for (const auto& acc : _gstate.show_admin) {
+        if (has_auth(acc)) { require_auth(acc); return; }
+    }
+    // 3) 该场演出的核销员集合内任一账户签名也通过
+    show_t::showidx shows(get_self(), get_self().value);
+    auto sit = shows.find(show_id);
+    check(sit != shows.end(), "show not found");
+
+    for (const auto& acc : sit->ticket_check_admins) {
+        if (has_auth(acc)) { require_auth(acc); return; }
+    }
+
+    check(false, "missing required authority: need admin/show_admin/ticket_check_admin for this show_id");
+}
+
 // ===== 全局设置 =====
 void show::init(const name& admin, const name& nft_bank) {
   require_auth(get_self());
@@ -37,6 +70,47 @@ void show::delshowadm(const name& account) {
   _gstate.show_admin.erase(it);
 }
 
+void show::addchecker(const uint64_t& show_id, const name& account) {
+    if (has_auth(_gstate.admin)) require_auth(_gstate.admin);
+    else {
+        bool ok = false;
+        for (const auto& acc : _gstate.show_admin) {
+            if (has_auth(acc)) { require_auth(acc); ok = true; break; }
+        }
+        check(ok, "missing required authority of admin or show_admin");
+    }
+    check(is_account(account), "account not exist");
+
+    show_t::showidx shows(get_self(), get_self().value);
+    auto it = shows.find(show_id);
+    check(it != shows.end(), "show not found");
+
+    shows.modify(it, same_payer, [&](auto& r){
+        r.ticket_check_admins.insert(account);
+        r.updated_at = current_time_point();
+    });
+}
+
+void show::delchecker(const uint64_t& show_id, const name& account) {
+    if (has_auth(_gstate.admin)) require_auth(_gstate.admin);
+    else {
+        bool ok = false;
+        for (const auto& acc : _gstate.show_admin) {
+            if (has_auth(acc)) { require_auth(acc); ok = true; break; }
+        }
+        check(ok, "missing required authority of admin or show_admin");
+    }
+
+    show_t::showidx shows(get_self(), get_self().value);
+    auto it = shows.find(show_id);
+    check(it != shows.end(), "show not found");
+
+    shows.modify(it, same_payer, [&](auto& r){
+        r.ticket_check_admins.erase(account);
+        r.updated_at = current_time_point();
+    });
+}
+
 // ===== 演出 =====
 void show::newshow(const name&       category,
                    const bool&       ticket_transferable,
@@ -47,7 +121,7 @@ void show::newshow(const name&       category,
                    const time_point& show_ended_at,
                    const name&       status)
 {
-  check_admin_or_showadm();
+  check_showadm();  // ← 只允许 show_admin
 
   check(sale_ended_at    >= sale_started_at, "sale_ended_at must be >= sale_started_at");
   check(show_started_at  >= sale_ended_at,   "show_started_at must be >= sale_ended_at");
@@ -83,7 +157,7 @@ void show::setshow(const uint64_t&   show_id,
                    const time_point& show_ended_at,
                    const name&       status)
 {
-  check_admin_or_showadm();
+  check_showadm();
 
   show_t::showidx shows(get_self(), get_self().value);
   auto it = shows.find(show_id);
@@ -110,7 +184,7 @@ void show::setshow(const uint64_t&   show_id,
 void show::showstatus(const uint64_t& show_id,
                       const name&     status)
 {
-  check_admin_or_showadm();
+  check_showadm();
 
   show_t::showidx shows(get_self(), get_self().value);
   auto it = shows.find(show_id);
@@ -131,7 +205,7 @@ void show::newticket(const uint64_t& show_id,
                      const uint32_t& total_count,
                      const name&     status)
 {
-  check_admin_or_showadm();
+  check_showadm();
 
   check(_gstate.nft_bank.value != 0, "nft_bank not set");
   show_t::showidx shows(get_self(), get_self().value);
@@ -167,7 +241,7 @@ void show::setticket(const uint64_t& show_id,
                      const uint32_t& total_count,
                      const name&     status)
 {
-  check_admin_or_showadm();
+  check_showadm();
 
   ticket_t::ticketidx tks(get_self(), show_id);
   auto it = tks.find(ticket_id);
@@ -191,7 +265,7 @@ void show::ticketstatus(const uint64_t& show_id,
                         const uint64_t& ticket_id,
                         const name&     status)
 {
-  check_admin_or_showadm();
+  check_showadm();
 
   ticket_t::ticketidx tks(get_self(), show_id);
   auto it = tks.find(ticket_id);
@@ -210,7 +284,7 @@ void show::issue(const name&     user,
                  const uint32_t& amount,
                  const string&   memo)
 {
-  check_admin_or_showadm();
+  require_issue_auth(show_id);
 
   check(is_account(user), "user not exist");
   check(_gstate.nft_bank.value != 0, "nft_bank not set");

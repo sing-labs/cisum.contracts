@@ -1,4 +1,4 @@
-add_contract(show.cisum show.cisum ${CMAKE_CURRENT_SOURCE_DIR}/src/blindbox.cpp)
+add_contract(show.cisum show.cisum ${CMAKE_CURRENT_SOURCE_DIR}/src/show.cisum.cpp)
 
 if(DEFINED ENV{DAY_SECONDS_FOR_TEST})
    message(WARNING "ENV{DAY_SECONDS_FOR_TEST}=$ENV{DAY_SECONDS_FOR_TEST} should use only for test!!!")
