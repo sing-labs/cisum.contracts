@@ -6,7 +6,7 @@
 #include <eosio/singleton.hpp>
 #include <string>
 #include <set>
-#include <nasset.hpp>
+#include <flon/nasset.hpp>
 
 using std::set;
 using std::string;
