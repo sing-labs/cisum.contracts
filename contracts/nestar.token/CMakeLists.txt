@@ -11,3 +11,4 @@ set_target_properties(nestar.token
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/ricardian/nestar.token.contracts.md.in ${CMAKE_CURRENT_BINARY_DIR}/ricardian/nestar.token.contracts.md @ONLY )
 
 target_compile_options( nestar.token PUBLIC -R${CMAKE_CURRENT_SOURCE_DIR}/ricardian -R${CMAKE_CURRENT_BINARY_DIR}/ricardian )
+target_link_libraries(nestar.token flon_base)

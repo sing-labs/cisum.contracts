@@ -38,8 +38,8 @@ void nestar::delwhitelist(const name& account) {
 
 void nestar::create(const name& issuer, const asset& maximum_supply)
 {
-    require_auth(get_self());           
-    require_issuer(issuer);            
+    require_auth(get_self());
+    require_issuer(issuer);
 
     CHECKC(maximum_supply.symbol == NESTAR_SYMBOL,  err::SYMBOL_MISMATCH, "symbol must be NESTAR");
     CHECKC(maximum_supply.symbol.is_valid(),        err::INVALID_FORMAT,  "invalid symbol");
@@ -169,14 +169,14 @@ void nestar::setissuer(const name& issuer) {
 
 void nestar::setadmin(const name& admin)
 {
-    require_auth(get_self());   
+    require_auth(get_self());
     CHECKC(is_account(admin),       err::ACCOUNT_INVALID, "admin not exist");
     _gstate.admin = admin;
 }
 
 void nestar::setwhite(const name& account, const bool& enabled)
 {
-    require_auth(get_self()); 
+    require_auth(get_self());
     CHECKC(is_account(account),     err::ACCOUNT_INVALID, "account not exist");
 
     whitelist_t::idx_t wtbl(get_self(), get_self().value);
@@ -195,7 +195,7 @@ void nestar::setwhite(const name& account, const bool& enabled)
 
 void nestar::setcontract(const name &artcontract)
 {
-    require_auth(get_self());   
+    require_auth(get_self());
     CHECKC(is_account(artcontract),       err::ACCOUNT_INVALID, "artcontract not exist");
     _gstate.artists_contract = artcontract;
 }
@@ -339,7 +339,7 @@ static inline std::string build_award_memo(const eosio::name& user,
 
     // 紧凑追加：|101x3|102x1 ...
     for (const auto& p : packs) {
-        memo += "|" + std::to_string(p.symbol.id) + "x" + std::to_string(p.amount);
+        memo += "|" + std::to_string(p.symbol.id()) + "x" + std::to_string(p.amount);
 
         // 留点余量，超长就用总量兜底
         if (memo.size() >= 250) {

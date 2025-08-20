@@ -7,6 +7,7 @@
 #include <string>
 #include <set>
 #include <vector>
+#include <flon/nasset.hpp>
 
 using std::set;
 using std::string;
@@ -56,60 +57,60 @@ static constexpr symbol NESTAR_SYMBOL  = symbol(symbol_code("NESTAR"), 4);
 #define TBL struct [[eosio::table, eosio::contract("nestar.token")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("nestar.token")]]
 
-static constexpr uint32_t U1E9  = 10'0000'0000UL;
-struct nsymbol {
-    uint32_t id;
-    uint32_t pid;
+// static constexpr uint32_t U1E9  = 10'0000'0000UL;
+// struct nsymbol {
+//     uint32_t id;
+//     uint32_t pid;
 
-    nsymbol() {}
-    nsymbol(const uint32_t& i): id(i),pid(0) {}
-    nsymbol(const uint32_t& i, const uint32_t& p): id(i),pid(p) {
-        check( pid < U1E9, "pid must be below 10**9" );
-        check( id < U1E9, "id must be below 10**10" );
-    }
+//     nsymbol() {}
+//     nsymbol(const uint32_t& i): id(i),pid(0) {}
+//     nsymbol(const uint32_t& i, const uint32_t& p): id(i),pid(p) {
+//         check( pid < U1E9, "pid must be below 10**9" );
+//         check( id < U1E9, "id must be below 10**10" );
+//     }
 
-    nsymbol(const uint64_t& raw) {
-        check( pid < U1E9, "pid must be below 10**9" );
-        check( id < U1E9, "id must be below 10**10" );
+//     nsymbol(const uint64_t& raw) {
+//         check( pid < U1E9, "pid must be below 10**9" );
+//         check( id < U1E9, "id must be below 10**10" );
 
-        pid = raw / U1E9;
-        id  = raw - pid * U1E9;
-    }
+//         pid = raw / U1E9;
+//         id  = raw - pid * U1E9;
+//     }
 
-    friend bool operator==(const nsymbol&, const nsymbol&);
-    // bool is_valid()const { return( id > pid ); }
-    uint64_t raw()const { return( (uint64_t) pid * U1E9 + id ); }
+//     friend bool operator==(const nsymbol&, const nsymbol&);
+//     // bool is_valid()const { return( id > pid ); }
+//     uint64_t raw()const { return( (uint64_t) pid * U1E9 + id ); }
 
-    EOSLIB_SERIALIZE( nsymbol, (id)(pid) )
-};
+//     EOSLIB_SERIALIZE( nsymbol, (id)(pid) )
+// };
 
-bool operator==(const nsymbol& symb1, const nsymbol& symb2) { 
-    return( symb1.id == symb2.id && symb1.pid == symb2.pid );
-}
+// bool operator==(const nsymbol& symb1, const nsymbol& symb2) {
+//     return( symb1.id == symb2.id && symb1.pid == symb2.pid );
+// }
 
-struct nasset {
-    int64_t         amount;
-    nsymbol         symbol;
+// struct nasset {
+//     int64_t         amount;
+//     nsymbol         symbol;
 
-    nasset() {}
-    nasset(const uint32_t& id): symbol(id), amount(0) {}
-    nasset(const uint32_t& id, const uint32_t& pid): symbol(id, pid), amount(0) {}
-    nasset(const uint32_t& id, const uint32_t& pid, const int64_t& am): symbol(id, pid), amount(am) {}
-    nasset(const int64_t& amt, const nsymbol& symb): amount(amt), symbol(symb) {}
+//     nasset() {}
+//     nasset(const uint32_t& id): symbol(id), amount(0) {}
+//     nasset(const uint32_t& id, const uint32_t& pid): symbol(id, pid), amount(0) {}
+//     nasset(const uint32_t& id, const uint32_t& pid, const int64_t& am): symbol(id, pid), amount(am) {}
+//     nasset(const int64_t& amt, const nsymbol& symb): amount(amt), symbol(symb) {}
 
-    nasset& operator+=(const nasset& quantity) { 
-        check( quantity.symbol.raw() == this->symbol.raw(), "nsymbol mismatch");
-        this->amount += quantity.amount; return *this;
-    } 
-    nasset& operator-=(const nasset& quantity) { 
-        check( quantity.symbol.raw() == this->symbol.raw(), "nsymbol mismatch");
-        this->amount -= quantity.amount; return *this; 
-    }
+//     nasset& operator+=(const nasset& quantity) {
+//         check( quantity.symbol.raw() == this->symbol.raw(), "nsymbol mismatch");
+//         this->amount += quantity.amount; return *this;
+//     }
+//     nasset& operator-=(const nasset& quantity) {
+//         check( quantity.symbol.raw() == this->symbol.raw(), "nsymbol mismatch");
+//         this->amount -= quantity.amount; return *this;
+//     }
 
-    // bool is_valid()const { return symbol.is_valid(); }
-    
-    EOSLIB_SERIALIZE( nasset, (amount)(symbol) )
-};
+//     // bool is_valid()const { return symbol.is_valid(); }
+
+//     EOSLIB_SERIALIZE( nasset, (amount)(symbol) )
+// };
 
 
 
@@ -179,7 +180,7 @@ TBL badge_rule_t {
 
    uint64_t  primary_key()    const { return id; }
    uint64_t  by_threshold()      const { return threshold.amount; }
-   uint64_t  by_symbol()      const { return symbol.raw(); } 
+   uint64_t  by_symbol()      const { return symbol.raw(); }
 
    typedef eosio::multi_index<
      "badgerules"_n, badge_rule_t,
