@@ -11,3 +11,4 @@ set_target_properties(cvticket.nft
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/ricardian/cvticket.nft.contracts.md.in ${CMAKE_CURRENT_BINARY_DIR}/ricardian/cvticket.nft.contracts.md @ONLY )
 
 target_compile_options( cvticket.nft PUBLIC -R${CMAKE_CURRENT_SOURCE_DIR}/ricardian -R${CMAKE_CURRENT_BINARY_DIR}/ricardian )
+target_link_libraries(cvticket.nft flon_base)

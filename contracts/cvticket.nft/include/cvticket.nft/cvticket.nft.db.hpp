@@ -5,6 +5,7 @@
 #include <eosio/singleton.hpp>
 #include <eosio/system.hpp>
 #include <eosio/time.hpp>
+#include <flon/nasset.hpp>
 
 // #include <deque>
 #include <optional>
@@ -22,7 +23,7 @@ using namespace eosio;
 #define TBL struct [[eosio::table, eosio::contract("cvticket.nft")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("cvticket.nft")]]
 
-static constexpr uint32_t U1E9  = 10'0000'0000UL;
+// static constexpr uint32_t U1E9  = 10'0000'0000UL;
 
 NTBL("global") global_t {
     set<name> creators; //null means open to public
@@ -32,60 +33,6 @@ NTBL("global") global_t {
 };
 typedef eosio::singleton< "global"_n, global_t > global_singleton;
 
-struct nsymbol {
-    uint32_t id;
-    uint32_t pid;
-
-    nsymbol() {}
-    nsymbol(const uint32_t& i): id(i),pid(0) {}
-    nsymbol(const uint32_t& i, const uint32_t& p): id(i),pid(p) {
-        check( pid < U1E9, "pid must be below 10**9" );
-        check( id < U1E9, "id must be below 10**10" );
-    }
-
-    nsymbol(const uint64_t& raw) {
-        check( pid < U1E9, "pid must be below 10**9" );
-        check( id < U1E9, "id must be below 10**10" );
-
-        pid = raw / U1E9;
-        id  = raw - pid * U1E9;
-    }
-
-    friend bool operator==(const nsymbol&, const nsymbol&);
-    // bool is_valid()const { return( id > pid ); }
-    uint64_t raw()const { return( (uint64_t) pid * U1E9 + id ); }
-
-    EOSLIB_SERIALIZE( nsymbol, (id)(pid) )
-};
-
-bool operator==(const nsymbol& symb1, const nsymbol& symb2) {
-    return( symb1.id == symb2.id && symb1.pid == symb2.pid );
-}
-
-
-struct nasset {
-    int64_t         amount;
-    nsymbol         symbol;
-
-    nasset() {}
-    nasset(const uint32_t& id): symbol(id), amount(0) {}
-    nasset(const uint32_t& id, const uint32_t& pid): symbol(id, pid), amount(0) {}
-    nasset(const uint32_t& id, const uint32_t& pid, const int64_t& am): symbol(id, pid), amount(am) {}
-    nasset(const int64_t& amt, const nsymbol& symb): amount(amt), symbol(symb) {}
-
-    nasset& operator+=(const nasset& quantity) {
-        check( quantity.symbol.raw() == this->symbol.raw(), "nsymbol mismatch");
-        this->amount += quantity.amount; return *this;
-    }
-    nasset& operator-=(const nasset& quantity) {
-        check( quantity.symbol.raw() == this->symbol.raw(), "nsymbol mismatch");
-        this->amount -= quantity.amount; return *this;
-    }
-
-    // bool is_valid()const { return symbol.is_valid(); }
-
-    EOSLIB_SERIALIZE( nasset, (amount)(symbol) )
-};
 
 //Scope: self
 TBL nstats_t {
@@ -104,8 +51,8 @@ TBL nstats_t {
     nstats_t(const uint64_t& id, const uint64_t& pid): supply(id, pid) {};
     nstats_t(const uint64_t& id, const uint64_t& pid, const int64_t& am): supply(id, pid, am) {};
 
-    uint64_t primary_key()const     { return supply.symbol.id; } // must use id to keep available_primary_key increase consistenly
-    uint64_t by_pid()const          { return supply.symbol.pid; }
+    uint64_t primary_key()const     { return supply.symbol.value; } // must use id to keep available_primary_key increase consistenly
+    uint64_t by_pid()const          { return supply.symbol.pid(); }
     uint64_t by_ipowner()const      { return ipowner.value; }
     uint64_t by_issuer()const       { return issuer.value; }
     uint128_t by_issuer_created()const { return (uint128_t) issuer.value << 64 | (uint128_t) issued_at.sec_since_epoch(); }

@@ -22,11 +22,13 @@ void cvticket::create( const name& issuer, const int64_t& maximum_supply, const 
    // auto upper_itr = idx.upper_bound( token_uri_hash );
    // check( lower_itr == idx.end() || lower_itr == upper_itr, "token with token_uri already exists" );
    check( idx.find(token_uri_hash) == idx.end(), "token with token_uri already exists" );
-   check( nstats.find(nsymb.id) == nstats.end(), "token of ID: " + to_string(nsymb.id) + " alreay exists" );
-   if (nsymb.id != 0)
-      check( nsymb.id != nsymb.pid, "parent id shall not be equal to id" );
-   else
-      nsymb.id         = nstats.available_primary_key();
+   check( nstats.find(nsymb.value) == nstats.end(), "token of nsymbol: " + to_string(nsymb.value) + " alreay exists" );
+   check( nsymb.pid() != 0, "parent id shall not be equal to 0" );
+   check( nsymb.id() != 0, "id shall not be equal to 0" );
+   // if (nsymb.id != 0)
+      // check( nsymb.id != nsymb.pid, "parent id shall not be equal to id" );
+   // else
+   //    nsymb.id         = nstats.available_primary_key();
 
    nstats.emplace( issuer, [&]( auto& s ) {
       s.supply.symbol   = nsymb;
@@ -93,7 +95,7 @@ void cvticket::issue( const name& to, const nasset& quantity, const string& memo
     check( memo.size() <= 256, "memo has more than 256 bytes" );
 
     auto nstats = nstats_t::idx_t( _self, _self.value );
-    auto existing = nstats.find( sym.id );
+    auto existing = nstats.find( sym.value );
     check( existing != nstats.end(), "token with symbol does not exist, create token before issue" );
     const auto& st = *existing;
     check( to == st.issuer, "tokens can only be issued to issuer account" );
@@ -120,7 +122,7 @@ void cvticket::retire( const nasset& quantity, const string& memo )
     check( memo.size() <= 256, "memo has more than 256 bytes" );
 
     auto nstats = nstats_t::idx_t( _self, _self.value );
-    auto existing = nstats.find( sym.id );
+    auto existing = nstats.find( sym.value );
     check( existing != nstats.end(), "token with symbol does not exist" );
     const auto& st = *existing;
 
@@ -158,7 +160,7 @@ void cvticket::transfer( const name& from, const name& to, const vector<nasset>&
    for( auto& quantity : assets) {
       auto sym = quantity.symbol;
       auto nstats = nstats_t::idx_t( _self, _self.value );
-      const auto& st = nstats.get( sym.id );
+      const auto& st = nstats.get( sym.value );
 
       // check( quantity.is_valid(), "invalid quantity" );
       check( quantity.amount > 0, "must transfer positive quantity" );
