@@ -4,33 +4,41 @@
 
 namespace flon {
 
-static constexpr uint32_t U1E9  = 10'0000'0000UL;
 
 struct nsymbol {
-    uint32_t id     = 0;
-    uint32_t pid    = 0;
+    uint64_t value = 0;
 
+    // consts
+    static constexpr uint32_t U1E9  = 10'0000'0000UL;
     nsymbol() = default;
-    explicit nsymbol(uint32_t i, uint32_t p = 0): id(i),pid(p) {
-        eosio::check( pid < U1E9, "pid must be below 10**9" );
-        eosio::check( id < U1E9, "id must be below 10**10" );
+
+    static uint64_t to_raw_value(uint32_t i, uint32_t p) {
+        eosio::check( p < U1E9, "pid must be below 10**9" );
+        eosio::check( i < U1E9, "id must be below 10**9" );
+        return (uint64_t)p * U1E9 + i;
     }
 
-    explicit nsymbol(uint64_t raw) {
-        eosio::check( pid < U1E9, "pid must be below 10**9" );
-        eosio::check( id < U1E9, "id must be below 10**10" );
+    explicit nsymbol(uint32_t i, uint32_t p = 0): value(to_raw_value(i, p)) {}
 
-        pid = raw / U1E9;
-        id  = raw - pid * U1E9;
-    }
+    explicit nsymbol(uint64_t raw): value(raw) {}
 
     friend bool operator==(const nsymbol& a, const nsymbol& b) {
-        return( a.id == b.id && a.pid == b.pid );
+        return( a.value == b.value );
     }
-    // bool is_valid()const { return( id > pid ); }
-    uint64_t raw()const { return( (uint64_t) pid * U1E9 + id ); }
 
-    EOSLIB_SERIALIZE( nsymbol, (id)(pid) )
+    inline uint64_t raw() const {
+        return value;
+    }
+
+    inline uint32_t id() const {
+        return value % U1E9;
+    }
+
+    inline uint32_t pid() const {
+        return value / U1E9;
+    }
+
+    EOSLIB_SERIALIZE( nsymbol, (value) )
 };
 
 struct nasset {
