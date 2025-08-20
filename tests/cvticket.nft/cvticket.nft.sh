@@ -43,10 +43,10 @@ mpush $ticket_ntoken issue '[
 
 
 
-mpush cvticket.nft deltoken '[{"id":10010,"pid":21010001}]' -p cvticket.nft
+mpush cvticket.nft deltoken '[{"id":10011,"pid":21010001}]' -p cvticket.nft
 
 
 mpush cvticket.nft retire '[
-  { "amount": 10000000, "symbol": { "id": 10010, "pid": 21010001 } },
+  { "amount": 9999998, "symbol": { "id": 10011, "pid": 21010001 } },
   "burn before deltoken"
-]' -p adminacct
+]' -p show111

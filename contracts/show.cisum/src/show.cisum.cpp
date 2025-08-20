@@ -298,17 +298,23 @@ void show::issue(const name&     user,
   // 库存检查
   check(it->stock_count >= amount, "insufficient ticket stock");
 
-  // 转 NFT（从本合约账号 _self 发出）
-  {
-    vector<nasset> packs;
-    nsymbol sym(ticket_id);
-    packs.emplace_back(static_cast<int64_t>(amount), sym);
+  // ✅ 将 raw 拆成 pid/id 后再构造 nsymbol，避免原始构造函数的顺序校验问题 --临时使用
+  static constexpr uint64_t U1E9 = 1'000'000'000ULL;
 
-    flon::cvticket::transfer_action{
-      _gstate.nft_bank,
-      { permission_level{ _self, "active"_n } }
-    }.send(_self, user, packs, memo);
-  }
+  // ticket_id 是 nsymbol.raw()，这里手动拆 raw -> (pid, id)
+  const uint32_t pid = ticket_id / U1E9;       // 高位 pid
+  const uint32_t id = ticket_id % U1E9;       // 低位 id
+
+  nsymbol sym{id, pid};
+
+  // 转 NFT（从本合约账号 _self 发出）
+  vector<nasset> packs;
+  packs.emplace_back(static_cast<int64_t>(amount), sym);
+  // nsymbol sym{ticket_id};
+  flon::cvticket::transfer_action{
+    _gstate.nft_bank,
+    { permission_level{ _self, "active"_n } }
+  }.send(_self, user, packs, memo);
 
   // 更新计数
   const auto now = nowtp();
