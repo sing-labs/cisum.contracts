@@ -11,3 +11,4 @@ set_target_properties(cvbadgestore
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/ricardian/cvbadgestore.contracts.md.in ${CMAKE_CURRENT_BINARY_DIR}/ricardian/cvbadgestore.contracts.md @ONLY )
 
 target_compile_options( cvbadgestore PUBLIC -R${CMAKE_CURRENT_SOURCE_DIR}/ricardian -R${CMAKE_CURRENT_BINARY_DIR}/ricardian )
+target_link_libraries(cvbadgestore flon_base)
