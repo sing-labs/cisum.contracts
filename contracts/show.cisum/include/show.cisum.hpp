@@ -5,7 +5,6 @@
 #include <string>
 
 #include <show.cisum.db.hpp>
-#include <cvticket.nft.hpp>
 
 namespace flon {
 

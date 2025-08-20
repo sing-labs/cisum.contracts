@@ -1,6 +1,5 @@
 #include <show.cisum.hpp>
 #include <show.cisum.db.hpp>
-#include <cvticket.nft.hpp>
 
 using std::string;
 using std::vector;
