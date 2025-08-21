@@ -49,8 +49,8 @@ TBL show_t {
    name       status = ShowStatus::onshelf;
    time_point show_started_at;                      // 演出开始
    time_point show_ended_at;                        // 演出结束
-   name       show_name;                            // 演唱会名称
-   name       show_address;                         // 演唱会地址
+   string     show_name;                            // 演唱会名称
+   string     show_address;                         // 演唱会地址
    time_point created_at;
    time_point updated_at;
 
@@ -61,10 +61,10 @@ TBL show_t {
    EOSLIB_SERIALIZE(show_t,
       (show_id)(category)
       (ticket_transferable)(ticket_refundable)
-      (status)
+      (ticket_check_admins)(status)
       (show_started_at)(show_ended_at)
       (show_name)(show_address)(created_at)(updated_at)
-            (ticket_check_admins)
+
    )
 };
 

@@ -56,8 +56,8 @@ public:
                                   const bool&       ticket_refundable,
                                   const time_point& show_started_at,
                                   const time_point& show_ended_at,
-                                  const name&       show_name,
-                                  const name&       show_address,
+                                  const string&       show_name,
+                                  const string&       show_address,
                                   const name&       status);
 
   [[eosio::action]] void setshow(const uint64_t&   show_id,
@@ -66,8 +66,8 @@ public:
                                   const bool&       ticket_refundable,
                                   const time_point& show_started_at,
                                   const time_point& show_ended_at,
-                                  const name&       show_name,
-                                  const name&       show_address,
+                                  const string&       show_name,
+                                  const string&       show_address,
                                   const name&       status);
 
   [[eosio::action]] void showstatus(const uint64_t& show_id,

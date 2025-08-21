@@ -166,8 +166,8 @@ void show::newshow(const uint64_t&   show_id,
                    const bool&       ticket_refundable,
                    const time_point& show_started_at,
                    const time_point& show_ended_at,
-                   const name&       show_name,
-                   const name&       show_address,
+                   const string&       show_name,
+                   const string&       show_address,
                    const name&       status)
 {
   require_admin_or_showadm();
@@ -205,8 +205,8 @@ void show::setshow(const uint64_t&   show_id,
                    const bool&       ticket_refundable,
                    const time_point& show_started_at,
                    const time_point& show_ended_at,
-                   const name&       show_name,
-                   const name&       show_address,
+                   const string&       show_name,
+                   const string&       show_address,
                    const name&       status)
 {
     require_admin_or_showadm();
@@ -397,13 +397,8 @@ void show::issue(const name&     user,
   check(it->sale_started_at <= now, "ticket not started yet");
   check(now <= it->sale_ended_at,   "ticket already ended");
 
-  // 组装 nsymbol（ticket_id 为 nsymbol.raw()）
-  static constexpr uint64_t U1E9 = 1'000'000'000ULL;
-  const uint64_t p64 = ticket_id / U1E9;   // pid
-  const uint64_t i64 = ticket_id % U1E9;   // id
-  check(p64 < U1E9, "bad pid");
-  check(i64 < U1E9, "bad id");
-  nsymbol tk_sym{ static_cast<uint32_t>(i64), static_cast<uint32_t>(p64) };
+
+  nsymbol tk_sym(ticket_id);
 
   // 转 NFT（从本合约账号 _self 发出）
   {

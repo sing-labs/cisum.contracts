@@ -10,9 +10,9 @@ mpush $ticket_ntoken  addwhitelist '["cvticket.nft"]'   -p $ticket_ntoken
 #普通票
 mpush $ticket_ntoken create '[
   "'"${ticket_ntoken}"'",
-  10000000000,
-  {"id": 010010, "pid": 0021010001},
-  "ipfs://ticket/silver.json",
+  10000000000,{"value": 21010001000010016}
+  ,
+  "ipfs://ticket/silver6.json",
   "'"${ticket_ntoken}"'"
 ]' -p $ticket_ntoken
 
@@ -42,11 +42,3 @@ mpush $ticket_ntoken issue '[
 
 
 
-
-mpush cvticket.nft deltoken '[{"id":10011,"pid":21010001}]' -p cvticket.nft
-
-
-mpush cvticket.nft retire '[
-  { "amount": 9999998, "symbol": { "id": 10011, "pid": 21010001 } },
-  "burn before deltoken"
-]' -p show111
