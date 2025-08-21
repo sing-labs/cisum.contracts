@@ -32,6 +32,10 @@ namespace deposit_type {
     static constexpr eosio::name DEMAND     = "demand"_n;
 }
 
+namespace pool_type {
+    static constexpr eosio::name CISUM_APR = "cisumapr"_n;  // 池A：利息按时释放（CISUM）
+    static constexpr eosio::name NEST_PONT = "nestpont"_n;  // 池B：一次性积分（NESTAR）
+}
 namespace interest_rate_scheme {
     static constexpr eosio::name LADDER3    = "lad3"_n;     //12-mo ladder ir
     static constexpr eosio::name LADDER2    = "lad2"_n;     //6-mo ladder ir
@@ -48,16 +52,16 @@ namespace interest_rate_scheme {
     static constexpr eosio::name DEMAND3    = "dem3"_n;
 }
 
+
 NTBL("global") global_t {
     name admin                              = "cisumadmin"_n;
     name penalty_share_account              = "share.cisum"_n;
     extended_symbol     principal_token;            //E.g. 8,AMAX@amax.token, can be set differently for diff contract
-    extended_symbol     interest_token;             //E.g. 8,AMAX@amax.token, can be set differently for diff contract
     asset mini_deposit_amount;                      // 最小可存入本金
     uint64_t share_pool_id                  = 0;    //to be set a value which has been set for this contract as a whole
     uint64_t last_save_id                   = 0;
 
-    EOSLIB_SERIALIZE( global_t, (admin)(penalty_share_account)(principal_token)(interest_token)(mini_deposit_amount)
+    EOSLIB_SERIALIZE( global_t, (admin)(penalty_share_account)(principal_token)(mini_deposit_amount)
                                 (share_pool_id)(last_save_id) )
 
 };
@@ -65,16 +69,17 @@ typedef eosio::singleton< "global"_n, global_t > global_singleton;
 
 struct plan_conf_s {
     name                type;                       //存款类型：deposit_type::TERM / deposit_type::DEMAND
+    name                pool_type;                  // pool_type::CISUM_APR | NEST_PONT
     name                ir_scheme;                  //利率方案：interest_rate_scheme::*
     uint64_t            deposit_term_days;          //定期天数 E.g. 365
     bool                allow_advance_redeem;       //是否允许提前赎回
     uint64_t            advance_redeem_fine_rate;   //提前赎回罚金比例E.g. 50% * 10000 = 5000
     time_point_sec      effective_from;             //before which deposits are not allowed
     time_point_sec      effective_to;               //after which deposits are not allowed but penalty split are allowed
-
-    EOSLIB_SERIALIZE( plan_conf_s,  (type)(ir_scheme)(deposit_term_days)
+    extended_symbol     interest_token;             // 每个池指定奖励代币（CISUM 或 NESTAR）
+    EOSLIB_SERIALIZE( plan_conf_s,  (type)(pool_type)(ir_scheme)(deposit_term_days)
                                     (allow_advance_redeem)(advance_redeem_fine_rate)
-                                    (effective_from)(effective_to) )
+                                    (effective_from)(effective_to)(interest_token) )
 };
 
 //scope: self
@@ -131,4 +136,4 @@ TBL save_account_t {
 
 };
 
-} //namespace amax
+} //namespace flon
