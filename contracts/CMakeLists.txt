@@ -55,6 +55,7 @@ add_subdirectory(grab.cisum)
 add_subdirectory(show.cisum)
 add_subdirectory(pop.cisum)
 
+add_subdirectory(pos.cisum)
 # if(BUILD_TESTS)
 #   add_subdirectory(test_contracts)
 # endif()

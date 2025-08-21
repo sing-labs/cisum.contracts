@@ -52,7 +52,6 @@ namespace interest_rate_scheme {
     static constexpr eosio::name DEMAND3    = "dem3"_n;
 }
 
-
 NTBL("global") global_t {
     name admin                              = "cisumadmin"_n;
     name penalty_share_account              = "share.cisum"_n;
@@ -68,18 +67,21 @@ NTBL("global") global_t {
 typedef eosio::singleton< "global"_n, global_t > global_singleton;
 
 struct plan_conf_s {
-    name                type;                       //存款类型：deposit_type::TERM / deposit_type::DEMAND
-    name                pool_type;                  // pool_type::CISUM_APR | NEST_PONT
-    name                ir_scheme;                  //利率方案：interest_rate_scheme::*
-    uint64_t            deposit_term_days;          //定期天数 E.g. 365
-    bool                allow_advance_redeem;       //是否允许提前赎回
-    uint64_t            advance_redeem_fine_rate;   //提前赎回罚金比例E.g. 50% * 10000 = 5000
-    time_point_sec      effective_from;             //before which deposits are not allowed
-    time_point_sec      effective_to;               //after which deposits are not allowed but penalty split are allowed
-    extended_symbol     interest_token;             // 每个池指定奖励代币（CISUM 或 NESTAR）
-    EOSLIB_SERIALIZE( plan_conf_s,  (type)(pool_type)(ir_scheme)(deposit_term_days)
-                                    (allow_advance_redeem)(advance_redeem_fine_rate)
-                                    (effective_from)(effective_to)(interest_token) )
+    name           type;                     // 存款类型：deposit_type::TERM / deposit_type::DEMAND
+    name           pool_type;                // 池型：pool_type::CISUM_APR | pool_type::NEST_PONT
+    name           ir_scheme;                // 利率方案：interest_rate_scheme::*
+    uint64_t       deposit_term_days;        // 期限天数 E.g. 365
+    bool           allow_advance_redeem;     // 是否允许提前赎回
+    uint64_t       advance_redeem_fine_rate; // 提前赎回罚金比例（万分制）
+    time_point_sec effective_from;           // 生效期：早于此不允许存入
+    time_point_sec effective_to;             // 截止期：晚于此不允许存入
+    extended_symbol interest_token;          // 奖励币（CISUM/NESTAR 等），每计划独立
+
+    EOSLIB_SERIALIZE( plan_conf_s,
+        (type)(pool_type)(ir_scheme)(deposit_term_days)
+        (allow_advance_redeem)(advance_redeem_fine_rate)
+        (effective_from)(effective_to)(interest_token)
+    )
 };
 
 //scope: self
