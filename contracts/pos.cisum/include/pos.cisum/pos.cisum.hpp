@@ -17,19 +17,11 @@ using std::vector;
 using namespace eosio;
 using namespace wasm::db;
 
-<<<<<<< HEAD
-static constexpr name      SYS_BANK    = "cisum.token"_n;
-static constexpr symbol    CISUM        = symbol(symbol_code("CISUM"), 8);
-
-static constexpr name      POINTS_BANK  = "nest.token"_n;               // 积分银行（写死）
-static constexpr symbol    NESTAR       = symbol(symbol_code("NESTAR"), 4);
-=======
 static constexpr name   SYS_BANK   = "cisum.token"_n;
 static constexpr symbol CISUM      = symbol(symbol_code("CISUM"), 8);
 
 static constexpr name   POINTS_BANK = "nest.token"_n;
 static constexpr symbol NESTAR      = symbol(symbol_code("NESTAR"), 4);
->>>>>>> aaron
 
 static constexpr uint16_t  PCT_BOOST   = 10000;
 static constexpr uint64_t  DAY_SECONDS = 24 * 60 * 60;
