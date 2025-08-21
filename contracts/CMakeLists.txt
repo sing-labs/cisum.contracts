@@ -53,6 +53,7 @@ add_subdirectory(artist.cisum)
 add_subdirectory(cvbadgestore)
 add_subdirectory(grab.cisum)
 add_subdirectory(show.cisum)
+add_subdirectory(pop.cisum)
 
 # if(BUILD_TESTS)
 #   add_subdirectory(test_contracts)
