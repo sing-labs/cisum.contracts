@@ -3,6 +3,9 @@
 #include <eosio/eosio.hpp>
 #include <flon/nasset.hpp>
 
+#define TRANSFER_NFT_OUT(contract, to, assets, memo) \
+    {	flon::flon_nft_token::transfer_action act{ contract, { {_self, "active"_n} } };\
+			act.send( _self, to, assets , memo );}
 
 namespace flon {
 
@@ -143,8 +146,21 @@ namespace flon {
          typedef eosio::multi_index< "stat"_n, currency_stats > stats;
    };
 
+   struct flon_nft_token {
 
+      [[eosio::action]]
+      void create( const name& issuer, const int64_t& maximum_supply, const nsymbol& symbol, const string& token_uri, const name& ipowner );
 
+      [[eosio::action]]
+      void issue( const name& to, const nasset& quantity, const string& memo );
+
+      [[eosio::action]]
+      void transfer(const name& from, const name& to, const std::vector<nasset>& assets, const std::string& memo);
+
+      using transfer_action = action_wrapper<"transfer"_n, &flon_nft_token::transfer>;
+      using create_action   = action_wrapper<"create"_n, &flon_nft_token::create>;
+      using issue_action    = action_wrapper<"issue"_n, &flon_nft_token::issue>;
+   };
 
 template<typename T, typename... Args>
 void execute_action( T& t, void (T::*func)(Args...)  ) {

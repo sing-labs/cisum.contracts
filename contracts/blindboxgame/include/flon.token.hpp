@@ -20,11 +20,13 @@ namespace eosiosystem {
 #define TRANSFER(bank, to, quantity, memo) \
     {	token::transfer_action act{ bank, { {_self, active_permission} } };\
 			act.send( _self, to, quantity , memo );}
-         
+
 namespace flon {
    using namespace eosio;
 
    using std::string;
+
+   static constexpr eosio::name active_permission{"active"_n};
 
    /**
     * flon.token contract defines the structures and actions that allow users to create, issue, and manage

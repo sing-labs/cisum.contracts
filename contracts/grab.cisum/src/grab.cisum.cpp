@@ -155,6 +155,8 @@ void grab_cisum::on_transfer_point( const name& from, const name& to, const asse
         // Check if user wins using on-chain pseudo-random
         uint32_t random_number = get_random(from, RATIO_BOOST);
         win = random_number <= rs_itr->win_ratio;
+        std::vector<nasset> assets = {nasset(1, rs_itr->ticket_id)};
+        TRANSFER_NFT_OUT(_gstate.ticket_contract, from, assets, "grab ticket");
     }
 
     user_idx.modify(user_itr, same_payer, [&](auto& u) {
