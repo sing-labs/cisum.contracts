@@ -8,6 +8,7 @@
 // #include <utils.hpp>
 #include "grab.cisum.hpp"
 #include <string>
+#include <flon/token.protocol.hpp>
 
 namespace flon {
 
@@ -65,12 +66,12 @@ void grab_cisum::addrushsale(   nsymbol        show_id,
                                 time_point     ended_at,
                                 asset          price,
                                 uint32_t       max_grabs_per_user,
-                                uint32_t       win_ratio,
-                                uint32_t       total_tickets)
+                                uint32_t       win_ratio)
 {
     require_auth(_gstate.admin);
     // TODO: check show_id valid?
     // TODO: check ticket_id valid?
+    CHECKC(ticket_id.value != 0, err::INVALID_FORMAT, "invalid ticket_id");
     // check started_at < ended_at
     CHECKC(started_at < ended_at, err::INVALID_TIME, "started_at must be less than ended_at");
     CHECKC(price.symbol == POINT_SYMBOL, err::INVALID_FORMAT, "price symbol mismatch");
@@ -79,39 +80,46 @@ void grab_cisum::addrushsale(   nsymbol        show_id,
 
     CHECKC(win_ratio <= RATIO_BOOST, err::INVALID_FORMAT, "win_ratio can not larger than " + std::to_string(RATIO_BOOST));
 
+
     auto now = current_time_point();
     _gstate.last_rush_sale_id++;
     rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
     rs_idx.emplace(get_self(), [&](auto& rs){
         rs.id = _gstate.last_rush_sale_id;
-        rs.show_id = show_id;
-        rs.ticket_id = ticket_id;
-        rs.started_at = started_at;
-        rs.ended_at = ended_at;
-        rs.price = price;
-        rs.max_grabs_per_user = 1;
-        rs.win_ratio = win_ratio;
-        rs.total_tickets = total_tickets;
-        rs.available_tickets = total_tickets;
-        rs.sold_tickets = 0;
-        rs.total_grabs = 0;
-        rs.created_at = now;
-        rs.updated_at = now;
+        rs.show_id              = show_id;
+        rs.ticket_id            = ticket_id;
+        rs.started_at           = started_at;
+        rs.ended_at             = ended_at;
+        rs.price                = price;
+        rs.max_grabs_per_user   = 1;
+        rs.win_ratio            = win_ratio;
+        rs.total_tickets        = nasset(0, ticket_id);
+        rs.available_tickets    = nasset(0, ticket_id);
+        rs.sold_tickets         = nasset(0, ticket_id);
+        rs.total_grabs          = 0;
+        rs.created_at           = now;
+        rs.updated_at           = now;
     });
 }
 
-void grab_cisum::on_transfer( const name& from, const name& to, const asset& quantity, const string& memo) {
-    if (get_first_receiver() != _gstate.point_contract || from == get_self() || to != get_self()) return;
+void grab_cisum::on_transfer() {
+    if (get_first_receiver() == _gstate.point_contract) {
+        execute_action(*this, &grab_cisum::on_transfer_point);
+    } else if (get_first_receiver() == _gstate.ticket_contract) {
+        execute_action(*this, &grab_cisum::on_transfer_ticket);
+    }
+}
 
-    require_auth( from );
+void grab_cisum::on_transfer_point( const name& from, const name& to, const asset& quantity, const string& memo) {
+    if ( from == get_self() || to != get_self()) return;
 
-    // memo format: "grab:${id}"
+    // memo format: "grab:${rush_sale_id}"
     auto memo_params = split(memo, ":");
     ASSERT( memo_params.size() > 1 )
 
     auto now = current_time_point();
     CHECKC( memo_params[0] == "grab",           err::INVALID_FORMAT,    "memo must start with 'grab'" )
-    CHECKC (memo_params.size() >= 2,            err::INVALID_FORMAT,    "ontransfer: params size must lager than 2" )
+    CHECKC (memo_params.size() > 1,            err::INVALID_FORMAT,    "ontransfer: params size must be larger than 1" )
 
     auto rush_sale_id       = std::stoul(string(memo_params[1]));
     rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
@@ -120,7 +128,7 @@ void grab_cisum::on_transfer( const name& from, const name& to, const asset& qua
 
     CHECKC( now >= rs_itr->started_at, err::STATUS_MISMATCH, "rush sale not started! id:" + std::to_string(rush_sale_id) )
     CHECKC( now <= rs_itr->ended_at, err::STATUS_MISMATCH, "rush sale ended! id:" + std::to_string(rush_sale_id) )
-    CHECKC( rs_itr->available_tickets > 0, err::EXCEED_LIMIT, "rush sale has no available tickets" )
+    CHECKC( rs_itr->available_tickets.amount > 0, err::EXCEED_LIMIT, "rush sale has no available tickets" )
     ASSERT( rs_itr->total_tickets == rs_itr->available_tickets + rs_itr->sold_tickets)
 
     // TODO: only allow grab once at a time?
@@ -134,6 +142,7 @@ void grab_cisum::on_transfer( const name& from, const name& to, const asset& qua
     if (user_itr == user_idx.end()) {
         user_itr = user_idx.emplace(get_self(), [&](auto& u){
             u.account = from;
+            u.tickets = nasset(0, rs_itr->ticket_id);
         });
     }
 
@@ -150,18 +159,50 @@ void grab_cisum::on_transfer( const name& from, const name& to, const asset& qua
 
     user_idx.modify(user_itr, same_payer, [&](auto& u) {
         u.grabs++;
-        if (win) u.tickets++;
+        if (win) u.tickets.amount += 1;
+        assert(u.tickets.is_amount_within_range());
     });
 
     rs_idx.modify(rs_itr, same_payer, [&](auto& r) {
         r.total_grabs++;
-        if (win) r.sold_tickets++;
+        if (win) r.sold_tickets.amount += 1;
+        ASSERT(r.sold_tickets.is_amount_within_range())
         ASSERT(r.sold_tickets <= r.total_tickets);
         r.available_tickets = r.total_tickets - r.sold_tickets;
         r.updated_at = now;
     });
 
     notifyticket(from, rush_sale_id, win);
+}
+
+void grab_cisum::on_transfer_ticket( const name& from, const name& to, const vector<nasset>& assets, const string& memo ) {
+    if ( from == get_self() || to != get_self()) return;
+    // memo format: "add:${rush_sale_id}"
+    auto memo_params = split(memo, ":");
+    ASSERT( memo_params.size() > 1 )
+
+    auto now = current_time_point();
+    CHECKC( memo_params[0] == "add",           err::INVALID_FORMAT,    "memo must start with 'add'" )
+    CHECKC (memo_params.size() == 2,           err::INVALID_FORMAT,    "ontransfer: params size must be equal to 2" )
+    CHECKC (assets.size() == 1,                err::INVALID_FORMAT,    "ontransfer: nasset count must be equal to 1" )
+
+    auto rush_sale_id       = std::stoul(string(memo_params[1]));
+    rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
+    auto rs_itr = rs_idx.find(rush_sale_id);
+    CHECKC( rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found! id: " + std::to_string(rush_sale_id) )
+
+    const auto& tickets = assets[0];
+    // TODO: only allow grab once at a time?
+    CHECKC(tickets.symbol == rs_itr->total_tickets.symbol, err::SYMBOL_MISMATCH,
+            "ticket symbol mismatch, rush_sale_id=" + std::to_string(rush_sale_id));
+    CHECKC( tickets.amount > 0, err::NOT_POSITIVE, "must transfer positive amount" );
+
+    rs_idx.modify(rs_itr, same_payer, [&](auto& r) {
+        r.total_tickets += tickets;
+        ASSERT(r.sold_tickets <= r.total_tickets);
+        r.available_tickets = r.total_tickets - r.sold_tickets;
+        r.updated_at = now;
+    });
 }
 
 void grab_cisum::notifyticket(const eosio::name& user, uint64_t rush_sale_id, bool won) {
@@ -179,9 +220,11 @@ void grab_cisum::delrushsale( uint64_t rush_sale_id, bool forced ) {
     auto now = current_time_point();
     // If not forced, prevent deletion when there are grabs or sold tickets
     if (!forced) {
-        bool is_grabbing = now >= rs_itr->started_at && now <= rs_itr->ended_at && rs_itr->available_tickets > 0;
+        bool is_grabbing = now >= rs_itr->started_at && now <= rs_itr->ended_at && rs_itr->available_tickets.amount > 0;
         CHECKC( !is_grabbing, err::STATUS_MISMATCH, "rush sale is in the grabbing status, can not be deleted! id:" + std::to_string(rush_sale_id) );
     }
+
+    // TODO: how to process the remaining tickets in the rush sale??
 
     rs_idx.erase(rs_itr);
 }
@@ -205,9 +248,8 @@ void grab_cisum::delusers( uint64_t rush_sale_id, uint32_t max_count ) {
     CHECKC( count > 0, err::NONE_DELETED, "no users deleted" );
 }
 
-void grab_cisum::updrushsale(   uint64_t rush_sale_id,
+void grab_cisum::cfgrushsale(   uint64_t rush_sale_id,
                                 std::optional<uint32_t> win_ratio,
-                                std::optional<uint32_t> total_tickets,
                                 std::optional<time_point> ended_at
     ) {
         require_auth(_gstate.admin);
@@ -221,9 +263,6 @@ void grab_cisum::updrushsale(   uint64_t rush_sale_id,
     if (win_ratio.has_value()) {
         CHECKC(win_ratio.value() <= RATIO_BOOST, err::INVALID_FORMAT, "win_ratio can not larger than " + std::to_string(RATIO_BOOST));
     }
-    if (total_tickets.has_value()) {
-        CHECKC(total_tickets.value() >= rs_itr->sold_tickets, err::EXCEED_LIMIT, "total_tickets cannot be less than already sold tickets");
-    }
     if (ended_at.has_value()) {
         CHECKC( rs_itr->started_at < ended_at.value(), err::INVALID_TIME, "ended_at must be greater than started_at");
         CHECKC( now < ended_at.value(), err::INVALID_TIME, "ended_at must be greater than current time");
@@ -231,11 +270,6 @@ void grab_cisum::updrushsale(   uint64_t rush_sale_id,
 
     rs_idx.modify(rs_itr, same_payer, [&](auto& r){
         if (win_ratio.has_value()) r.win_ratio = win_ratio.value();
-        if (total_tickets.has_value()) {
-            r.total_tickets = total_tickets.value();
-            // adjust available tickets accordingly
-            r.available_tickets = r.total_tickets - r.sold_tickets;
-        }
         if (ended_at.has_value()) r.ended_at = ended_at.value();
         r.updated_at = now;
     });

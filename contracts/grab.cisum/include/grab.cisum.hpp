@@ -8,10 +8,11 @@
 
 #include "grab.cisum.db.hpp"
 
+namespace flon {
+
 using std::string;
 using namespace eosio;
-
-namespace flon {
+using std::vector;
 
 class [[eosio::contract("grab.cisum")]] grab_cisum : public contract {
 public:
@@ -39,14 +40,13 @@ public:
    * Create a new rush sale event.
    * Only admin can call this action.
    *
-   * @param show_id              The show identifier.
-   * @param ticket_id            The ticket identifier.
+   * @param show_id              The show id.
+   * @param ticket_id            The ticket id.
    * @param started_at           Sale start time.
    * @param ended_at             Sale end time.
    * @param price                Ticket price.
    * @param max_grabs_per_user   Max grabs per user.
    * @param win_ratio            Win ratio (1-10000).
-   * @param total_tickets        Total tickets available.
    */
   [[eosio::action]]
   void addrushsale(   nsymbol        show_id,
@@ -55,8 +55,7 @@ public:
                       time_point     ended_at,
                       asset          price,
                       uint32_t       max_grabs_per_user,
-                      uint32_t       win_ratio,
-                      uint32_t       total_tickets
+                      uint32_t       win_ratio
    );
 
   /**
@@ -74,14 +73,11 @@ public:
    *
    * @param rush_sale_id         The rush sale id to update.
    * @param win_ratio            Optional new win ratio.
-   * @param max_grabs_per_user   Optional new max grabs per user.
-   * @param total_tickets        Optional new total tickets.
    * @param ended_at             Optional new end time.
    */
   [[eosio::action]]
-  void updrushsale( uint64_t                  rush_sale_id,
+  void cfgrushsale( uint64_t                  rush_sale_id,
                     std::optional<uint32_t>   win_ratio,
-                    std::optional<uint32_t>   total_tickets,
                     std::optional<time_point> ended_at
   );
 
@@ -96,15 +92,10 @@ public:
 
   /**
    * Handle incoming token transfer for grabbing tickets.
-   * Called automatically on transfer from POINT_TOKEN.
-   *
-   * @param from                 Sender account.
-   * @param to                   Receiver (contract self).
-   * @param quantity             Amount transferred.
-   * @param memo                 Memo string, format: "grab:<rush_sale_id>".
+   * Called automatically on transfer from token contract.
    */
   [[eosio::on_notify("*::transfer")]]
-  void on_transfer(const name& from, const name& to, const asset& quantity, const string& memo);
+  void on_transfer();
 
   /**
    * Notify user of ticket grab result.
@@ -130,13 +121,15 @@ public:
   // -------- Inline wrappers --------
   using addrushsale_action        = eosio::action_wrapper<"addrushsale"_n,        &grab_cisum::addrushsale>;
   using delrushsale_action        = eosio::action_wrapper<"delrushsale"_n,        &grab_cisum::delrushsale>;
-  using updrushsale_action        = eosio::action_wrapper<"updrushsale"_n,        &grab_cisum::updrushsale>;
+  using cfgrushsale_action        = eosio::action_wrapper<"cfgrushsale"_n,        &grab_cisum::cfgrushsale>;
 
 private:
   // 全局
   global_singleton _global;
   global_t         _gstate;
 
+  void on_transfer_point(const name& from, const name& to, const asset& quantity, const string& memo);
+  void on_transfer_ticket( const name& from, const name& to, const vector<nasset>& assets, const string& memo );
 };
 
 } // namespace flon
