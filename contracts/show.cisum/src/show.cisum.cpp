@@ -359,6 +359,11 @@ void show::issue(const name&     user,
   check(it->status == TicketStatus::running, "ticket not running");
   check(it->stock_count >= amount, "insufficient stock");
 
+  // === 销售时间窗口校验 ===
+  const auto now = nowtp();
+  check(sit->sale_started_at <= now, "not started yet");   // 未到开售时间
+  check(now <= sit->sale_ended_at,   "already ended");     // 已过截止时间
+
   // 组装 nsymbol（ticket_id 为 nsymbol.raw()）
   static constexpr uint64_t U1E9 = 1000000000ULL;
   uint64_t p64 = ticket_id / U1E9;

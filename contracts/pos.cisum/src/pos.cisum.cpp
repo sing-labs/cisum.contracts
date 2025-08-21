@@ -81,87 +81,10 @@ using namespace wasm::safemath;
       interest.amount = mul_down( mul_down(interest_rate * 100, real_duration, total_duraton), deposit_quant.amount, PCT_BOOST * 100 );
    }
 
-   // auto ext_symb = extended_symbol(AMAX, SYS_BANK);
-   // auto from = time_point_sec(1664246887); //::from_iso_string("2022-09-27T02:48:07+00:00");)
-   // auto to = time_point_sec(1666810087); //::from_iso_string("2022-10-27T00:00:00");
-   // _gstate.admin                 = "armoniaadmin"_n;
-   //   auto pc = plan_conf_s {
-   //       deposit_type::TERM,
-   //       interest_rate_scheme::LADDER1,
-   //       365,
-   //       true,
-   //       5000,
-   //       time_point_sec( default_plan_from ),
-   //       time_point_sec( default_plan_to )
-   //    };
 
    void pos_cisum::init() {
       CHECK(false, "disabled" )
       require_auth( _self );
-
-      // auto old_save                 = save_account_t( 363 );
-      // auto old_acct                 = "aplxzxnb3he5"_n;
-      // auto new_acct                 = "apl3dnfgkzay"_n;
-      // _db.get( old_acct.value, old_save );
-      // auto tmp = old_save;
-      // _db.del( old_acct.value, old_save );
-
-      // auto new_save                 = save_account_t( 363 );
-      // new_save.plan_id              = tmp.plan_id;
-      // new_save.interest_rate        = tmp.interest_rate;
-      // new_save.deposit_quant        = tmp.deposit_quant;
-      // new_save.interest_term_quant  = tmp.interest_term_quant;
-      // new_save.interest_collected   = tmp.interest_collected;
-      // new_save.created_at           = tmp.created_at;
-      // new_save.term_ended_at        = tmp.term_ended_at;
-
-      // _db.set( new_acct.value, new_save, false );
-
-      // _gstate.principal_token       = ptoken;
-      // _gstate.interest_token        = itoken;
-      // _gstate.admin                 = admin;
-      // _gstate.mini_deposit_amount   = mini_deposit_amount;
-      // _gstate.share_pool_id         = share_pool_id;
-
-      // auto zero_pricipal            = asset(0, ptoken.get_symbol());
-      // auto zero_interest            = asset(0, itoken.get_symbol());
-
-      // auto plan = save_plan_t(1);
-      // _db.get( plan );
-      // plan.conf               = pc;
-      // plan.deposit_available  = zero_pricipal;
-      // plan.deposit_redeemed   = zero_pricipal;
-      // plan.interest_available = zero_interest;
-      // plan.interest_redeemed  = zero_interest;
-      // plan.created_at         = current_time_point();
-      // _db.set( plan );
-
-      // auto plan1 = save_plan_t(1);
-      // _db.get( plan1 );
-      // plan1.conf.ir_scheme = "lad1"_n;
-      // plan1.conf.deposit_term_days = 90;
-      // _db.set( plan1 );
-
-      // auto plan3 = save_plan_t(3);
-      // _db.get( plan3 );
-      // plan3.conf.ir_scheme = "lad3"_n;
-      // plan3.conf.deposit_term_days = 365;
-      // _db.set( plan3 );
-
-      // auto acct = "huanghuanghh"_n;
-
-      // auto save1 = save_account_t(1);
-      // _db.get( acct.value, save1 );
-      // save1.interest_term_quant.amount = 147945;
-      // save1.term_ended_at = save1.created_at + 90 * DAY_SECONDS;
-      // _db.set( acct.value, save1 );
-
-      // auto save3 = save_account_t(3);
-      // _db.get( acct.value, save3 );
-      // save3.interest_rate = 800;
-      // save3.interest_term_quant.amount = 800000;
-      // save3.term_ended_at = save3.created_at + 365 * DAY_SECONDS;
-      // _db.set( acct.value, save3 );
 
    }
 
@@ -208,9 +131,6 @@ using namespace wasm::safemath;
 
    void pos_cisum::collectint(const name& issuer, const name& owner, const uint64_t& save_id) {
       require_auth( issuer );
-
-      // check(false, "under maintenance");
-
       if ( issuer != owner ) {
          CHECKC( issuer == _gstate.admin, err::NO_AUTH, "non-admin not allowed to collect others saving interest" )
       }
@@ -221,38 +141,41 @@ using namespace wasm::safemath;
       auto plan = save_plan_t( save_acct.plan_id );
       CHECKC( _db.get( plan ), err::RECORD_NOT_FOUND, "plan not found: " + to_string(save_acct.plan_id) )
 
-      //interest_rate_ = interest_rate * ( (now - deposited_at) / day_secs / 365 )
+      // 仅池A可领取
+      CHECKC( plan.conf.pool_type == "cisumapr"_n, err::STATUS_ERROR, "collectint only for cisumapr pool" )
+
       if (save_acct.last_collected_at == time_point())
          save_acct.last_collected_at = save_acct.created_at;
 
-      auto now                = current_time_point();
-      auto elapsed_sec        = now.sec_since_epoch() - save_acct.last_collected_at.sec_since_epoch();
+      auto now               = current_time_point();
+      auto elapsed_sec       = now.sec_since_epoch() - save_acct.last_collected_at.sec_since_epoch();
       CHECKC( elapsed_sec > DAY_SECONDS, err::TIME_PREMATURE, "less than 24 hours since last interest collection time" )
-      auto total_elapsed_sec  = now.sec_since_epoch() - save_acct.created_at.sec_since_epoch();
+      auto total_elapsed_sec = now.sec_since_epoch() - save_acct.created_at.sec_since_epoch();
 
-      auto interest           = asset( 0, _gstate.interest_token.get_symbol() );
+      // 用计划奖励币符号
+      auto interest = asset( 0, plan.conf.interest_token.get_symbol() );
       _term_interest(save_acct.interest_rate, save_acct.deposit_quant, total_elapsed_sec, YEAR_DAYS * DAY_SECONDS, interest );
       if (interest > save_acct.interest_term_quant)
          interest = save_acct.interest_term_quant;
 
-      auto interest_due       = interest - save_acct.interest_collected;
-
+      auto interest_due = interest - save_acct.interest_collected;
       CHECKC( interest_due.amount > 0, err::NOT_POSITIVE, "interest due amount is zero" )
-      TRANSFER( _gstate.interest_token.get_contract(), owner, interest_due, "interest: " + to_string(save_id) )
 
-      save_acct.interest_collected  += interest_due;
-      save_acct.last_collected_at   = now;
+      // 可用奖励充足（>=）
+      CHECKC( plan.interest_available >= interest_due, err::NOT_POSITIVE, "insufficient available interest to collect" )
+
+      // 发放奖励：使用计划奖励币合约
+      TRANSFER( plan.conf.interest_token.get_contract(), owner, interest_due, "interest: " + to_string(save_id) )
+
+      save_acct.interest_collected += interest_due;
+      save_acct.last_collected_at  = now;
       _db.set( owner.value, save_acct );
 
-      CHECKC( plan.interest_available > interest_due, err::NOT_POSITIVE, "insufficient available interest to collect" )
-
-      plan.interest_available       -= interest_due;
-      plan.interest_redeemed        += interest_due;
-
+      plan.interest_available -= interest_due;
+      plan.interest_redeemed  += interest_due;
       _db.set( plan );
 
-      _int_coll_log(owner, save_acct.save_id, plan.id, interest_due,  time_point_sec( current_time_point() ));
-
+      _int_coll_log(owner, save_acct.save_id, plan.id, interest_due, time_point_sec(current_time_point()));
    }
 
 
@@ -270,84 +193,144 @@ using namespace wasm::safemath;
     */
    void pos_cisum::ontransfer(const name& from, const name& to, const asset& quant, const string& memo) {
       CHECKC( from != to, err::ACCOUNT_INVALID, "cannot transfer to self" );
-
-      // check(false, "under maintenance");
-
       if (from == get_self() || to != get_self()) return;
 
-      auto token_bank = get_first_receiver();
-
+      const name token_bank = get_first_receiver();
       vector<string_view> memo_params = split(memo, ":");
-      if( memo_params.size() == 2 && memo_params[0] == "refuel" ) {
-         auto plan_id = to_uint64(memo_params[1], "refuel plan");
-         auto plan = save_plan_t( plan_id );
-         CHECKC( _db.get( plan ), err::RECORD_NOT_FOUND, "plan id not found: " + to_string( plan_id ) )
-         CHECKC( _gstate.interest_token.get_contract() == token_bank, err::CONTRACT_MISMATCH, "interest token contract mismatches" )
+
+      // 解析 plan_id
+      uint64_t plan_id = 1;
+      bool is_refuel   = (memo_params.size() == 2 && memo_params[0] == "refuel");
+      bool is_deposit  = (memo_params.size() == 2 && memo_params[0] == "deposit");
+      if (is_refuel || is_deposit)
+         plan_id = to_uint64(memo_params[1], is_refuel ? "refuel plan" : "deposit plan");
+
+      auto plan = save_plan_t( plan_id );
+      CHECKC( _db.get( plan ), err::RECORD_NOT_FOUND, "plan id not found: " + to_string( plan_id ) )
+
+      // refuel：必须是计划奖励币
+      if (is_refuel) {
+         CHECKC( plan.conf.interest_token.get_contract() == token_bank, err::CONTRACT_MISMATCH, "interest token contract mismatches" )
+         CHECKC( quant.symbol == plan.conf.interest_token.get_symbol(), err::SYMBOL_MISMATCH, "interest token symbol mismatches" )
 
          plan.interest_available += quant;
          _db.set( plan );
          _int_refuel_log(from, plan_id, quant, current_time_point());
-
-      } else {
-         CHECKC( _gstate.mini_deposit_amount <= quant, err::INCORRECT_AMOUNT, "deposit amount too small" )
-
-         uint64_t plan_id = 1;   //default 1st-plan
-         if (memo_params.size() == 2 && memo_params[0] == "deposit")
-            plan_id = to_uint64(memo_params[1], "deposit plan");
-
-         auto now = time_point_sec(current_time_point());
-         auto plan = save_plan_t( plan_id );
-         CHECKC( _db.get( plan ), err::RECORD_NOT_FOUND, "plan id not found: " + to_string( plan_id ) )
-         CHECKC( _gstate.principal_token.get_contract() == token_bank, err::CONTRACT_MISMATCH, "deposit token contract mismatches" )
-         CHECKC( plan.conf.effective_from <= now, err::PLAN_INEFFECTIVE, "plan not effective yet" )
-         CHECKC( plan.conf.effective_to   >= now, err::PLAN_INEFFECTIVE, "plan expired already" )
-
-         plan.deposit_available        += quant;
-         _db.set( plan );
-
-         // auto accts                    = save_account_t::tbl_t(_self, from.value);
-         auto save_acct                = save_account_t( ++_gstate.last_save_id );
-         save_acct.plan_id             = plan_id;
-         save_acct.interest_rate       = get_interest_rate( plan.conf.ir_scheme, quant);
-         save_acct.interest_term_quant = asset(0, _gstate.interest_token.get_symbol());
-         _term_interest( save_acct.interest_rate, quant, plan.conf.deposit_term_days, YEAR_DAYS, save_acct.interest_term_quant );
-
-         save_acct.deposit_quant       = quant;
-         save_acct.interest_collected  = asset( 0, _gstate.interest_token.get_symbol() );
-         save_acct.created_at          = now;
-         save_acct.term_ended_at       = now + plan.conf.deposit_term_days * DAY_SECONDS;
-
-         _db.set( from.value, save_acct, false );
-         //TODO call addshare
-      }
-   }
-
-   void pos_cisum::setplan(const uint64_t& pid, const plan_conf_s& pc) {
-      require_auth( _gstate.admin );
-
-      auto plan = save_plan_t(pid);
-      bool plan_existing = _db.get( plan );
-
-      plan.conf.type                   = pc.type;
-      plan.conf.ir_scheme              = pc.ir_scheme;
-      plan.conf.deposit_term_days      = pc.deposit_term_days;
-      plan.conf.allow_advance_redeem   = pc.allow_advance_redeem;
-      plan.conf.advance_redeem_fine_rate = pc.advance_redeem_fine_rate;
-      plan.conf.effective_from         = pc.effective_from;
-      plan.conf.effective_to           = pc.effective_to;
-
-      if (!plan_existing) {
-         auto zero_pricipal            = asset(0, _gstate.principal_token.get_symbol());
-         auto zero_interest            = asset(0, _gstate.interest_token.get_symbol());
-         plan.deposit_available        = zero_pricipal;
-         plan.deposit_redeemed         = zero_pricipal;
-         plan.interest_available       = zero_interest;
-         plan.interest_redeemed        = zero_interest;
-         plan.created_at               = current_time_point();
+         return;
       }
 
+      // deposit：必须是全局本金
+      CHECKC( _gstate.mini_deposit_amount <= quant, err::INCORRECT_AMOUNT, "deposit amount too small" )
+      CHECKC( _gstate.principal_token.get_contract() == token_bank, err::CONTRACT_MISMATCH, "deposit token contract mismatches" )
+      CHECKC( quant.symbol == _gstate.principal_token.get_symbol(), err::SYMBOL_MISMATCH, "deposit token symbol mismatches" )
+
+      auto now = time_point_sec(current_time_point());
+      CHECKC( plan.conf.effective_from <= now, err::PLAN_INEFFECTIVE, "plan not effective yet" )
+      CHECKC( plan.conf.effective_to   >= now, err::PLAN_INEFFECTIVE, "plan expired already" )
+
+      plan.deposit_available += quant;
       _db.set( plan );
+
+      auto save_acct               = save_account_t( ++_gstate.last_save_id );
+      save_acct.plan_id            = plan_id;
+      save_acct.interest_rate      = get_interest_rate( plan.conf.ir_scheme, quant );
+      save_acct.deposit_quant      = quant; // 本金
+      save_acct.interest_collected = asset(0, plan.conf.interest_token.get_symbol());
+      save_acct.created_at         = now;
+      save_acct.term_ended_at      = now + plan.conf.deposit_term_days * DAY_SECONDS;
+      save_acct.last_collected_at  = now;
+
+      if (plan.conf.pool_type == "cisumapr"_n) {
+         // 池A：预计算整期可领
+         save_acct.interest_term_quant = asset(0, plan.conf.interest_token.get_symbol());
+         _term_interest(save_acct.interest_rate, quant, plan.conf.deposit_term_days, YEAR_DAYS, save_acct.interest_term_quant );
+      } else {
+         // 池B：term_quant 不使用，置0
+         save_acct.interest_term_quant = asset(0, plan.conf.interest_token.get_symbol());
+      }
+
+      _db.set( from.value, save_acct, false );
+
+      // 池B：一次性发放积分（计划奖励币）
+      if (plan.conf.pool_type == "nestpont"_n) {
+         CHECKC( plan.conf.deposit_term_days > 0, err::PARAM_ERROR, "points plan requires positive term days" );
+         asset points{0, plan.conf.interest_token.get_symbol()};
+         {
+            __int128 raw = (__int128)quant.amount * (__int128)save_acct.interest_rate * (__int128)plan.conf.deposit_term_days;
+            raw /= (__int128)10000;  // BP
+            raw /= (__int128)365;
+            points.amount = (int64_t)raw;
+         }
+         CHECKC( points.amount > 0, err::NOT_POSITIVE, "points = 0" );
+         TRANSFER( plan.conf.interest_token.get_contract(), from, points, "pos.cisum points reward: " + to_string(save_acct.save_id) );
+      }
    }
+
+void pos_cisum::setplan(const uint64_t& pid, const plan_conf_s& pc) {
+   require_auth( _gstate.admin );
+   CHECKC( pc.type == deposit_type::TERM || pc.type == deposit_type::DEMAND,
+           err::PARAM_ERROR, "invalid deposit type" );
+   CHECKC( pc.pool_type == "cisumapr"_n || pc.pool_type == "nestpont"_n,
+           err::PARAM_ERROR, "invalid pool_type (expect 'cisumapr' or 'nestpont')" );
+
+   // TERM 要求正的期限；DEMAND 可为 0（随存随取）
+   if (pc.type == deposit_type::TERM) {
+      CHECKC( pc.deposit_term_days > 0, err::PARAM_ERROR, "term deposit requires positive deposit_term_days" );
+   }
+
+   CHECKC( pc.effective_from <= pc.effective_to, err::PARAM_ERROR, "invalid effective time range" );
+
+   CHECKC( pc.interest_token.get_contract().value != 0, err::PARAM_ERROR, "interest_token contract not set" );
+   CHECKC( pc.interest_token.get_symbol().is_valid(), err::PARAM_ERROR, "invalid interest_token symbol" );
+
+   auto plan = save_plan_t(pid);
+   bool plan_existing = _db.get( plan );
+   plan.conf.type                     = pc.type;
+   plan.conf.pool_type                = pc.pool_type;
+   plan.conf.ir_scheme                = pc.ir_scheme;
+   plan.conf.deposit_term_days        = pc.deposit_term_days;
+   plan.conf.allow_advance_redeem     = pc.allow_advance_redeem;
+   plan.conf.advance_redeem_fine_rate = pc.advance_redeem_fine_rate;
+   plan.conf.effective_from           = pc.effective_from;
+   plan.conf.effective_to             = pc.effective_to;
+   plan.conf.interest_token           = pc.interest_token;
+
+   if (!plan_existing) {
+      const auto zero_principal = asset(0, _gstate.principal_token.get_symbol());
+      const auto zero_interest  = asset(0, pc.interest_token.get_symbol());
+
+      plan.deposit_available  = zero_principal;
+      plan.deposit_redeemed   = zero_principal;
+      plan.interest_available = zero_interest;
+      plan.interest_redeemed  = zero_interest;
+      plan.created_at         = current_time_point();
+
+   } else {
+      // 已存在计划：
+
+      // 1) 本金口径：必须与全局本金一致；不允许更换
+      CHECKC( plan.deposit_available.symbol == _gstate.principal_token.get_symbol(),
+              err::SYMBOL_MISMATCH, "principal symbol mismatch with global setting (deposit_available)" );
+      CHECKC( plan.deposit_redeemed.symbol  == _gstate.principal_token.get_symbol(),
+              err::SYMBOL_MISMATCH, "principal symbol mismatch with global setting (deposit_redeemed)" );
+
+      // 2) 奖励口径：若存在余额，禁止更换奖励符号；若两边均为 0，可切换到新符号
+      const bool interest_has_balance =
+         (plan.interest_available.amount != 0) || (plan.interest_redeemed.amount != 0);
+
+      if (interest_has_balance) {
+         CHECKC( plan.interest_available.symbol == pc.interest_token.get_symbol(),
+                 err::SYMBOL_MISMATCH, "cannot change interest token symbol when non-zero interest balances exist" );
+         // 保持原符号，无需改动资产字段
+      } else {
+         // 无余额：更新奖励资产符号为最新的计划奖励币
+         plan.interest_available = asset(0, pc.interest_token.get_symbol());
+         plan.interest_redeemed  = asset(0, pc.interest_token.get_symbol());
+      }
+   }
+
+   _db.set( plan );
+}
 
    void pos_cisum::delplan(const uint64_t& pid) {
       require_auth( _gstate.admin );
