@@ -123,7 +123,7 @@ void show::delchecker(const uint64_t& show_id, const name& account) {
 }
 
 // ========== cvticket.nft: 票种创建 / 发放 ==========
-void show::ntcreate(const int64_t& max_supply,
+void show::nftcreate(const int64_t& max_supply,
                     const nsymbol& symbol,
                     const string&  token_uri)
 {
@@ -141,7 +141,7 @@ void show::ntcreate(const int64_t& max_supply,
   }.send(get_self(), max_supply, symbol, token_uri, get_self());
 }
 
-void show::ntissue(const nasset& quantity,
+void show::nftissue(const nasset& quantity,
                    const string& memo)
 {
   // 发放到合约自身账号

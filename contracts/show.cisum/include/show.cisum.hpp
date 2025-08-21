@@ -41,13 +41,13 @@ public:
 
   // === cvticket.nft: 创建票种 ===
   [[eosio::action]]
-  void ntcreate(const int64_t&  max_supply,
+  void nftcreate(const int64_t&  max_supply,
                 const nsymbol&  symbol,
                 const string&   token_uri);
 
   // === cvticket.nft: 发放（铸造到合约自身，再转出/或直接发放） ===
   [[eosio::action]]
-  void ntissue(const nasset&  quantity,
+  void nftissue(const nasset&  quantity,
                const string&  memo);
 
   // ===== 演出 =====
