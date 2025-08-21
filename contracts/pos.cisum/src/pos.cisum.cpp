@@ -1,12 +1,12 @@
 #include <pos.cisum/pos.cisum.hpp>
 #include "safemath.hpp"
 #include <utils.hpp>
+#include <flon.token.hpp>
 
 
-static constexpr eosio::name active_perm        {"active"_n};
-
+static constexpr eosio::name active_perm{"active"_n};
 #define TRANSFER(bank, to, quantity, memo) \
-    {	eosio::token::transfer_action act{ bank, { {_self, active_perm} } };\
+    {	flon::token::transfer_action act{ bank, { {_self, active_perm} } };\
 			act.send( _self, to, quantity , memo );}
 
 namespace flon {
@@ -196,7 +196,7 @@ using namespace wasm::safemath;
       if (from == get_self() || to != get_self()) return;
 
       const name token_bank = get_first_receiver();
-      vector<string_view> memo_params = split(memo, ":");
+      auto memo_params = split(memo, ":");
 
       // 解析 plan_id
       uint64_t plan_id = 1;
