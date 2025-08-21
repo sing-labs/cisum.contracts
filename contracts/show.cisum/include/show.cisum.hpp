@@ -50,43 +50,48 @@ public:
                const string&  memo);
 
   // ===== 演出 =====
-  [[eosio::action]] void newshow(const name&       category,
-                                 const bool&       ticket_transferable,
-                                 const bool&       ticket_refundable,
-                                 const time_point& sale_started_at,
-                                 const time_point& sale_ended_at,
-                                 const time_point& show_started_at,
-                                 const time_point& show_ended_at,
-                                 const name&       status);
+  [[eosio::action]] void newshow(const uint64_t&   show_id,
+                                  const name&       category,
+                                  const bool&       ticket_transferable,
+                                  const bool&       ticket_refundable,
+                                  const time_point& show_started_at,
+                                  const time_point& show_ended_at,
+                                  const name&       show_name,
+                                  const name&       show_address,
+                                  const name&       status);
 
   [[eosio::action]] void setshow(const uint64_t&   show_id,
-                                 const name&       category,
-                                 const bool&       ticket_transferable,
-                                 const bool&       ticket_refundable,
-                                 const time_point& sale_started_at,
-                                 const time_point& sale_ended_at,
-                                 const time_point& show_started_at,
-                                 const time_point& show_ended_at,
-                                 const name&       status);
+                                  const name&       category,
+                                  const bool&       ticket_transferable,
+                                  const bool&       ticket_refundable,
+                                  const time_point& show_started_at,
+                                  const time_point& show_ended_at,
+                                  const name&       show_name,
+                                  const name&       show_address,
+                                  const name&       status);
 
   [[eosio::action]] void showstatus(const uint64_t& show_id,
                                     const name&     status);
 
   // ===== 票档 =====
   [[eosio::action]] void newticket(const uint64_t& show_id,
-                                   const nsymbol&  ticket_nsym,
-                                   const nsymbol&  prerequisite_nsym,
-                                   const string&   ticket_type,
-                                   const asset&    price,
-                                   const uint32_t& total_count,
-                                   const name&     status);
+                                    const nsymbol&  ticket_nsym,
+                                    const nsymbol&  prerequisite_nsym,
+                                    const string&   ticket_type,
+                                    const asset&    price,
+                                    const uint32_t& total_count,
+                                    const name&     status,
+                                    const time_point& sale_started_at,
+                                    const time_point& sale_ended_at);
 
   [[eosio::action]] void setticket(const uint64_t& show_id,
-                                   const uint64_t& ticket_id,
-                                   const string&   ticket_type,
-                                   const asset&    price,
-                                   const uint32_t& total_count,
-                                   const name&     status);
+                                    const uint64_t& ticket_id,
+                                    const string&   ticket_type,
+                                    const asset&    price,
+                                    const uint32_t& total_count,
+                                    const name&     status,
+                                    const time_point& sale_started_at,
+                                    const time_point& sale_ended_at);
 
   [[eosio::action]] void ticketstatus(const uint64_t& show_id,
                                       const uint64_t& ticket_id,

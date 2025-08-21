@@ -47,11 +47,10 @@ TBL show_t {
    bool       ticket_refundable   = false;          // 门票是否可退票
    set<name>  ticket_check_admins;                  // 核销员
    name       status = ShowStatus::onshelf;
-
-   time_point sale_started_at;                      // 售票开始
-   time_point sale_ended_at;                        // 售票结束
    time_point show_started_at;                      // 演出开始
    time_point show_ended_at;                        // 演出结束
+   name       show_name;                            // 演唱会名称
+   name       show_address;                         // 演唱会地址
    time_point created_at;
    time_point updated_at;
 
@@ -62,11 +61,10 @@ TBL show_t {
    EOSLIB_SERIALIZE(show_t,
       (show_id)(category)
       (ticket_transferable)(ticket_refundable)
-      (ticket_check_admins)
       (status)
-      (sale_started_at)(sale_ended_at)
       (show_started_at)(show_ended_at)
-      (created_at)(updated_at)
+      (show_name)(show_address)(created_at)(updated_at)
+            (ticket_check_admins)
    )
 };
 
@@ -80,6 +78,8 @@ TBL ticket_t {
    uint32_t   sold_count;               // 已售/已分配（含待发）
    uint32_t   stock_count;              // 剩余库存（= total_count - sold_count）
    uint32_t   issued_count;             // 已实际发放的 NFT 数
+   time_point sale_started_at;          // 售票开始
+   time_point sale_ended_at;            // 售票结束
    name       status;
 
    time_point created_at;
@@ -93,7 +93,7 @@ TBL ticket_t {
       (ticket_id)(prerequisite_ticket_id)
       (ticket_type)(price)
       (total_count)(sold_count)(stock_count)(issued_count)
-      (status)
+      (sale_started_at)(sale_ended_at)(status)
       (created_at)(updated_at)
    )
 };

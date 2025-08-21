@@ -160,34 +160,38 @@ void show::nftissue(const nasset& quantity,
 }
 
 // ========== 演出 ==========
-void show::newshow(const name&       category,
+void show::newshow(const uint64_t&   show_id,
+                   const name&       category,
                    const bool&       ticket_transferable,
                    const bool&       ticket_refundable,
-                   const time_point& sale_started_at,
-                   const time_point& sale_ended_at,
                    const time_point& show_started_at,
                    const time_point& show_ended_at,
+                   const name&       show_name,
+                   const name&       show_address,
                    const name&       status)
 {
   require_admin_or_showadm();
 
-  check(sale_ended_at   >= sale_started_at, "sale_ended_at must be >= sale_started_at");
-  check(show_started_at >= sale_ended_at,   "show_started_at must be >= sale_ended_at");
-  check(show_ended_at   >= show_started_at, "show_ended_at must be >= show_started_at");
+  check(show_started_at != time_point{}, "show_started_at is required");
+  if (show_ended_at != time_point{}) {
+    check(show_ended_at >= show_started_at, "show_ended_at must be >= show_started_at");
+  }
 
   show_t::showidx shows(get_self(), get_self().value);
-  uint64_t pk = shows.available_primary_key();
-  if (pk == 0) pk = 1;
+
+  // 检查是否已存在
+  auto it = shows.find(show_id);
+  check(it == shows.end(), "show_id already exists");
 
   const auto t = nowtp();
   shows.emplace(get_self(), [&](auto& r){
-    r.show_id               = pk;
+    r.show_id               = show_id;
     r.category              = category;
     r.ticket_transferable   = ticket_transferable;
     r.ticket_refundable     = ticket_refundable;
     r.status                = status;
-    r.sale_started_at       = sale_started_at;
-    r.sale_ended_at         = sale_ended_at;
+    r.show_name             = show_name;
+    r.show_address          = show_address;
     r.show_started_at       = show_started_at;
     r.show_ended_at         = show_ended_at;
     r.created_at            = t;
@@ -199,34 +203,45 @@ void show::setshow(const uint64_t&   show_id,
                    const name&       category,
                    const bool&       ticket_transferable,
                    const bool&       ticket_refundable,
-                   const time_point& sale_started_at,
-                   const time_point& sale_ended_at,
                    const time_point& show_started_at,
                    const time_point& show_ended_at,
+                   const name&       show_name,
+                   const name&       show_address,
                    const name&       status)
 {
-  require_admin_or_showadm();
+    require_admin_or_showadm();
 
-  show_t::showidx shows(get_self(), get_self().value);
-  auto it = shows.find(show_id);
-  check(it != shows.end(), "show not found");
+    show_t::showidx shows(get_self(), get_self().value);
+    auto it = shows.find(show_id);
+    check(it != shows.end(), "show not found");
 
-  check(sale_ended_at   >= sale_started_at, "sale_ended_at must be >= sale_started_at");
-  check(show_started_at >= sale_ended_at,   "show_started_at must be >= sale_ended_at");
-  check(show_ended_at   >= show_started_at, "show_ended_at must be >= show_started_at");
+    // ===== 时间校验 =====
+    const bool has_show_start = (show_started_at != time_point{});
+    const bool has_show_end   = (show_ended_at   != time_point{});
 
-  const auto t = nowtp();
-  shows.modify(it, same_payer, [&](auto& r){
-    r.category              = category;
-    r.ticket_transferable   = ticket_transferable;
-    r.ticket_refundable     = ticket_refundable;
-    r.status                = status;
-    r.sale_started_at       = sale_started_at;
-    r.sale_ended_at         = sale_ended_at;
-    r.show_started_at       = show_started_at;
-    r.show_ended_at         = show_ended_at;
-    r.updated_at            = t;
-  });
+    // show_started_at 必填
+    check(has_show_start, "show_started_at is required");
+
+    // 如果有 show_ended_at，则校验必须大于等于 show_started_at
+    if (has_show_end) {
+        check(show_ended_at >= show_started_at,
+              "show_ended_at must be >= show_started_at");
+    }
+
+    const auto t = nowtp();
+
+    // ===== 修改记录 =====
+    shows.modify(it, same_payer, [&](auto& r){
+        r.category            = category;
+        r.ticket_transferable = ticket_transferable;
+        r.ticket_refundable   = ticket_refundable;
+        r.status              = status;
+        r.show_started_at     = show_started_at;
+        r.show_ended_at       = show_ended_at;
+        r.show_name           = show_name;
+        r.show_address        = show_address;
+        r.updated_at          = t;
+    });
 }
 
 void show::showstatus(const uint64_t& show_id,
@@ -251,7 +266,9 @@ void show::newticket(const uint64_t& show_id,
                      const string&   ticket_type,
                      const asset&    price,
                      const uint32_t& total_count,
-                     const name&     status)
+                     const name&     status,
+                     const time_point& sale_started_at,
+                     const time_point& sale_ended_at)
 {
   require_admin_or_showadm();
 
@@ -260,7 +277,10 @@ void show::newticket(const uint64_t& show_id,
   check(price.amount >= 0, "price must be >= 0");
   check(ticket_type.size() <= 64, "ticket_type too long");
 
-  // show 存在性
+  check(sale_started_at != time_point{}, "sale_started_at is required");
+  check(sale_ended_at   != time_point{}, "sale_ended_at is required");
+  check(sale_ended_at >= sale_started_at, "sale_ended_at must be >= sale_started_at");
+
   show_t::showidx shows(get_self(), get_self().value);
   auto sit = shows.find(show_id);
   check(sit != shows.end(), "show not found");
@@ -279,6 +299,8 @@ void show::newticket(const uint64_t& show_id,
     r.sold_count              = 0;
     r.stock_count             = total_count;
     r.issued_count            = 0;
+    r.sale_started_at         = sale_started_at;
+    r.sale_ended_at           = sale_ended_at;
     r.status                  = status;
     r.created_at              = t;
     r.updated_at              = t;
@@ -290,7 +312,9 @@ void show::setticket(const uint64_t& show_id,
                      const string&   ticket_type,
                      const asset&    price,
                      const uint32_t& total_count,
-                     const name&     status)
+                     const name&     status,
+                     const time_point& sale_started_at,
+                     const time_point& sale_ended_at)
 {
   require_admin_or_showadm();
 
@@ -298,18 +322,26 @@ void show::setticket(const uint64_t& show_id,
   auto it = tks.find(ticket_id);
   check(it != tks.end(), "ticket not found");
 
+  // 基本校验
   check(price.amount >= 0, "price must be >= 0");
   check(total_count >= it->sold_count, "total_count cannot be less than sold_count");
   check(ticket_type.size() <= 64, "ticket_type too long");
 
+  // 售卖窗口校验
+  check(sale_started_at != time_point{}, "sale_started_at is required");
+  check(sale_ended_at   != time_point{}, "sale_ended_at is required");
+  check(sale_ended_at >= sale_started_at, "sale_ended_at must be >= sale_started_at");
+
   const auto t = nowtp();
   tks.modify(it, same_payer, [&](auto& r){
-    r.ticket_type = ticket_type;
-    r.price       = price;
-    r.total_count = total_count;
-    r.stock_count = r.total_count - r.sold_count;
-    r.status      = status;
-    r.updated_at  = t;
+    r.ticket_type     = ticket_type;
+    r.price           = price;
+    r.total_count     = total_count;
+    r.stock_count     = r.total_count - r.sold_count;
+    r.status          = status;
+    r.sale_started_at = sale_started_at;
+    r.sale_ended_at   = sale_ended_at;
+    r.updated_at      = t;
   });
 }
 
@@ -360,15 +392,15 @@ void show::issue(const name&     user,
   check(it->status == TicketStatus::running, "ticket not running");
   check(it->stock_count >= amount, "insufficient stock");
 
-  // === 销售时间窗口校验 ===
+  // === 售卖时间窗口校验（以票档为准） ===
   const auto now = nowtp();
-  check(sit->sale_started_at <= now, "not started yet");   // 未到开售时间
-  check(now <= sit->sale_ended_at,   "already ended");     // 已过截止时间
+  check(it->sale_started_at <= now, "ticket not started yet");
+  check(now <= it->sale_ended_at,   "ticket already ended");
 
   // 组装 nsymbol（ticket_id 为 nsymbol.raw()）
-  static constexpr uint64_t U1E9 = 1000000000ULL;
-  uint64_t p64 = ticket_id / U1E9;
-  uint64_t i64 = ticket_id % U1E9;
+  static constexpr uint64_t U1E9 = 1'000'000'000ULL;
+  const uint64_t p64 = ticket_id / U1E9;   // pid
+  const uint64_t i64 = ticket_id % U1E9;   // id
   check(p64 < U1E9, "bad pid");
   check(i64 < U1E9, "bad id");
   nsymbol tk_sym{ static_cast<uint32_t>(i64), static_cast<uint32_t>(p64) };
@@ -384,7 +416,6 @@ void show::issue(const name&     user,
     }.send(get_self(), user, packs, memo);
   }
 
-  // 更新计数
   const auto t = nowtp();
   tks.modify(it, same_payer, [&](auto& r){
     r.sold_count   += amount;
