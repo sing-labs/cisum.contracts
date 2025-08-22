@@ -159,10 +159,10 @@ BOOST_FIXTURE_TEST_CASE(test_grab, grab_cisum_tester) {
     auto nestar_symbol = symbol(4, "NESTAR");
     int64_t initial_supply = 1'0000'0000'0000;
     asset grab_price = asset(1'0000, nestar_symbol);
-    nsymbol show_id = nsymbol(1, 1);
+    uint64_t show_id = 1;
 
     int64_t total_tickets = 10000;
-    nsymbol ticket_id = nsymbol(1, 2);
+    nsymbol ticket_id = nsymbol(1, 1);
     auto ticket_issuer = ticket_contract;
     auto point_issuer = point_contract;
 
@@ -220,7 +220,7 @@ BOOST_FIXTURE_TEST_CASE(test_grab, grab_cisum_tester) {
     // Admin creates rush sale
     push_action(contract_account, "addrushsale"_n, admin, mutable_variant_object()
         ("show_id", show_id)
-        ("ticket_id", ticket_id)
+        ("ticket_id", ticket_id.value)
         ("started_at", control->head().block_time())
         ("ended_at", control->head().block_time() + fc::seconds(3600))
         ("price", grab_price)

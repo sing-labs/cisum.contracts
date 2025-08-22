@@ -49,8 +49,8 @@ public:
    * @param win_ratio            Win ratio (1-10000).
    */
   [[eosio::action]]
-  void addrushsale(   nsymbol        show_id,
-                      nsymbol        ticket_id,
+  void addrushsale(   uint64_t       show_id,
+                      uint64_t       ticket_id,
                       time_point     started_at,
                       time_point     ended_at,
                       asset          price,

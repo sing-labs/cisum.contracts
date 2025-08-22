@@ -74,8 +74,8 @@ void grab_cisum::init(const name& admin) {
 //     transfer_action.send(tickets)
 // }
 
-void grab_cisum::addrushsale(   nsymbol        show_id,
-                                nsymbol        ticket_id,
+void grab_cisum::addrushsale(   uint64_t       show_id,
+                                uint64_t       ticket_id,
                                 time_point     started_at,
                                 time_point     ended_at,
                                 asset          price,
@@ -85,7 +85,7 @@ void grab_cisum::addrushsale(   nsymbol        show_id,
     require_auth(_gstate.admin);
     // TODO: check show_id valid?
     // TODO: check ticket_id valid?
-    CHECKC(ticket_id.value != 0, err::INVALID_FORMAT, "invalid ticket_id");
+    CHECKC(ticket_id != 0, err::INVALID_FORMAT, "invalid ticket_id");
     // check started_at < ended_at
     CHECKC(started_at < ended_at, err::INVALID_TIME, "started_at must be less than ended_at");
     CHECKC(price.symbol == POINT_SYMBOL, err::INVALID_FORMAT, "price symbol mismatch");
@@ -107,9 +107,9 @@ void grab_cisum::addrushsale(   nsymbol        show_id,
         rs.price                = price;
         rs.max_grabs_per_user   = 1;
         rs.win_ratio            = win_ratio;
-        rs.total_tickets        = nasset(0, ticket_id);
-        rs.available_tickets    = nasset(0, ticket_id);
-        rs.sold_tickets         = nasset(0, ticket_id);
+        rs.total_tickets        = nasset(0, nsymbol(ticket_id));
+        rs.available_tickets    = nasset(0, nsymbol(ticket_id));
+        rs.sold_tickets         = nasset(0, nsymbol(ticket_id));
         rs.total_grabs          = 0;
         rs.created_at           = now;
         rs.updated_at           = now;
@@ -157,7 +157,7 @@ void grab_cisum::on_transfer_point( const name& from, const name& to, const asse
     if (user_itr == user_idx.end()) {
         user_itr = user_idx.emplace(get_self(), [&](auto& u){
             u.account = from;
-            u.tickets = nasset(0, rs_itr->ticket_id);
+            u.tickets = nasset(0, nsymbol(rs_itr->ticket_id));
         });
     }
 
@@ -170,7 +170,7 @@ void grab_cisum::on_transfer_point( const name& from, const name& to, const asse
         // Check if user wins using on-chain pseudo-random
         uint32_t random_number = get_random(from, RATIO_BOOST);
         win = random_number <= rs_itr->win_ratio;
-        std::vector<nasset> assets = {nasset(1, rs_itr->ticket_id)};
+        std::vector<nasset> assets = {nasset(1, nsymbol(rs_itr->ticket_id))};
         TRANSFER_NFT_OUT(_gstate.ticket_contract, from, assets, "grab ticket");
     }
 
