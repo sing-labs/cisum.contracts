@@ -8,6 +8,8 @@ struct contracts {
    static std::vector<char>    grab_cisum_abi()  { return read_abi("${CMAKE_BINARY_DIR}/contracts/grab.cisum/grab.cisum.abi"); }
    static std::vector<uint8_t> nestar_token_wasm() { return read_wasm("${CMAKE_BINARY_DIR}/contracts/nestar.token/nestar.token.wasm"); }
    static std::vector<char>    nestar_token_abi()  { return read_abi("${CMAKE_BINARY_DIR}/contracts/nestar.token/nestar.token.abi"); }
+   static std::vector<uint8_t> cvticket_nft_wasm() { return read_wasm("${CMAKE_BINARY_DIR}/contracts/cvticket.nft/cvticket.nft.wasm"); }
+   static std::vector<char>    cvticket_nft_abi()  { return read_abi("${CMAKE_BINARY_DIR}/contracts/cvticket.nft/cvticket.nft.abi"); }
 };
 
 } // namespace eosio::testing

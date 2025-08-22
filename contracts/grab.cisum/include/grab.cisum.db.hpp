@@ -60,6 +60,7 @@ static constexpr uint32_t RATIO_BOOST = 10000;
 static constexpr symbol_code POINT_SYMBOL_CODE  = symbol_code("NESTAR");
 static constexpr symbol POINT_SYMBOL            = symbol(POINT_SYMBOL_CODE, 4);
 static constexpr name   POINT_CONTRACT_DEFAULT  = "nestar.token"_n;
+static constexpr name   TICKET_CONTRACT_DEFAULT = "cvticket.nft"_n;
 
 #define TBL struct [[eosio::table, eosio::contract("grab.cisum")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("grab.cisum")]]
@@ -69,8 +70,9 @@ NTBL("global") global_t {
    uint64_t       last_rush_sale_id;
    eosio::name    admin;
    eosio::name    point_contract = POINT_CONTRACT_DEFAULT;
+   eosio::name    ticket_contract = TICKET_CONTRACT_DEFAULT;
 
-   EOSLIB_SERIALIZE(global_t, (last_rush_sale_id)(admin)(point_contract))
+   EOSLIB_SERIALIZE(global_t, (last_rush_sale_id)(admin)(point_contract)(ticket_contract))
 };
 
 typedef eosio::singleton< "global"_n, global_t > global_singleton;
@@ -78,16 +80,16 @@ typedef eosio::singleton< "global"_n, global_t > global_singleton;
 // scope: self
 NTBL("rushsales") rush_sale {
    uint64_t       id; // auto increment, PK
-   nsymbol        show_id;
-   nsymbol        ticket_id;
+   uint64_t       show_id;
+   uint64_t       ticket_id;
    time_point     started_at;
    time_point     ended_at;
    asset          price;
    uint32_t       max_grabs_per_user;
    uint32_t       win_ratio;              // boost 10000, <= 10000
-   uint32_t       total_tickets;
-   uint32_t       available_tickets;
-   uint32_t       sold_tickets;
+   nasset         total_tickets;
+   nasset         available_tickets;
+   nasset         sold_tickets;
    uint32_t       total_grabs;
    time_point     created_at;
    time_point     updated_at;
@@ -103,7 +105,7 @@ NTBL("rushsales") rush_sale {
 NTBL("users") user_t {
    eosio::name    account;
    uint32_t       grabs;
-   uint32_t       tickets;
+   nasset         tickets;
 
    uint64_t primary_key() const { return account.value; }
 
