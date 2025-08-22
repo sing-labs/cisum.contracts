@@ -174,7 +174,9 @@ void grab_cisum::on_transfer_point( const name& from, const name& to, const asse
         r.updated_at = now;
     });
 
-    notifyticket(from, rush_sale_id, win);
+    // Notify the user of the grab result
+    grab_cisum::notifyticket_action act{ get_self(), { {get_self(), "active"_n} } };
+    act.send( from, rush_sale_id, win );
 }
 
 void grab_cisum::on_transfer_ticket( const name& from, const name& to, const vector<nasset>& assets, const string& memo ) {

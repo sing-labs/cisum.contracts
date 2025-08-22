@@ -14,28 +14,35 @@ using namespace std;
 using mvo = fc::mutable_variant_object;
 
 struct nsymbol {
-    uint32_t id     = 0;
-    uint32_t pid    = 0;
-
-    nsymbol() = default;
-    explicit nsymbol(uint32_t i, uint32_t p = 0): id(i),pid(p) {
-    }
-
-    explicit nsymbol(uint64_t raw) {
-        pid = raw / U1E9;
-        id  = raw - pid * U1E9;
-    }
-
-    friend bool operator==(const nsymbol& a, const nsymbol& b) {
-        return( a.id == b.id && a.pid == b.pid );
-    }
-
-    uint64_t raw()const { return( (uint64_t) pid * U1E9 + id ); }
+    uint64_t value = 0;
 
     static constexpr uint32_t U1E9  = 10'0000'0000UL;
+    nsymbol() = default;
+
+    static uint64_t to_raw_value(uint32_t i, uint32_t p) {
+        EOS_ASSERT( p < U1E9, symbol_type_exception, "pid must be below 10**9" );
+        EOS_ASSERT( i < U1E9, symbol_type_exception, "id must be below 10**9" );
+        return (uint64_t)p * U1E9 + i;
+    }
+
+    explicit nsymbol(uint32_t i, uint32_t p): value(to_raw_value(i, p)) {}
+
+    explicit nsymbol(uint64_t raw): value(raw) {}
+
+    friend bool operator==(const nsymbol& a, const nsymbol& b) {
+        return( a.value == b.value );
+    }
+
+    inline uint32_t id() const {
+        return value % U1E9;
+    }
+
+    inline uint32_t pid() const {
+        return value / U1E9;
+    }
 };
 
-FC_REFLECT( nsymbol, (id)(pid) )
+FC_REFLECT( nsymbol, (value) )
 struct nasset {
     int64_t         amount  = 0;
     nsymbol         symbol;
@@ -46,11 +53,11 @@ struct nasset {
     explicit nasset(int64_t amount, const nsymbol& symb): amount(amount), symbol(symb) {}
 
     nasset& operator+=(const nasset& quantity) {
-        EOS_ASSERT( quantity.symbol.raw() == this->symbol.raw(), symbol_type_exception, "nsymbol mismatch" );
+        EOS_ASSERT( quantity.symbol.value == this->symbol.value, symbol_type_exception, "nsymbol mismatch" );
         this->amount += quantity.amount; return *this;
     }
     nasset& operator-=(const nasset& quantity) {
-        EOS_ASSERT( quantity.symbol.raw() == this->symbol.raw(), symbol_type_exception, "nsymbol mismatch" );
+        EOS_ASSERT( quantity.symbol.value == this->symbol.value, symbol_type_exception, "nsymbol mismatch" );
         this->amount -= quantity.amount; return *this;
     }
 
@@ -102,6 +109,32 @@ public:
         vector<char> data = get_row_by_account( contract_account, name(rush_sale_id), "users"_n, user );
         return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "user_t", data, abi_serializer::create_yield_function(abi_serializer_max_time) );
    }
+
+   abi_serializer get_abi_ser(const name& contract) {
+       abi_serializer abi_ser;
+       const auto& accnt = control->db().get<account_object,by_name>( contract );
+       abi_def abi;
+       BOOST_REQUIRE_EQUAL(abi_serializer::to_abi(accnt.abi, abi), true);
+       abi_ser.set_abi(abi, abi_serializer::create_yield_function(abi_serializer_max_time));
+       return abi_ser;
+   }
+
+   asset get_balance( const name& contract, const account_name& act, symbol balance_symbol ) {
+        auto abi_ser = get_abi_ser(contract);
+        vector<char> data = get_row_by_account( contract, act, "accounts"_n, account_name(balance_symbol.to_symbol_code().value) );
+        return data.empty() ?
+                asset(0, balance_symbol) :
+                abi_ser.binary_to_variant("account", data, abi_serializer::create_yield_function(abi_serializer_max_time))["balance"].as<asset>();
+   }
+
+   nasset get_balance( const name& contract, const account_name& act, nsymbol balance_symbol ) {
+        auto abi_ser = get_abi_ser(contract);
+        vector<char> data = get_row_by_account( contract, act, "accounts"_n, account_name(balance_symbol.value) );
+        return data.empty() ?
+               nasset(0, balance_symbol) :
+               abi_ser.binary_to_variant("account", data, abi_serializer::create_yield_function(abi_serializer_max_time))["balance"].as<nasset>();
+   }
+
     // Add more helper methods for other actions and table queries as needed
 };
 
@@ -120,58 +153,100 @@ BOOST_FIXTURE_TEST_CASE( test_init_admin, grab_cisum_tester ) try {
 
 BOOST_FIXTURE_TEST_CASE(test_grab, grab_cisum_tester) {
     // 1. Instantiate tester and deploy contracts
-    auto token_account = "nestar.token"_n;
+    auto point_contract = "nestar.token"_n;
+    auto ticket_contract = "cvticket.nft"_n;
     auto user = "useracc"_n;
     auto nestar_symbol = symbol(4, "NESTAR");
-    int64_t initial_supply = 100000000;
-    int64_t grab_price = 10000;
+    int64_t initial_supply = 1'0000'0000'0000;
+    asset grab_price = asset(1'0000, nestar_symbol);
+    nsymbol show_id = nsymbol(1, 1);
+
+    int64_t total_tickets = 10000;
+    nsymbol ticket_id = nsymbol(1, 2);
+    auto ticket_issuer = ticket_contract;
+    auto point_issuer = point_contract;
+
+    // deploy ticket contract
+    create_accounts({ticket_contract});
+    set_code(ticket_contract, contracts::cvticket_nft_wasm());
+    set_abi(ticket_contract, contracts::cvticket_nft_abi().data());
+
+    // create ticket
+    push_action( ticket_contract, "create"_n, ticket_contract, mvo()
+        ("issuer", ticket_issuer)
+        ("maximum_supply", total_tickets)
+        ("symbol", ticket_id)
+        ("token_uri", "ipfs://ticket_metadata")
+        ("ipowner", ticket_issuer) );
+
+    // issue ticket
+    push_action(ticket_contract, "issue"_n, ticket_issuer, mvo()
+        ("to", ticket_issuer)
+        ("quantity", nasset(100, ticket_id))
+        ("memo", "issue ticket"));
+
 
     // Deploy nestar.token and create/issue NESTAR
-    create_accounts({token_account, user});
-    set_code(token_account, contracts::nestar_token_wasm());
-    set_abi(token_account, contracts::nestar_token_abi().data());
+    create_accounts({point_contract, user});
+    set_code(point_contract, contracts::nestar_token_wasm());
+    set_abi(point_contract, contracts::nestar_token_abi().data());
 
-    push_action(token_account, "init"_n, token_account, mvo()
-        ("issuer", token_account)
-        ("admin", token_account)
-        ("artists_contract", token_account)
-        ("badgestore_contract", token_account));
+    push_action(point_contract, "init"_n, point_contract, mvo()
+        ("issuer", point_issuer)
+        ("admin", point_issuer)
+        ("artists_contract", point_issuer)
+        ("badgestore_contract", point_issuer));
 
-    push_action(token_account, "create"_n, token_account, mvo()
-        ("issuer", token_account)
+    push_action(point_contract, "create"_n, point_issuer, mvo()
+        ("issuer", point_issuer)
         ("maximum_supply", asset(initial_supply, nestar_symbol)));
-    push_action(token_account, "issue"_n, token_account, mvo()
-        ("to", user)
+    push_action(point_contract, "issue"_n, point_issuer, mvo()
+        ("to", point_issuer)
         ("quantity", asset(initial_supply, nestar_symbol))
         ("memo", "initial issue"));
 
-    push_action(token_account, "addwhitelist"_n, token_account, mvo()
+    push_action(point_contract, "addwhitelist"_n, point_contract, mvo()
+        ("account", point_issuer));
+    push_action(point_contract, "addwhitelist"_n, point_contract, mvo()
         ("account", contract_account));
 
-    // 3. Admin creates rush sale
+    // transfer point to user
+    push_action(point_contract, "transfer"_n, point_issuer, mvo()
+        ("from", point_issuer)
+        ("to", user)
+        ("quantity", asset(100'0000, nestar_symbol))
+        ("memo", "add:1" ));
+
+    // Admin creates rush sale
     push_action(contract_account, "addrushsale"_n, admin, mutable_variant_object()
-        ("show_id", nsymbol(1, 1))
-        ("ticket_id", nsymbol(1, 2))
+        ("show_id", show_id)
+        ("ticket_id", ticket_id)
         ("started_at", control->head().block_time())
         ("ended_at", control->head().block_time() + fc::seconds(3600))
-        ("price", asset(grab_price, nestar_symbol))
+        ("price", grab_price)
         ("max_grabs_per_user", 1)
-        ("win_ratio", 10000)
-        ("total_tickets", 10));
+        ("win_ratio", 10000));
 
-    // 4. User transfers NESTAR to grab.cisum to grab ticket
-    push_action(token_account, "transfer"_n, user, mutable_variant_object()
+    // transfer tickets to rush sale
+    push_action(ticket_contract, "transfer"_n, ticket_issuer, mvo()
+        ("from", ticket_issuer)
+        ("to", contract_account)
+        ("assets", vector<nasset>{nasset(100, ticket_id)})
+        ("memo", "add:1" ));
+
+    // User transfers point to grab.cisum to grab ticket
+    push_action(point_contract, "transfer"_n, user, mutable_variant_object()
         ("from", user)
         ("to", contract_account)
-        ("quantity", asset(grab_price, nestar_symbol))
+        ("quantity", grab_price)
         ("memo", "grab:1"));
 
     // 5. Check user tickets and rush sale status
     auto user_stat = get_user_state(1, user);
     BOOST_REQUIRE_MESSAGE(user_stat.is_object(), "User state not found");
-    BOOST_CHECK(user_stat["tickets"].as_int64() >= 0);
+    BOOST_CHECK(user_stat["tickets"]["amount"].as_int64() >= 0);
     auto rush_sale = get_rush_sale_state(1);
     BOOST_REQUIRE_MESSAGE(rush_sale.is_object(), "Rush sale state not found");
-    BOOST_CHECK(rush_sale["sold_tickets"].as_int64() >= 0);
+    BOOST_CHECK(rush_sale["sold_tickets"]["amount"].as_int64() >= 0);
 }
 BOOST_AUTO_TEST_SUITE_END()
