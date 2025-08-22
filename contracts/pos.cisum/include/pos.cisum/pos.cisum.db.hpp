@@ -53,7 +53,7 @@ namespace interest_rate_scheme {
 }
 
 NTBL("global") global_t {
-    name admin                              = "cisumadmin"_n;
+    name admin                              = "flonian"_n;
     name penalty_share_account              = "share.cisum"_n;
     extended_symbol     principal_token;            //E.g. 8,AMAX@amax.token, can be set differently for diff contract
     asset mini_deposit_amount;                      // 最小可存入本金

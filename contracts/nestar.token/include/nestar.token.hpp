@@ -35,6 +35,8 @@ public:
   [[eosio::action]] void addwhitelist(const name& account);
   [[eosio::action]] void delwhitelist(const name& account);
 
+  [[eosio::action]] void addconsumewl(const name& account);
+  [[eosio::action]] void delconsumewl(const name& account);
 
   [[eosio::action]]
   void create(const name& issuer, const asset& maximum_supply);
@@ -57,18 +59,18 @@ public:
   void open(const name& owner, const symbol& sym, const name& ram_payer);
 
   [[eosio::action]]
-  void setissuer(const name& issuer);      
-  
-  [[eosio::action]]
-  void setcontract(const name& artcontract); 
+  void setissuer(const name& issuer);
 
   [[eosio::action]]
-  void setadmin(const name& admin);         
+  void setcontract(const name& artcontract);
+
+  [[eosio::action]]
+  void setadmin(const name& admin);
 
   [[eosio::action]]
   void setwhite(const name& account, const bool& enabled);
 
-  [[eosio::action]] 
+  [[eosio::action]]
   void setbadgestore(name badgestore_contract);
 
   // 新增/修改规则（若 id == 0 则新增，否则修改对应 id）
@@ -120,9 +122,11 @@ private:
     return has_auth(get_self()) ||
           (_gstate.admin.value != 0 && has_auth(_gstate.admin));
   }
-  inline bool is_whitelisted(const name& acc) const {
+
+  // 是否在计入 consumed 的白名单（通常用于 from 侧的“消费”）
+  inline bool is_consumewl(const name& acc) const {
     // 1) 先查本地 whitelist 表
-    whitelist_t::idx_t wtbl(get_self(), get_self().value);
+    consumed_whitelist_t::idx_t wtbl(get_self(), get_self().value);
     auto it = wtbl.find(acc.value);
     if (it != wtbl.end() && it->enabled) return true;
 
@@ -136,6 +140,14 @@ private:
     }
     return false;
   }
+
+
+  inline bool in_whitelist(name acct) const{
+    whitelist_t::idx_t wl(get_self(), get_self().value);
+    auto it = wl.find(acct.value);
+    return it != wl.end() && it->enabled;
+  }
+
 
   void try_award_badges(const name& account, int64_t consumed_before, int64_t consumed_after);
 

@@ -171,6 +171,19 @@ TBL whitelist_t {
    EOSLIB_SERIALIZE(whitelist_t, (account)(enabled))
 };
 
+TBL consumed_whitelist_t {
+   name account;          // 被允许的账户/合约
+   bool enabled = true;   // 开关
+
+   uint64_t primary_key() const { return account.value; }
+
+   typedef eosio::multi_index<"consumewl"_n, consumed_whitelist_t> idx_t;
+
+   EOSLIB_SERIALIZE(consumed_whitelist_t, (account)(enabled))
+};
+
+
+
 TBL badge_rule_t {
    uint64_t       id;
    asset          threshold;        // 达到多少 consumed.amount 送此勋章

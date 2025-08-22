@@ -76,7 +76,8 @@ class [[eosio::contract("pos.cisum")]] pos_cisum : public contract {
    [[eosio::on_notify("*::transfer")]]
    void ontransfer(const name& from, const name& to, const asset& quants, const string& memo);
 
-   ACTION init();
+   ACTION init(const extended_symbol& principal_token,
+                     const asset&           mini_deposit_amount);
    ACTION setplan(const uint64_t& plan_id, const plan_conf_s& pc);
    ACTION delplan(const uint64_t& plan_id);
    ACTION withdraw(const name& issuer, const name& owner, const uint64_t& save_id);

@@ -36,6 +36,31 @@ void nestar::delwhitelist(const name& account) {
     tbl.erase(it);
 }
 
+
+void nestar::addconsumewl(const name& account) {
+  require_auth(get_self());
+  check(is_account(account), "account not exist");
+  consumed_whitelist_t::idx_t wl(get_self(), get_self().value);
+  auto it = wl.find(account.value);
+  if (it == wl.end()) {
+    wl.emplace(get_self(), [&](auto& r){ r.account = account; r.enabled = true; });
+  } else {
+    wl.modify(it, same_payer, [&](auto& r){ r.enabled = true; });
+  }
+}
+
+
+void nestar::delconsumewl(const name& account) {
+  require_auth(get_self());
+  consumed_whitelist_t::idx_t wl(get_self(), get_self().value);
+  auto it = wl.find(account.value);
+  check(it != wl.end(), "cwhitelist: account not found");
+  wl.erase(it);
+}
+
+
+
+
 void nestar::create(const name& issuer, const asset& maximum_supply)
 {
     require_auth(get_self());
@@ -129,9 +154,9 @@ void nestar::transfer(const name& from,
   bool allowed = false;
   bool count_consumed = false;
 
-  if (from == _gstate.issuer) {
+  if (from == _gstate.issuer || in_whitelist(from) ) {
     allowed = true;
-  } else if (is_whitelisted(to)) {
+  } else if (is_consumewl(to)) {
     allowed = true;
     count_consumed = true;
   }

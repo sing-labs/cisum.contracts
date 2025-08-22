@@ -82,16 +82,30 @@ using namespace wasm::safemath;
    }
 
 
-   void pos_cisum::init() {
-      require_auth(get_self());   // 只有合约自己能初始化
+void pos_cisum::init(const extended_symbol& principal_token,
+                     const asset&           mini_deposit_amount) {
+      require_auth(get_self()); // 只允许合约自身
 
-      check(!_global.exists(), "already initialized");  // 防止重复初始化
+      check(is_account(principal_token.get_contract()),
+                              "principal_token contract not exist");
+      check(principal_token.get_symbol().is_valid(),
+                              "invalid principal_token symbol");
+      check(mini_deposit_amount.symbol == principal_token.get_symbol(),
+                              "mini_deposit_amount symbol must match principal_token");
+      check(mini_deposit_amount.amount >= 0, "mini_deposit_amount must be >= 0");
 
-      _gstate.admin = get_self();    // 默认管理员
-      _gstate.principal_token = extended_symbol(CISUM, SYS_BANK);  // 主存款币种
-      _gstate.share_pool_id = 0;     // 如果有奖池/分润池
+      // 只允许初始化一次（如需可重设，改成 setglobal 动作）
+      check(!_global.exists(), "already initialized");
 
-   }
+      _gstate.admin             = get_self();          // 默认管理员 = 合约
+      _gstate.principal_token   = principal_token;     // 主存款币（如 8,CISUM@cisum.token）
+      _gstate.mini_deposit_amount = mini_deposit_amount;
+
+      // 可选：如果用得到分润池/记账自增ID，给默认值
+      _gstate.share_pool_id     = 0;
+      _gstate.last_save_id      = 0;
+
+}
 
    void pos_cisum::withdraw(const name& issuer, const name& owner, const uint64_t& save_id) {
       require_auth( issuer );
@@ -116,13 +130,37 @@ using namespace wasm::safemath;
             CHECKC( !premature_withdraw, err::NO_AUTH, "premature withdraw not allowed" )
 
          if (premature_withdraw) {
-            auto unfinish_rate      = div( save_termed_at.sec_since_epoch() - now.sec_since_epoch(), plan.conf.deposit_term_days * DAY_SECONDS, PCT_BOOST );
-            auto penalty_amount     = mul_up( mul_up( save_acct.deposit_quant.amount, unfinish_rate, PCT_BOOST ), plan.conf.advance_redeem_fine_rate, PCT_BOOST );
-            auto penalty            = asset( penalty_amount, _gstate.principal_token.get_symbol() );
-            redeem_quant            -= penalty;
+            // Penalty rule (proportional):
+            //   - advance_redeem_fine_rate (in BP) is the MAXIMUM penalty at t=0
+            //   - actual rate scales linearly with remaining term:
+            //       rate_bp = ceil(max_rate_bp * remaining_seconds / total_seconds)
+            //   - penalty is applied on the *total deposited* amount
+            const int64_t total_seconds    = (int64_t)plan.conf.deposit_term_days * DAY_SECONDS;
+            const int64_t elapsed_seconds  = now.sec_since_epoch() - save_acct.created_at.sec_since_epoch();
+            int64_t       remaining_seconds = total_seconds - elapsed_seconds;
+            if (remaining_seconds < 0) remaining_seconds = 0;
+
+            const uint64_t max_rate_bp = plan.conf.advance_redeem_fine_rate;   // e.g. 3000 = 30%
+            uint64_t rate_bp = 0;
+            if (total_seconds > 0 && max_rate_bp > 0) {
+               // ceil(max_rate_bp * remaining / total)
+               rate_bp = mul_up(max_rate_bp, (uint64_t)remaining_seconds, (uint64_t)total_seconds);
+               if (rate_bp > max_rate_bp) rate_bp = max_rate_bp; // safety cap
+            }
+
+            int64_t penalty_amount = 0;
+            if (rate_bp > 0) {
+               penalty_amount = mul_up( save_acct.deposit_quant.amount, (int64_t)rate_bp, (int64_t)PCT_BOOST );
+            }
+
+            auto penalty = asset( penalty_amount, _gstate.principal_token.get_symbol() );
+
+            redeem_quant -= penalty;
             CHECKC( redeem_quant.amount > 0, err::INCORRECT_AMOUNT, "redeem amount not positive " )
 
-            TRANSFER( _gstate.principal_token.get_contract(), _gstate.penalty_share_account, penalty, owner.to_string() + ":" + to_string(_gstate.share_pool_id) )
+            // send penalty portion to penalty pool account
+            TRANSFER( _gstate.principal_token.get_contract(), _gstate.penalty_share_account, penalty,
+                      owner.to_string() + ":" + to_string(_gstate.share_pool_id) )
          }
       }
 
@@ -260,15 +298,29 @@ using namespace wasm::safemath;
       // 池B：一次性发放积分（计划奖励币）
       if (plan.conf.pool_type == "nestpont"_n) {
          CHECKC( plan.conf.deposit_term_days > 0, err::PARAM_ERROR, "points plan requires positive term days" );
-         asset points{0, plan.conf.interest_token.get_symbol()};
-         {
-            __int128 raw = (__int128)quant.amount * (__int128)save_acct.interest_rate * (__int128)plan.conf.deposit_term_days;
-            raw /= (__int128)10000;  // BP
-            raw /= (__int128)365;
-            points.amount = (int64_t)raw;
-         }
+         const symbol reward_sym = plan.conf.interest_token.get_symbol();
+         asset points{0, reward_sym};
+
+         // Convert principal amount from its precision to reward token precision
+         const int64_t p_prec = get_precision(quant);        // e.g. CISUM 1e8
+         const int64_t r_prec = get_precision(reward_sym);   // e.g. NESTAR 1e4
+
+         __int128 base = (__int128)quant.amount;             // in principal precision
+         base = base * r_prec / p_prec;                      // now in reward precision
+
+         // points = principal * ir_bp/10000 * term_days/365
+         base = base * (__int128)save_acct.interest_rate * (__int128)plan.conf.deposit_term_days;
+         base /= (__int128)10000;                             // ir_bp -> ratio
+         base /= (__int128)365;                               // year days
+
+         points.amount = (int64_t)base;                       // floor
          CHECKC( points.amount > 0, err::NOT_POSITIVE, "points = 0" );
-         TRANSFER( plan.conf.interest_token.get_contract(), from, points, "pos.cisum points reward: " + to_string(save_acct.save_id) );
+
+         plan.interest_available -= points;
+         plan.interest_redeemed  += points;
+         _db.set(plan);
+         TRANSFER( plan.conf.interest_token.get_contract(), from, points,
+                   string("pos.cisum points reward: ") + to_string(save_acct.save_id) );
       }
    }
 
