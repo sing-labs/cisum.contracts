@@ -80,7 +80,7 @@ typedef eosio::singleton< "global"_n, global_t > global_singleton;
 // scope: self
 NTBL("rushsales") rush_sale {
    uint64_t       id; // auto increment, PK
-   nsymbol        show_id;
+   nsymbol        show_id; // TODO: uint64_t
    nsymbol        ticket_id;
    time_point     started_at;
    time_point     ended_at;

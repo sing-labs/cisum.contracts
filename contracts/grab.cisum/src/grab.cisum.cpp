@@ -60,6 +60,20 @@ void grab_cisum::init(const name& admin) {
     // _gstate saved in ~grab_cisum()
 }
 
+// add to show.cisum contract
+// addrushsale(nsymbol        show_id,
+//                                 nsymbol        ticket_id,
+//                                 time_point     started_at,
+//                                 time_point     ended_at,
+//                                 asset          price,
+//                                 uint32_t       max_grabs_per_user,
+//                                 uint32_t       win_ratio,
+//                             int64_t tickets) {
+//     rush_sale_id = grab.cisum.global.last_sale_id + 1;
+//     addrushsale_action.send()
+//     transfer_action.send(tickets)
+// }
+
 void grab_cisum::addrushsale(   nsymbol        show_id,
                                 nsymbol        ticket_id,
                                 time_point     started_at,
@@ -113,6 +127,7 @@ void grab_cisum::on_transfer() {
 void grab_cisum::on_transfer_point( const name& from, const name& to, const asset& quantity, const string& memo) {
     if ( from == get_self() || to != get_self()) return;
 
+    // TODO: add nonce param to memo
     // memo format: "grab:${rush_sale_id}"
     auto memo_params = split(memo, ":");
     ASSERT( memo_params.size() > 1 )

@@ -40,4 +40,4 @@ tcli get table ${grab_contract} ${grab_contract} rushsales -l 1 -r | jq '.rows[0
 tpush ${ticket_contract} transfer "[\"${show_contract}\", \"${grab_contract}\", [[1000.0000, [2000000001]], \"add:1\"]]" -p ${show_contract}@active
 
 ## transfer point to contract and grab a ticket
-tpush ${point_contract} transfer "[\"${user}\", \"${grab_contract}\", \"100.0000 NESTAR\", \"\"]" -p ${user}@active
+tpush ${point_contract} transfer "[\"${user}\", \"${grab_contract}\", \"100.0000 NESTAR\", \"grab:1\"]" -p ${user}@active
