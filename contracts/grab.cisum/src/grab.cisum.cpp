@@ -285,4 +285,10 @@ void grab_cisum::cfgpoint(const eosio::name& new_point_contract) {
     _gstate.point_contract = new_point_contract;
 }
 
+void grab_cisum::cfgticket(const eosio::name& new_ticket_contract) {
+    require_auth(_gstate.admin);
+    CHECKC(is_account(new_ticket_contract), err::ACCOUNT_INVALID, "ticket_contract must be a valid account");
+    _gstate.ticket_contract = new_ticket_contract;
+}
+
 } /// namespace flon

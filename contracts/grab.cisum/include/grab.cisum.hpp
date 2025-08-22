@@ -118,6 +118,16 @@ public:
   [[eosio::action]]
   void cfgpoint(const eosio::name& new_point_contract);
 
+  /**
+   * Configure the ticket contract infomation.
+   * Only admin can call this action.
+   * Only for test
+   *
+   * @param new_ticket_contract   The new ticket contract account name.
+   */
+  [[eosio::action]]
+  void cfgticket(const eosio::name& new_ticket_contract);
+
   // -------- Inline wrappers --------
   using addrushsale_action        = eosio::action_wrapper<"addrushsale"_n,        &grab_cisum::addrushsale>;
   using delrushsale_action        = eosio::action_wrapper<"delrushsale"_n,        &grab_cisum::delrushsale>;
