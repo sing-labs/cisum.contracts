@@ -55,7 +55,7 @@ add_subdirectory(grab.cisum)
 add_subdirectory(show.cisum)
 add_subdirectory(pop.cisum)
 add_subdirectory(poh.cisum)
-
+add_subdirectory(poe.cisum)
 
 
 add_subdirectory(pos.cisum)
