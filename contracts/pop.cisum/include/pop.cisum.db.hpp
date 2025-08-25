@@ -59,7 +59,7 @@ enum class err: uint8_t {
 
 static constexpr name         REWARD_CONTRACT_DEFAULT    = "cisum.token"_n;
 static constexpr symbol_code  REWARD_SYMBOL_CODE         = symbol_code("CISUM");
-static constexpr symbol       REWARD_SYMBOL              = symbol(REWARD_SYMBOL_CODE, 4);
+static constexpr symbol       REWARD_SYMBOL              = symbol(REWARD_SYMBOL_CODE, 8);
 static const asset            MAX_REWARDS_DEFAULT        = asset(25'5000'0000'0000, REWARD_SYMBOL);
 
 
@@ -77,11 +77,25 @@ NTBL("global") global_t {
    asset          max_rewards          = MAX_REWARDS_DEFAULT;
    asset          available_rewards    = MAX_REWARDS_DEFAULT;
    asset          issued_rewards       = asset(0, REWARD_SYMBOL);
+   asset          receivable           = asset(0, USDT_SYMBOL);
+   name           cisumreserve         = "cisumreserve"_n;
 
-   EOSLIB_SERIALIZE(global_t, (oracle_contract)(max_rewards)(available_rewards)(issued_rewards))
+   EOSLIB_SERIALIZE(global_t, (oracle_contract)(reward_contract)(max_rewards)(available_rewards)(issued_rewards)(receivable)(cisumreserve))
 };
 
 typedef eosio::singleton< "global"_n, global_t > global_singleton;
+
+
+TBL receivable_t {
+   asset       amount;         // 当前应收金额
+   time_point  updated_at;     // 最近更新时间
+
+   uint64_t primary_key() const { return 0; } // 单行表
+
+   EOSLIB_SERIALIZE(receivable_t, (amount)(updated_at))
+};
+using receivable_singleton = eosio::singleton<"receivable"_n, receivable_t>;
+
 
 
 } // namespace flon

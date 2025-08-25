@@ -8,6 +8,8 @@
 
 #include "pop.cisum.db.hpp"
 
+#include "flon.swap.db.hpp"
+
 using std::string;
 using namespace eosio;
 
@@ -40,6 +42,13 @@ public:
               string      memo
    );
 
+
+  [[eosio::action]]
+  void  settle(const asset& amount, const string& memo) ;
+
+
+
+
   // -------- Inline wrappers --------
   using mine_action        = eosio::action_wrapper<"mine"_n,        &pop_cisum::mine>;
 
@@ -47,6 +56,45 @@ private:
   global_singleton _global;
   global_t         _gstate;
 
-};
 
+private:
+  // 小写化 symbol_code -> std::string
+  static std::string to_lower(const symbol_code& sc) {
+    std::string s = sc.to_string();
+    for (char& c : s) c = (char)std::tolower((unsigned char)c);
+    return s;
+  }
+
+  // 10^p（0<=p<=18）
+  static int64_t pow10(int p) {
+    int64_t v = 1;
+    while (p-- > 0) v *= 10;
+    return v;
+  }
+
+  // 从 flon.swap 读取池子并返回按 left 精度放大的 "quote per left"
+  inline asset get_price_from_swap_as_asset(const symbol& left_sym,
+                                            const symbol& right_sym)
+  {
+    const name swap_ctr = "flon.swap"_n;
+    const name tpcode{ to_lower(left_sym.code()) + "." + to_lower(right_sym.code()) };
+
+    flon::market_t::idx_t markets(swap_ctr, swap_ctr.value);
+    auto it = markets.find(tpcode.value);
+    check(it != markets.end(), "market not found: " + tpcode.to_string());
+
+    const asset& L = it->left_pool_quant.quantity;   // left 池量
+    const asset& R = it->right_pool_quant.quantity;  // right 池量
+    check(L.symbol == left_sym && R.symbol == right_sym, "symbol mismatch in market");
+    check(L.amount > 0 && R.amount > 0, "empty pool");
+
+    const int64_t scale = pow10(L.symbol.precision());
+
+    __int128 num = (__int128)R.amount * (__int128)scale;
+    int64_t price_amount = (int64_t)(num / (__int128)L.amount); // floor
+
+    return asset{ price_amount, right_sym };
+  }
+
+};
 } // namespace flon
