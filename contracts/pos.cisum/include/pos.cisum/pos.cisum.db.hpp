@@ -59,9 +59,9 @@ NTBL("global") global_t {
     asset mini_deposit_amount;                      // 最小可存入本金
     uint64_t share_pool_id                  = 0;    //to be set a value which has been set for this contract as a whole
     uint64_t last_save_id                   = 0;
-
+    asset    music_treasury;
     EOSLIB_SERIALIZE( global_t, (admin)(penalty_share_account)(principal_token)(mini_deposit_amount)
-                                (share_pool_id)(last_save_id) )
+                                (share_pool_id)(last_save_id)(music_treasury) )
 
 };
 typedef eosio::singleton< "global"_n, global_t > global_singleton;
@@ -76,11 +76,12 @@ struct plan_conf_s {
     time_point_sec effective_from;           // 生效期：早于此不允许存入
     time_point_sec effective_to;             // 截止期：晚于此不允许存入
     extended_symbol interest_token;          // 奖励币（CISUM/NESTAR 等），每计划独立
+    uint64_t       music_reward_rate;        // 新增: NESTAR 对应的 MUSIC 奖励比例（bp），  比如说5000  就是50%
 
     EOSLIB_SERIALIZE( plan_conf_s,
         (type)(pool_type)(ir_scheme)(deposit_term_days)
         (allow_advance_redeem)(advance_redeem_fine_rate)
-        (effective_from)(effective_to)(interest_token)
+        (effective_from)(effective_to)(interest_token)(music_reward_rate)
     )
 };
 
@@ -118,6 +119,8 @@ TBL save_account_t {
     asset               deposit_quant;        //存入本金
     asset               interest_term_quant;  //total interest collectable upon term completion
     asset               interest_collected;   //已领取利息累计
+    asset               music_reward;         //新增: 质押时发放的 MUSIC 奖励总额
+    asset               music_returned;       //新增: 用户已归还的 MUSIC 数量
     time_point_sec      created_at;
     time_point_sec      term_ended_at;
     time_point_sec      last_collected_at;    //上次领取利息时间
@@ -134,7 +137,7 @@ TBL save_account_t {
     > tbl_t;
 
     EOSLIB_SERIALIZE( save_account_t,   (save_id)(plan_id)(interest_rate)(deposit_quant)(interest_term_quant)(interest_collected)
-                                        (created_at)(term_ended_at)(last_collected_at) )
+                                        (music_reward)(music_returned)(created_at)(term_ended_at)(last_collected_at) )
 
 };
 

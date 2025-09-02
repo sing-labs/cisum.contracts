@@ -20,8 +20,12 @@ using namespace wasm::db;
 static constexpr name   SYS_BANK   = "cisum.token"_n;
 static constexpr symbol CISUM      = symbol(symbol_code("CISUM"), 8);
 
-static constexpr name   POINTS_BANK = "nest.token"_n;
+static constexpr name   POINTS_BANK = "nest21.token"_n;
 static constexpr symbol NESTAR      = symbol(symbol_code("NESTAR"), 4);
+
+static constexpr symbol MUSIC_SYMBOL = symbol(symbol_code("MUSIC"), 8);
+static constexpr name   MUSIC_CONTRACT = "cisum.token"_n;
+
 
 static constexpr uint16_t  PCT_BOOST   = 10000;
 static constexpr uint64_t  DAY_SECONDS = 24 * 60 * 60;
@@ -73,8 +77,11 @@ class [[eosio::contract("pos.cisum")]] pos_cisum : public contract {
 
     ~pos_cisum() { _global.set( _gstate, get_self() ); }
 
-   [[eosio::on_notify("*::transfer")]]
+   [[eosio::on_notify("cisum.token::transfer")]]
    void ontransfer(const name& from, const name& to, const asset& quants, const string& memo);
+
+   [[eosio::on_notify("nest21.token::transfer")]]
+   void on_nestar_transfer(const name& from, const name& to, const asset& quants, const string& memo);
 
    ACTION init(const extended_symbol& principal_token,
                      const asset&           mini_deposit_amount);
