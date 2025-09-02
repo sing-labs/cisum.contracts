@@ -12,7 +12,7 @@ mreg flon share.cisum flonian
 mpush $pos_con  init '[{"sym":"8,CISUM","contract":"cisum.token"},"100.00000000 CISUM"    ]' -p $pos_con
 
 #将合约加入到nestar白名单
-mpush  nest15.token  addwhitelist '["'"${pos_con}"'"]' -p nest15.token
+mpush  nest21.token  addwhitelist '["'"${pos_con}"'"]' -p nest21.token
 
 
 mpush $pos_con setplan '[
@@ -84,14 +84,14 @@ mpush $pos_con setplan '[
     "advance_redeem_fine_rate":3000,
     "effective_from": "2025-08-01T00:00:00",
     "effective_to": "2026-11-25T00:00:00",
-    "interest_token":{"sym":"4,NESTAR","contract":"nest15.token"}
+    "interest_token":{"sym":"4,NESTAR","contract":"nest21.token"}
   }
 ]' -p $pos_con
 
 
 
 # 给计划3补充 1,000 NESTAR 作为利息池
-mpush nest15.token transfer '[
+mpush nest21.token transfer '[
   "nes11.issuer",
   "'"${pos_con}"'",
   "10000.0000 NESTAR",

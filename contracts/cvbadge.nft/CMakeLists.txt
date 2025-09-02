@@ -11,3 +11,4 @@ set_target_properties(cvbadge.nft
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/ricardian/cvbadge.nft.contracts.md.in ${CMAKE_CURRENT_BINARY_DIR}/ricardian/cvbadge.nft.contracts.md @ONLY )
 
 target_compile_options( cvbadge.nft PUBLIC -R${CMAKE_CURRENT_SOURCE_DIR}/ricardian -R${CMAKE_CURRENT_BINARY_DIR}/ricardian )
+target_link_libraries(cvbadge.nft flon_base)

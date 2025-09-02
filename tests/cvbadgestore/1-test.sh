@@ -10,7 +10,7 @@ mcli set account permission $stor_con active --add-code
 
 
 badge_ntoken=cvbadge.nft
- 
+
 
 
 mpush $stor_con setadmin '["flonian"]' -p $stor_con
@@ -18,7 +18,7 @@ mpush $stor_con setadmin '["flonian"]' -p $stor_con
 mpush $stor_con setbadge '["'"${badge_ntoken}"'","'"${badge_ntoken}"'"]' -p $stor_con
 
 
-mpush $stor_con addwhitelist '["nest15.token"]' -p $stor_con
+mpush $stor_con addwhitelist '["nest21.token"]' -p $stor_con
 
 
 

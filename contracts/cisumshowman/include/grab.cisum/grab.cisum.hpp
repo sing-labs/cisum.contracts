@@ -8,6 +8,12 @@
 
 #include "grab.cisum.db.hpp"
 
+
+
+#define ADDRUSHSALE(bank, show_id,ticket_id,started_at,ended_at,price,max_grabs_per_user,win_ratio) \
+    {	flon::grab_cisum::addrushsale_action act{ bank, { {get_self(), "active"_n} } };\
+			act.send( show_id,ticket_id,started_at,ended_at,price,max_grabs_per_user,win_ratio);}
+
 namespace flon {
 
 using std::string;
@@ -17,15 +23,6 @@ using std::vector;
 class [[eosio::contract("grab.cisum")]] grab_cisum : public contract {
 public:
   using contract::contract;
-
-  grab_cisum(eosio::name receiver, eosio::name code, datastream<const char*> ds)
-  : contract(receiver, code, ds),
-    _global(get_self(), get_self().value)
-  {
-    _gstate = _global.exists() ? _global.get() : global_t{};
-  }
-
-  ~grab_cisum() { _global.set(_gstate, get_self()); }
 
   /**
    * Initialize the contract and set the admin account.
@@ -90,20 +87,12 @@ public:
   [[eosio::action]]
   void delusers( uint64_t rush_sale_id, uint32_t max_count );
 
-
-  // 处理 FT（积分）转账：来自积分合约
-  [[eosio::on_notify("nest21.token::transfer")]]
-  void on_transfer_point(const name& from,
-                        const name& to,
-                        const asset& quantity,
-                        const std::string& memo);
-
-  // 处理 NFT 转账：来自票据合约
-  [[eosio::on_notify("cvticket.nft::transfer")]]
-  void on_transfer_ticket(const name& from,
-                          const name& to,
-                          const std::vector<nasset>& assets,
-                          const std::string& memo);
+  /**
+   * Handle incoming token transfer for grabbing tickets.
+   * Called automatically on transfer from token contract.
+   */
+  [[eosio::on_notify("*::transfer")]]
+  void on_transfer();
 
   /**
    * Notify user of ticket grab result.
@@ -141,11 +130,6 @@ public:
   using delrushsale_action        = eosio::action_wrapper<"delrushsale"_n,        &grab_cisum::delrushsale>;
   using cfgrushsale_action        = eosio::action_wrapper<"cfgrushsale"_n,        &grab_cisum::cfgrushsale>;
   using notifyticket_action        = eosio::action_wrapper<"notifyticket"_n,        &grab_cisum::notifyticket>;
-
-private:
-  // 全局
-  global_singleton _global;
-  global_t         _gstate;
 
 };
 

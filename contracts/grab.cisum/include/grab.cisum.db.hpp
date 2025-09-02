@@ -62,6 +62,9 @@ static constexpr symbol POINT_SYMBOL            = symbol(POINT_SYMBOL_CODE, 4);
 static constexpr name   POINT_CONTRACT_DEFAULT  = "nestar.token"_n;
 static constexpr name   TICKET_CONTRACT_DEFAULT = "cvticket.nft"_n;
 
+static constexpr name SHOW_CONTRACT = "show23.cisum"_n;
+static constexpr name OPS_CONTRACT = "ops15.cisum"_n;   // ops  操作调度中心合约账户
+
 #define TBL struct [[eosio::table, eosio::contract("grab.cisum")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("grab.cisum")]]
 
@@ -94,24 +97,41 @@ NTBL("rushsales") rush_sale {
    time_point     created_at;
    time_point     updated_at;
 
+   // 主键
    uint64_t primary_key() const { return id; }
 
-   typedef eosio::multi_index<"rushsales"_n, rush_sale> idx_t;
+   // 二级索引键函数
+   uint64_t byticket() const { return ticket_id; }
+   uint64_t byshow()   const { return show_id;   }
 
-   EOSLIB_SERIALIZE(rush_sale, (id)(show_id)(ticket_id)(started_at)(ended_at)(price)(max_grabs_per_user)(win_ratio)(total_tickets)(available_tickets)(sold_tickets)(total_grabs)(created_at)(updated_at))
+   typedef eosio::multi_index<
+      "rushsales"_n,
+      rush_sale,
+      indexed_by<"byticket"_n, const_mem_fun<rush_sale, uint64_t, &rush_sale::byticket>>,
+      indexed_by<"byshow"_n,   const_mem_fun<rush_sale, uint64_t, &rush_sale::byshow>>
+   >idx_t;
+
+   EOSLIB_SERIALIZE(rush_sale,
+     (id)(show_id)(ticket_id)(started_at)(ended_at)(price)
+     (max_grabs_per_user)(win_ratio)
+     (total_tickets)(available_tickets)(sold_tickets)(total_grabs)
+     (created_at)(updated_at)
+   )
 };
 
 // scope: rush_sale_id
 NTBL("users") user_t {
+   string         grab_id;
    eosio::name    account;
    uint32_t       grabs;
    nasset         tickets;
+   time_point     created_at;
 
    uint64_t primary_key() const { return account.value; }
 
    typedef eosio::multi_index<"users"_n, user_t> idx_t;
 
-   EOSLIB_SERIALIZE(user_t, (account)(grabs)(tickets))
+   EOSLIB_SERIALIZE(user_t, (grab_id)(account)(grabs)(tickets)(created_at))
 };
 
 } // namespace flon

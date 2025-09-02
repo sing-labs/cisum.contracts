@@ -4,16 +4,47 @@
 #include <eosio/time.hpp>
 #include <eosio/transaction.hpp>
 #include <eosio/crypto.hpp>
-#include <cstring>
-// #include <utils.hpp>
 #include "grab.cisum.hpp"
 #include <string>
 #include <flon/token.protocol.hpp>
+#include "show.cisum.db.hpp"
 
 namespace flon {
 
 using namespace eosio;
 using std::string;
+
+
+
+// 将 16 字节数组转 32 位小写十六进制（只取前 16 字节 -> 32 hex）
+static inline std::string to_hex32_from160_prefix(const checksum160& cs) {
+    auto bytes = cs.extract_as_byte_array(); // 20 bytes
+    static const char* HEX = "0123456789abcdef";
+    std::string out;
+    out.resize(32);                          // 16 bytes -> 32 hex chars
+
+    // 只取前 16 字节，凑够 128bit（32 hex）
+    size_t j = 0;
+    for (size_t i = 0; i < 16; ++i) {
+        uint8_t b = bytes[i];
+        out[j++] = HEX[(b >> 4) & 0x0F];
+        out[j++] = HEX[b & 0x0F];
+    }
+    return out;
+}
+
+// 生成 32 位十六进制ID： md5_like( 13位毫秒时间戳 + account )
+// 说明：使用 ripemd160 代替 md5，并截取前 16 字节（128bit） => 32 hex
+static inline std::string create_grab_id(const eosio::name& account) {
+    // 13位毫秒级时间戳
+    uint64_t ms = eosio::current_time_point().time_since_epoch().count() / 1000ULL;
+    std::string payload = std::to_string(ms) + account.to_string();
+
+    // ripemd160(payload) 并截取前 16 字节作为 32位hex
+    checksum160 h = ripemd160(payload.data(), payload.size());
+    return to_hex32_from160_prefix(h);
+}
+
 
 // TODO: move to utils.hpp of common lib
 std::vector<std::string> split(const std::string& s, const std::string& delimiter) {
@@ -82,7 +113,12 @@ void grab_cisum::addrushsale(   uint64_t       show_id,
                                 uint32_t       max_grabs_per_user,
                                 uint32_t       win_ratio)
 {
-    require_auth(_gstate.admin);
+    check(
+    has_auth(_gstate.admin) ||
+    has_auth(get_self()) ||
+    has_auth(OPS_CONTRACT),   // 指定的合约账户
+    "[[16]] requires admin, self, or cisumshowman auth"
+    );
     // TODO: check show_id valid?
     // TODO: check ticket_id valid?
     CHECKC(ticket_id != 0, err::INVALID_FORMAT, "invalid ticket_id");
@@ -116,62 +152,54 @@ void grab_cisum::addrushsale(   uint64_t       show_id,
     });
 }
 
-void grab_cisum::on_transfer() {
-    if (get_first_receiver() == _gstate.point_contract) {
-        execute_action(*this, &grab_cisum::on_transfer_point);
-    } else if (get_first_receiver() == _gstate.ticket_contract) {
-        execute_action(*this, &grab_cisum::on_transfer_ticket);
-    }
-}
+void grab_cisum::on_transfer_point(const name& from, const name& to, const asset& quantity, const string& memo) {
+    if (from == get_self() || to != get_self()) return;
 
-void grab_cisum::on_transfer_point( const name& from, const name& to, const asset& quantity, const string& memo) {
-    if ( from == get_self() || to != get_self()) return;
-
-    // TODO: add nonce param to memo
     // memo format: "grab:${rush_sale_id}"
     auto memo_params = split(memo, ":");
-    ASSERT( memo_params.size() > 1 )
+    ASSERT(memo_params.size() > 1)
 
     auto now = current_time_point();
-    CHECKC( memo_params[0] == "grab",           err::INVALID_FORMAT,    "memo must start with 'grab'" )
-    CHECKC (memo_params.size() > 1,            err::INVALID_FORMAT,    "ontransfer: params size must be larger than 1" )
+    CHECKC(memo_params[0] == "grab", err::INVALID_FORMAT, "memo must start with 'grab'")
+    CHECKC(memo_params.size() > 1, err::INVALID_FORMAT, "ontransfer: params size must be larger than 1")
 
-    auto rush_sale_id       = std::stoul(string(memo_params[1]));
-    rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
+    auto rush_sale_id = std::stoul(string(memo_params[1]));
+    rush_sale::idx_t rs_idx(get_self(), get_self().value);
     auto rs_itr = rs_idx.find(rush_sale_id);
-    CHECKC( rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found! id: " + std::to_string(rush_sale_id) )
+    CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found! id: " + std::to_string(rush_sale_id))
 
-    CHECKC( now >= rs_itr->started_at, err::STATUS_MISMATCH, "rush sale not started! id:" + std::to_string(rush_sale_id) )
-    CHECKC( now <= rs_itr->ended_at, err::STATUS_MISMATCH, "rush sale ended! id:" + std::to_string(rush_sale_id) )
-    CHECKC( rs_itr->available_tickets.amount > 0, err::EXCEED_LIMIT, "rush sale has no available tickets" )
-    ASSERT( rs_itr->total_tickets == rs_itr->available_tickets + rs_itr->sold_tickets)
+    CHECKC(now >= rs_itr->started_at, err::STATUS_MISMATCH, "rush sale not started! id:" + std::to_string(rush_sale_id))
+    CHECKC(now <= rs_itr->ended_at, err::STATUS_MISMATCH, "rush sale ended! id:" + std::to_string(rush_sale_id))
+    CHECKC(rs_itr->available_tickets.amount > 0, err::EXCEED_LIMIT, "rush sale has no available tickets")
+    ASSERT(rs_itr->total_tickets == rs_itr->available_tickets + rs_itr->sold_tickets)
 
-    // TODO: only allow grab once at a time?
-    CHECKC(quantity.symbol == rs_itr->price.symbol,    err::SYMBOL_MISMATCH,   "symbol mismatch");
-    CHECKC( quantity == rs_itr->price, err::QUANTITY_MISMATCH, "quantity must be equal to rush sale price" )
+    CHECKC(quantity.symbol == rs_itr->price.symbol, err::SYMBOL_MISMATCH, "symbol mismatch");
+    CHECKC(quantity == rs_itr->price, err::QUANTITY_MISMATCH, "quantity must be equal to rush sale price")
 
     user_t::idx_t user_idx(get_self(), rush_sale_id);
     auto user_itr = user_idx.find(from.value);
 
-    //TODO: user should open before grab tickets?
     if (user_itr == user_idx.end()) {
-        user_itr = user_idx.emplace(get_self(), [&](auto& u){
+        user_itr = user_idx.emplace(get_self(), [&](auto& u) {
+            u.grab_id = create_grab_id(from);
             u.account = from;
             u.tickets = nasset(0, nsymbol(rs_itr->ticket_id));
+            u.created_at = now;
         });
     }
 
-    // check user can grab
-    CHECKC( user_itr->grabs < rs_itr->max_grabs_per_user, err::EXCEED_LIMIT, "user's grabs exceeds max grabs limit of rush sale" )
-    ASSERT( user_itr->tickets < rs_itr->total_tickets )
+    CHECKC(user_itr->grabs < rs_itr->max_grabs_per_user, err::EXCEED_LIMIT, "user's grabs exceeds max grabs limit of rush sale")
+    ASSERT(user_itr->tickets < rs_itr->total_tickets)
 
     bool win = false;
     if (rs_itr->win_ratio > 0) {
-        // Check if user wins using on-chain pseudo-random
         uint32_t random_number = get_random(from, RATIO_BOOST);
         win = random_number <= rs_itr->win_ratio;
-        std::vector<nasset> assets = {nasset(1, nsymbol(rs_itr->ticket_id))};
-        TRANSFER_NFT_OUT(_gstate.ticket_contract, from, assets, "grab ticket");
+        eosio::print(from.to_string()+","+ std::to_string(random_number)+","+ std::to_string(rs_itr->win_ratio));
+        if (win) {
+            std::vector<nasset> assets = { nasset(1, nsymbol(rs_itr->ticket_id)) };
+            TRANSFER_NFT_OUT(_gstate.ticket_contract, from, assets, "grab ticket");
+        }
     }
 
     user_idx.modify(user_itr, same_payer, [&](auto& u) {
@@ -189,9 +217,8 @@ void grab_cisum::on_transfer_point( const name& from, const name& to, const asse
         r.updated_at = now;
     });
 
-    // Notify the user of the grab result
     grab_cisum::notifyticket_action act{ get_self(), { {get_self(), "active"_n} } };
-    act.send( from, rush_sale_id, win );
+    act.send(from, rush_sale_id, win);
 }
 
 void grab_cisum::on_transfer_ticket( const name& from, const name& to, const vector<nasset>& assets, const string& memo ) {

@@ -1,0 +1,40 @@
+#pragma once
+#include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
+#include <eosio/time.hpp>
+#include <vector>
+
+#include "cisumshowman.db.hpp"
+
+namespace flon {
+
+class [[eosio::contract("cisumshowman")]] cisumshow : public eosio::contract {
+public:
+  using contract::contract;
+
+    cisumshow(eosio::name receiver, eosio::name code, datastream<const char*> ds)
+  : contract(receiver, code, ds),
+    _global(get_self(), get_self().value)
+  {
+    _gstate = _global.exists() ? _global.get() : global_t{};
+  }
+
+  ~cisumshow() { _global.set(_gstate, get_self()); }
+
+  // 一次性：newshow -> (nftcreate -> newticket -> nftissue)* -> 若免费票则发给 grap.cisum
+  [[eosio::action]]
+  void publishshow(eosio::name creator,
+                   const show_arg& show,
+                   const std::vector<ticket_arg>& tickets);
+
+  using publishshow_action = eosio::action_wrapper<"publishshow"_n, &cisumshow::publishshow>;
+
+private:
+  global_singleton _global;
+  global_t         _gstate;
+
+
+};
+
+
+} // namespace flon

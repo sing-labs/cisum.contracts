@@ -2,11 +2,20 @@
 
 ## workdir: path root of repository
 
+
+grab_con=grab21.cisum
+mreg flon $grab_con flonian
+mtran flonian $grab_con "100 FLON"
+mset $grab_con grab.cisum
+mcli set account permission $grab_con active --add-code
+
+
+
 ## env: see client.env
-grab_contract="grab15.cisum"
-point_contract="nest15.token"
+grab_contract="grab21.cisum"
+point_contract="nest21.token"
 ticket_contract="cvticket.nft"
-show_contract="show15.cisum"
+show_contract="show23.cisum"
 admin="flonian"
 user="user1"
 
@@ -41,3 +50,16 @@ tpush ${ticket_contract} transfer "[\"${show_contract}\", \"${grab_contract}\", 
 
 ## transfer point to contract and grab a ticket
 tpush ${point_contract} transfer "[\"${user}\", \"${grab_contract}\", \"100.0000 NESTAR\", \"grab:1\"]" -p ${user}@active
+
+
+
+mpush $grab_con init '["flonian"]' -p $grab_con
+#增加消费白名单
+mpush $nestar_token  addconsumewl '["grab21.cisum"]'   -p $nestar_token
+
+mpush  grab21.cisum  delrushsale '["21010001000010026",true]' -p flonian
+
+mpush nest21.token  transfer '["gahbnbehaskk","grab21.cisum","200.0000 NESTAR","grab:10"]' -p gahbnbehaskk
+mpush nest21.token  transfer '["ipowner.111","grab21.cisum","200.0000 NESTAR","grab:2"]' -p ipowner.111
+mpush nest21.token  transfer '["myadmin","grab21.cisum","200.0000 NESTAR","grab:2"]' -p myadmin
+mpush nest21.token  transfer '["nes11.issuer","grab21.cisum","200.0000 NESTAR","grab:2"]' -p nes11.issuer

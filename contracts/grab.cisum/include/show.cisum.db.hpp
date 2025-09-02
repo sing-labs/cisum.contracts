@@ -6,31 +6,15 @@
 #include <set>
 #include <string>
 
-#include <cvticket.nft.hpp>
-
 namespace flon {
 
 using namespace eosio;
 using std::string;
 using std::set;
 
-#define TBL        struct [[eosio::table, eosio::contract("show.cisum")]]
-#define NTBL(name) struct [[eosio::table(name), eosio::contract("show.cisum")]]
-
-static constexpr name GRAB_CONTRACT = "grab21.cisum"_n;
-
-NTBL("global") global_t {
-  name        admin;          // 超管
-  set<name>   show_admin;     // 演出管理员白名单
-  set<name>   platform_admin; // 平台管理员白名单
-  name        nft_bank = "cvticket.nft"_n;       // 票 NFT 合约账户
-
-  EOSLIB_SERIALIZE(global_t, (admin)(show_admin)(platform_admin)(nft_bank))
-};
-using global_singleton = eosio::singleton<"global"_n, global_t>;
 
 // 演出主表（scope: self）
-TBL show_t {
+struct [[eosio::table, eosio::contract("show.cisum")]] show_t {
    uint64_t   show_id;                              // 主键
    name       category;                             // 类别（自定义：concert/drama/exhibit...）
    bool       ticket_transferable = false;          // 门票是否可转让
@@ -58,7 +42,7 @@ TBL show_t {
 };
 
 // 票档表（scope: show_id）
-TBL ticket_t {
+struct [[eosio::table, eosio::contract("show.cisum")]] ticket_t {
    uint64_t   ticket_id;                // 对应票 NFT 的 nsymbol.raw()
    uint64_t   prerequisite_ticket_id;   // 前置/父票（nsymbol.raw()，无则 0）
    string     ticket_type;              // 普通/合影/晚宴…
@@ -85,29 +69,6 @@ TBL ticket_t {
       (created_at)(updated_at)
    )
 };
-
-NTBL("tkincrease") ticket_increase_t {
-    uint64_t    id;             // 自增主键
-    uint64_t    show_id;        // 演出ID
-    uint64_t    ticket_id;      // 票种 symbol (nsymbol.raw())
-    uint64_t    ticket_count;         // 增加的票数
-    uint64_t    prev_ticket_count;    // 修改前的票数
-    string      memo;           // 备注
-    name        issuer;         // 操作者
-    time_point  created_at;     // 记录创建时间
-
-    uint64_t primary_key() const { return id; }
-    uint64_t by_show() const { return show_id; }
-    uint64_t by_ticket() const { return ticket_id; }
-
-    EOSLIB_SERIALIZE(ticket_increase_t, (id)(show_id)(ticket_id)(ticket_count)(prev_ticket_count)(memo)(issuer)(created_at))
-};
-
-typedef eosio::multi_index<
-    "tkincrease"_n, ticket_increase_t,
-    indexed_by<"byshow"_n, const_mem_fun<ticket_increase_t, uint64_t, &ticket_increase_t::by_show>>,
-    indexed_by<"byticket"_n, const_mem_fun<ticket_increase_t, uint64_t, &ticket_increase_t::by_ticket>>
-> ticket_increase_idx;
 
 
 } // namespace flon

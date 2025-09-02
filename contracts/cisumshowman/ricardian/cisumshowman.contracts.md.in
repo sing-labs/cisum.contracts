@@ -1,0 +1,11 @@
+<h1 class="contract">mine</h1>
+---
+spec_version: "0.2.0"
+title: Mine rewards for the payment.
+summary: 'Mine rewards for the payment.'
+---
+Mine rewards for the payment.
+This action is submitted by contract self account:
+* payer: The payer account who will receive rewards.
+* pay_amount: The pay amount.
+* memo: Additional information or remarks.

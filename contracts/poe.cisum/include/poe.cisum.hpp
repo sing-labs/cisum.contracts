@@ -34,7 +34,7 @@ public:
   [[eosio::action]]
   void claimpoints(name claimer, name act_name);
 
-  [[eosio::on_notify("nest15.token::transfer")]]
+  [[eosio::on_notify("nest21.token::transfer")]]
   void ontransfer(name from, name to, asset quantity, string memo);
 
   // 便捷别名

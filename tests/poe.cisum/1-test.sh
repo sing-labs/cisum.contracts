@@ -6,17 +6,17 @@ mcli set account permission $poe_con active --add-code
 
 
 # 给合约开 NESTAR 余额行（RAM 自付）
-mpush nest15.token open '[
+mpush nest21.token open '[
   "'"${poe_con}"'",
   "4,NESTAR",
   "'"${poe_con}"'"
 ]' -p $poe_con
 
 # 将合约加入白名单（允许转账 NESTAR）
-mpush nest15.token addwhitelist '["'"${poe_con}"'"]' -p nest15.token
+mpush nest21.token addwhitelist '["'"${poe_con}"'"]' -p nest21.token
 
 # 给合约充值奖励池（示例从 flonian 转入）
-mpush nest15.token transfer '[
+mpush nest21.token transfer '[
   "nes11.issuer",
   "'"${poe_con}"'",
   "1000000.0000 NESTAR",

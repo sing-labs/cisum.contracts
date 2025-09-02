@@ -16,7 +16,7 @@ void nestar::init(name issuer, name admin, name artists_contract, name badgestor
 
 void nestar::addwhitelist(const name& account) {
     require_auth(get_self());
-    whitelist_t::idx_t tbl(get_self(), get_self().value);
+    transfer_whitelist_t::idx_t tbl(get_self(), get_self().value);
     auto it = tbl.find(account.value);
     if (it == tbl.end()) {
         tbl.emplace(get_self(), [&](auto& row){
@@ -30,7 +30,7 @@ void nestar::addwhitelist(const name& account) {
 
 void nestar::delwhitelist(const name& account) {
     require_auth(get_self());
-    whitelist_t::idx_t tbl(get_self(), get_self().value);
+    transfer_whitelist_t::idx_t tbl(get_self(), get_self().value);
     auto it = tbl.find(account.value);
     check(it != tbl.end(), "whitelist not found");
     tbl.erase(it);
@@ -40,7 +40,7 @@ void nestar::delwhitelist(const name& account) {
 void nestar::addconsumewl(const name& account) {
   require_auth(get_self());
   check(is_account(account), "account not exist");
-  consumed_whitelist_t::idx_t wl(get_self(), get_self().value);
+  redeem_whitelist_t::idx_t wl(get_self(), get_self().value);
   auto it = wl.find(account.value);
   if (it == wl.end()) {
     wl.emplace(get_self(), [&](auto& r){ r.account = account; r.enabled = true; });
@@ -52,7 +52,7 @@ void nestar::addconsumewl(const name& account) {
 
 void nestar::delconsumewl(const name& account) {
   require_auth(get_self());
-  consumed_whitelist_t::idx_t wl(get_self(), get_self().value);
+  redeem_whitelist_t::idx_t wl(get_self(), get_self().value);
   auto it = wl.find(account.value);
   check(it != wl.end(), "cwhitelist: account not found");
   wl.erase(it);
@@ -204,7 +204,7 @@ void nestar::setwhite(const name& account, const bool& enabled)
     require_auth(get_self());
     CHECKC(is_account(account),     err::ACCOUNT_INVALID, "account not exist");
 
-    whitelist_t::idx_t wtbl(get_self(), get_self().value);
+    transfer_whitelist_t::idx_t wtbl(get_self(), get_self().value);
     auto it = wtbl.find(account.value);
     if (it == wtbl.end()) {
         wtbl.emplace(get_self(), [&](auto& r){

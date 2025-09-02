@@ -1,4 +1,4 @@
-nestar_token=nest15.token
+nestar_token=nest21.token
 mreg flon $nestar_token flonian
 mtran flonian $nestar_token "100 FLON"
 mset $nestar_token nestar.token
@@ -47,17 +47,17 @@ mpush $nestar_token issue '["'"${issuer_owner}"'", "1000000000.0000 NESTAR", "bo
 
 
 # 新增规则（id=0 表示新增）
-mpush $nestar_token  setbrule '[0, "15000.0000 NESTAR", {"pid":1001025,"id":101}, true]' -p $nestar_token
-mpush $nestar_token  setbrule '[0, "150000.0000 NESTAR", {"pid":1001025,"id":102}, true]' -p $nestar_token
-mpush $nestar_token  setbrule '[0, "1500000.0000 NESTAR", {"pid":1001025,"id":103}, true]' -p $nestar_token
-mpush $nestar_token  setbrule '[0, "15000000.0000 NESTAR", {"pid":1001025,"id":104}, true]' -p $nestar_token
+mpush $nestar_token  setbrule '[0, "15000.0000 NESTAR", {"value":"4299369637478501"}, true]' -p $nestar_token
+mpush $nestar_token  setbrule '[0, "150000.0000 NESTAR", {"value":"4299369637478502"}, true]' -p $nestar_token
+mpush $nestar_token  setbrule '[0, "1500000.0000 NESTAR", {"value":"4299369637478503"}, true]' -p $nestar_token
+mpush $nestar_token  setbrule '[0, "15000000.0000 NESTAR", {"value":"4299369637478504"}, true]' -p $nestar_token
 
 mpush $nestar_token delbrule '["2"]' -p $nestar_token
 
 
 
 
-
+nes11.issuer
 
 
 
@@ -73,7 +73,7 @@ mpush $nestar_token transfer '["gahbnbehaskk", "artist.acc1", "150000.0000 NESTA
 
 
 # 6) 用户给艺人打赏（需艺人已白名单）
-mpush $nestar_token transfer '["ipowner.111", "artist.acc1", "100.0000 NESTAR", "tip"]' -p ipowner.111
+mpush $nestar_token transfer '["ipowner.111", "artist.acc1", "15000.0000 NESTAR", "tip"]' -p ipowner.111
 
 
 

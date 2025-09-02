@@ -47,7 +47,7 @@ enum class err: uint8_t {
 #define CHECKC(exp, code, msg) \
   { if (!(exp)) eosio::check(false, string("[[") + std::to_string((int)code) + string("]] ") + msg); }
 
-static constexpr name   POINTS_BANK   = "nest15.token"_n;
+static constexpr name   POINTS_BANK   = "nest21.token"_n;
 static constexpr symbol POINTS_SYM    = symbol(symbol_code("NESTAR"), 4);
 
 

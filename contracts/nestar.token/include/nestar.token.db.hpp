@@ -57,63 +57,6 @@ static constexpr symbol NESTAR_SYMBOL  = symbol(symbol_code("NESTAR"), 4);
 #define TBL struct [[eosio::table, eosio::contract("nestar.token")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("nestar.token")]]
 
-// static constexpr uint32_t U1E9  = 10'0000'0000UL;
-// struct nsymbol {
-//     uint32_t id;
-//     uint32_t pid;
-
-//     nsymbol() {}
-//     nsymbol(const uint32_t& i): id(i),pid(0) {}
-//     nsymbol(const uint32_t& i, const uint32_t& p): id(i),pid(p) {
-//         check( pid < U1E9, "pid must be below 10**9" );
-//         check( id < U1E9, "id must be below 10**10" );
-//     }
-
-//     nsymbol(const uint64_t& raw) {
-//         check( pid < U1E9, "pid must be below 10**9" );
-//         check( id < U1E9, "id must be below 10**10" );
-
-//         pid = raw / U1E9;
-//         id  = raw - pid * U1E9;
-//     }
-
-//     friend bool operator==(const nsymbol&, const nsymbol&);
-//     // bool is_valid()const { return( id > pid ); }
-//     uint64_t raw()const { return( (uint64_t) pid * U1E9 + id ); }
-
-//     EOSLIB_SERIALIZE( nsymbol, (id)(pid) )
-// };
-
-// bool operator==(const nsymbol& symb1, const nsymbol& symb2) {
-//     return( symb1.id == symb2.id && symb1.pid == symb2.pid );
-// }
-
-// struct nasset {
-//     int64_t         amount;
-//     nsymbol         symbol;
-
-//     nasset() {}
-//     nasset(const uint32_t& id): symbol(id), amount(0) {}
-//     nasset(const uint32_t& id, const uint32_t& pid): symbol(id, pid), amount(0) {}
-//     nasset(const uint32_t& id, const uint32_t& pid, const int64_t& am): symbol(id, pid), amount(am) {}
-//     nasset(const int64_t& amt, const nsymbol& symb): amount(amt), symbol(symb) {}
-
-//     nasset& operator+=(const nasset& quantity) {
-//         check( quantity.symbol.raw() == this->symbol.raw(), "nsymbol mismatch");
-//         this->amount += quantity.amount; return *this;
-//     }
-//     nasset& operator-=(const nasset& quantity) {
-//         check( quantity.symbol.raw() == this->symbol.raw(), "nsymbol mismatch");
-//         this->amount -= quantity.amount; return *this;
-//     }
-
-//     // bool is_valid()const { return symbol.is_valid(); }
-
-//     EOSLIB_SERIALIZE( nasset, (amount)(symbol) )
-// };
-
-
-
 // ---------- 全局配置 ----------
 NTBL("global") global_t {
    name      issuer;                    // NESTAR 发行者
@@ -160,26 +103,26 @@ TBL stats_t {
 };
 
 // ---------- 功能白名单（允许被转账/收款的账户或合约） ----------
-TBL whitelist_t {
+TBL transfer_whitelist_t {
    name account;          // 被允许的账户/合约
    bool enabled = true;   // 开关
 
    uint64_t primary_key() const { return account.value; }
 
-   typedef eosio::multi_index<"whitelist"_n, whitelist_t> idx_t;
+   typedef eosio::multi_index<"transferwlst"_n, transfer_whitelist_t> idx_t;
 
-   EOSLIB_SERIALIZE(whitelist_t, (account)(enabled))
+   EOSLIB_SERIALIZE(transfer_whitelist_t, (account)(enabled))
 };
 
-TBL consumed_whitelist_t {
+TBL redeem_whitelist_t {
    name account;          // 被允许的账户/合约
    bool enabled = true;   // 开关
 
    uint64_t primary_key() const { return account.value; }
 
-   typedef eosio::multi_index<"consumewl"_n, consumed_whitelist_t> idx_t;
+   typedef eosio::multi_index<"redeemwlst"_n, redeem_whitelist_t> idx_t;
 
-   EOSLIB_SERIALIZE(consumed_whitelist_t, (account)(enabled))
+   EOSLIB_SERIALIZE(redeem_whitelist_t, (account)(enabled))
 };
 
 

@@ -1,4 +1,4 @@
-show_con=show15.cisum
+show_con=show23.cisum
 mreg flon $show_con flonian
 mtran flonian $show_con "100 FLON"
 mset $show_con show.cisum
@@ -13,6 +13,8 @@ mpush $show_con init '["flonian", "cvticket.nft"]' -p $show_con
 mpush $show_con addshowadm '["flonian"]' -p flonian
 
 mpush $show_con addshowadm '["myadmin"]' -p flonian
+
+mpush $show_con addshowadm '["testtest"]' -p flonian
 
 
 #普通票
@@ -34,11 +36,8 @@ mpush $show_con nftcreate '[
   "ipfs://ticket/silver12.json"
 ]' -p flonian
 
-s s
-mpush $show_con nftissue '[
-  {"amount": 10000000, "symbol": {"value": 21010001000010022} },
-  "bootstrap batch"
-]' -p flonian
+
+mpush $show_con nftissue '["flonian","show23.cisum",{"amount": 100, "symbol": {"value": 21010001000010071} },"issue:20250025"]' -p flonian
 
 
 mpush $show_con newshow '[41258,"concert", true, true, "2025-09-01T00:00:00", "2025-09-10T23:59:59","test" ,"gasgsgg gq gg sa gdf jhfd j" , "onshelf"]' -p flonian
@@ -64,4 +63,7 @@ mpush $show_con newticket '[41258, {"value": 21010001000010027}, {"value": 21010
 
 
 mpush $show_con issue '["gahbnbehaskk",41258,21010001000010021,1,"send to gahbnbehaskk 1 ticket NFT"]' -p flonian
+
+
+
 
