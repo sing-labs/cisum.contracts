@@ -22,10 +22,9 @@ public:
   ~cisumshow() { _global.set(_gstate, get_self()); }
 
   // 一次性：newshow -> (nftcreate -> newticket -> nftissue)* -> 若免费票则发给 grap.cisum
-  [[eosio::action]]
-  void publishshow(eosio::name creator,
-                   const show_arg& show,
-                   const std::vector<ticket_arg>& tickets);
+  ACTION publishshow(eosio::name creator,
+                   const show_info& show,
+                   const std::vector<ticket_info>& tickets);
 
   using publishshow_action = eosio::action_wrapper<"publishshow"_n, &cisumshow::publishshow>;
 

@@ -23,7 +23,7 @@ public:
 private:
     asset get_balance(const name& bank, const symbol& symb, const name& account) ;
 
-    std::string format_amount(int64_t amount, uint8_t precision) ;
+    // std::string format_amount(int64_t amount, uint8_t precision) ;
 };
 
 }
