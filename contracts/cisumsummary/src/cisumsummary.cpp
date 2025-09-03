@@ -35,8 +35,7 @@ std::string cisum_summary::format_amount(int64_t amount, uint8_t precision) {
 }
 
 CisumSummary cisum_summary::view(const name& account) {
-    std::vector<token_info> result;
-    result.reserve(16);
+    std::vector<extended_asset> result;
 
     std::vector<std::pair<name, symbol>> tokenlist = {
         { CISUM_BANK,   CISUM },
@@ -45,18 +44,16 @@ CisumSummary cisum_summary::view(const name& account) {
     };
 
     for (const auto& item : tokenlist) {
+        auto bank = item.first;
+        auto symb = item.second;
 
-        asset bal = get_balance(item.first, item.second, account);
+        asset bal = get_balance( bank, symb, account);
         if (bal.amount <= 0) continue;
 
-        std::string bal_str = format_amount(bal.amount, bal.symbol.precision());
-
-        result.emplace_back(token_info{ item.first, bal_str, bal.symbol.code().to_string() });
+        result.emplace_back( extended_asset( bal, bank ) );
     }
 
-    CisumSummary summary;
-    summary.tokens = std::move(result);
-    return summary;
+    return CisumSummary(result);
 }
 
 

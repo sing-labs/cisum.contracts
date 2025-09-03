@@ -1,22 +1,23 @@
 #pragma once
-#include <eosio/asset.hpp>
+
 #include <eosio/name.hpp>
+#include <eosio/eosio.hpp>
+#include <eosio/asset.hpp>
 
-struct token_info {
-    eosio::name code;     // 合约名
-    std::string balance;  // 余额字符串
-    std::string coin;
-    EOSLIB_SERIALIZE(token_info, (code)(balance)(coin))
-};
-
+using namespace eosio;
+using namespace std;
 struct CisumSummary {
-    std::vector<token_info> tokens;
+    vector< extended_asset > tokens;
+
+    CisumSummary( vector< extended_asset >& assets ): tokens(assets) {};
+
     EOSLIB_SERIALIZE(CisumSummary, (tokens))
 };
 
-
+//scope: account
 struct [[eosio::table, eosio::contract("cisumsummary")]] accounts {
     eosio::asset balance;
+
     uint64_t primary_key() const { return balance.symbol.code().raw(); }
 };
 
