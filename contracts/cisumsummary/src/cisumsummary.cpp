@@ -11,14 +11,11 @@ using namespace eosio;
 using namespace flon;
 
 
-asset cisum_summary::get_balance(const name& bank, const symbol& symb, const name& account) {
-   tbl_accounts tmp(bank, account.value);
-   auto itr = tmp.find(symb.code().raw());
+void cisum_summary::_balance(const name& bank, const symbol& symb, const name& account, asset& balance) {
+    tbl_accounts tmp(bank, account.value);
+    auto itr = tmp.find(symb.code().raw());
 
-   if (itr != tmp.end())
-      return itr->balance;
-   else
-      return asset(0, symb);
+    balance = (itr != tmp.end()) ? itr->balance : asset(0, symb);
 }
 
 
@@ -67,7 +64,9 @@ CisumSummary cisum_summary::view(const name& account) {
     CisumSummary summary;
 
     for (auto &row : token_cfg_t(get_self(), get_self().value)) {
-        auto bal = get_balance(row.bank, row.sym, account);
+        auto bal = asset(0, row.sym);
+        _balance(row.bank, row.sym, account, bal);
+
         if (bal.amount > 0) {
             summary.tokens.push_back({
                 row.bank,
