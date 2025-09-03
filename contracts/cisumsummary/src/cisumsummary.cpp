@@ -34,26 +34,50 @@ std::string cisum_summary::format_amount(int64_t amount, uint8_t precision) {
     return s;
 }
 
+void cisum_summary::addtoken(const name& bank, const symbol& sym) {
+    require_auth(get_self());
+
+    check(is_account(bank), "bank account not exist");
+    check(sym.is_valid(),   "invalid symbol");
+
+    token_cfg_t cfg(get_self(), get_self().value);
+    auto pk = make_tokencfg_pk(bank, sym);
+    auto it = cfg.find(pk);
+    check(it == cfg.end(), "token already in list");
+
+    cfg.emplace(get_self(), [&](auto& r){
+        r.bank = bank;
+        r.sym  = sym;
+    });
+}
+
+void cisum_summary::deltoken(const name& bank, const symbol& sym) {
+    require_auth(get_self());
+
+    token_cfg_t cfg(get_self(), get_self().value);
+    auto pk = make_tokencfg_pk(bank, sym);
+    auto it = cfg.find(pk);
+    check(it != cfg.end(), "token not found");
+    cfg.erase(it);
+}
+
+
+
 CisumSummary cisum_summary::view(const name& account) {
-    std::vector<extended_asset> result;
+    CisumSummary summary;
 
-    std::vector<std::pair<name, symbol>> tokenlist = {
-        { CISUM_BANK,   CISUM },
-        { NESTAR_BANK,  NESTAR },
-        { CISUM_BANK,   MUSIC  }
-    };
-
-    for (const auto& item : tokenlist) {
-        auto bank = item.first;
-        auto symb = item.second;
-
-        asset bal = get_balance( bank, symb, account);
-        if (bal.amount <= 0) continue;
-
-        result.emplace_back( extended_asset( bal, bank ) );
+    for (auto &row : token_cfg_t(get_self(), get_self().value)) {
+        auto bal = get_balance(row.bank, row.sym, account);
+        if (bal.amount > 0) {
+            summary.tokens.push_back({
+                row.bank,
+                format_amount(bal.amount, bal.symbol.precision()),
+                bal.symbol.code().to_string()
+            });
+        }
     }
 
-    return CisumSummary(result);
+    return summary;
 }
 
 

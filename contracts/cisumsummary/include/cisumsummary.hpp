@@ -10,19 +10,12 @@ namespace flon {
 
 using std::string;
 using namespace eosio;
-
-static constexpr name CISUM_BANK   = "cisum.token"_n;
-static constexpr symbol CISUM      = symbol(symbol_code("CISUM"), 8);
-
-static constexpr symbol MUSIC      = symbol(symbol_code("MUSIC"), 8);
-
-static constexpr name NESTAR_BANK   = "nest21.token"_n;
-static constexpr symbol NESTAR      = symbol(symbol_code("NESTAR"), 4);
-
-
 class [[eosio::contract("cisumsummary")]] cisum_summary : public contract {
 public:
     using contract::contract;
+
+    ACTION addtoken(const name& bank, const symbol& sym);
+    ACTION deltoken(const name& bank, const symbol& sym);
 
     [[eosio::action, eosio::read_only]]
     CisumSummary view(const name& account);
