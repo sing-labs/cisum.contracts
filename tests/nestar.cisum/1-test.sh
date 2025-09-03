@@ -47,14 +47,13 @@ mpush $nestar_token issue '["'"${issuer_owner}"'", "1000000000.0000 NESTAR", "bo
 
 
 # 新增规则（id=0 表示新增）
-mpush $nestar_token  setbrule '[0, "15000.0000 NESTAR", {"value":"4299369637478501"}, true]' -p $nestar_token
-mpush $nestar_token  setbrule '[0, "150000.0000 NESTAR", {"value":"4299369637478502"}, true]' -p $nestar_token
-mpush $nestar_token  setbrule '[0, "1500000.0000 NESTAR", {"value":"4299369637478503"}, true]' -p $nestar_token
-mpush $nestar_token  setbrule '[0, "15000000.0000 NESTAR", {"value":"4299369637478504"}, true]' -p $nestar_token
+mpush $nestar_token  setbrule '[0, "15000.0000 NESTAR", {"value":"4299369637478511"}, true]' -p $nestar_token
+mpush $nestar_token  setbrule '[0, "150000.0000 NESTAR", {"value":"4299369637478512"}, true]' -p $nestar_token
+mpush $nestar_token  setbrule '[0, "1500000.0000 NESTAR", {"value":"4299369637478513"}, true]' -p $nestar_token
+mpush $nestar_token  setbrule '[0, "15000000.0000 NESTAR", {"value":"4299369637478514"}, true]' -p $nestar_token
 
-mpush $nestar_token  setbrule '[0, "1500000000.0000 NESTAR", {"value":"4299369637478506"}, true]' -p $nestar_token
 
-mpush $nestar_token delbrule '["2"]' -p $nestar_token
+mpush $nestar_token delbrule '["0"]' -p $nestar_token
 
 
 
@@ -82,3 +81,6 @@ mpush $nestar_token transfer '["ipowner.111", "artist.acc1", "15000.0000 NESTAR"
 #设置cisum 转化为 NESTAR 的汇率
 mpush $nestar_token setrate '["100"]' -p $nestar_token
 
+
+
+mpush $nestar_token transfer '["gahbnbehaskk", "grab21.cisum", "300.0000 NESTAR", "airdrop"]' -p gahbnbehaskk

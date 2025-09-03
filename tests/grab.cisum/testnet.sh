@@ -56,10 +56,20 @@ tpush ${point_contract} transfer "[\"${user}\", \"${grab_contract}\", \"100.0000
 mpush $grab_con init '["flonian"]' -p $grab_con
 #增加消费白名单
 mpush $nestar_token  addconsumewl '["grab21.cisum"]'   -p $nestar_token
+mpush  cvticket.nft  addwhitelist '["grab21.cisum"]'   -p cvticket.nft
+
 
 mpush  grab21.cisum  delrushsale '["21010001000010026",true]' -p flonian
 
-mpush nest21.token  transfer '["gahbnbehaskk","grab21.cisum","200.0000 NESTAR","grab:10"]' -p gahbnbehaskk
+mpush nest21.token  transfer '["gahbnbehaskk","grab21.cisum","200.0000 NESTAR","grab:25"]' -p gahbnbehaskk
 mpush nest21.token  transfer '["ipowner.111","grab21.cisum","200.0000 NESTAR","grab:2"]' -p ipowner.111
 mpush nest21.token  transfer '["myadmin","grab21.cisum","200.0000 NESTAR","grab:2"]' -p myadmin
 mpush nest21.token  transfer '["nes11.issuer","grab21.cisum","200.0000 NESTAR","grab:2"]' -p nes11.issuer
+
+
+
+for i in {1..1000}; do
+  echo "第 $i 次执行..."
+  mpush nest21.token  transfer '["nes11.issuer","grab21.cisum","200.0000 NESTAR","grab:25"]' -p nes11.issuer
+  sleep 0.5  # 每次间隔 0.5 秒，避免节点压力过大
+done

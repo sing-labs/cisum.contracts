@@ -84,6 +84,35 @@ static uint32_t get_random(const name& account, uint32_t range) {
     return r;
 }
 
+
+static inline uint32_t sha256_to_u32(const checksum256& d) {
+    auto b = d.extract_as_byte_array();
+    uint32_t v = 0;
+    v |= (uint32_t)b[31] << 24;
+    v |= (uint32_t)b[30] << 16;
+    v |= (uint32_t)b[29] <<  8;
+    v |= (uint32_t)b[28] <<  0;
+    return v;
+}
+
+// 返回 [0, RATIO_BASE-1] 的随机数；salt 可用 rush_sale_id
+static inline uint32_t get_random_base(const name& user, uint64_t salt) {
+    uint64_t mix2 = (uint64_t)tapos_block_prefix();
+    uint64_t mix3 = (uint64_t)tapos_block_num();
+
+    std::array<char, 8*4> buf{};
+    size_t o = 0;
+    memcpy(buf.data()+o, &user.value, 8); o+=8;
+    memcpy(buf.data()+o, &salt,       8); o+=8;
+    memcpy(buf.data()+o, &mix2,       8); o+=8;
+    memcpy(buf.data()+o, &mix3,       8); o+=8;
+
+    auto h = sha256(buf.data(), o);
+    return sha256_to_u32(h) % RATIO_BASE; // 0..9999
+}
+
+
+
 void grab_cisum::init(const name& admin) {
     require_auth(get_self());
     CHECKC(is_account(admin), err::ACCOUNT_INVALID, "admin must be a valid account");
@@ -128,7 +157,7 @@ void grab_cisum::addrushsale(   uint64_t       show_id,
     CHECKC(price.amount > 0, err::INVALID_FORMAT, "price must be positive");
     // TODO: check price.symbol is valid?? price.symbol.is_valid()?
 
-    CHECKC(win_ratio <= RATIO_BOOST, err::INVALID_FORMAT, "win_ratio can not larger than " + std::to_string(RATIO_BOOST));
+    CHECKC(win_ratio <= RATIO_BASE, err::INVALID_FORMAT, "win_ratio can not larger than " + std::to_string(RATIO_BASE));
 
 
     auto now = current_time_point();
@@ -141,7 +170,7 @@ void grab_cisum::addrushsale(   uint64_t       show_id,
         rs.started_at           = started_at;
         rs.ended_at             = ended_at;
         rs.price                = price;
-        rs.max_grabs_per_user   = 1;
+        rs.max_grabs_per_user   = max_grabs_per_user;
         rs.win_ratio            = win_ratio;
         rs.total_tickets        = nasset(0, nsymbol(ticket_id));
         rs.available_tickets    = nasset(0, nsymbol(ticket_id));
@@ -191,11 +220,16 @@ void grab_cisum::on_transfer_point(const name& from, const name& to, const asset
     CHECKC(user_itr->grabs < rs_itr->max_grabs_per_user, err::EXCEED_LIMIT, "user's grabs exceeds max grabs limit of rush sale")
     ASSERT(user_itr->tickets < rs_itr->total_tickets)
 
+    // win_ratio 采用万分制：10000=100%，5000=50%，1000=10%，100=1%
+    CHECKC(rs_itr->win_ratio <= RATIO_BASE, err::EXCEED_LIMIT, "win_ratio must be in 0..10000");
+
     bool win = false;
     if (rs_itr->win_ratio > 0) {
-        uint32_t random_number = get_random(from, RATIO_BOOST);
-        win = random_number <= rs_itr->win_ratio;
-        eosio::print(from.to_string()+","+ std::to_string(random_number)+","+ std::to_string(rs_itr->win_ratio));
+        uint32_t rnd = get_random_base(from, (uint64_t)rush_sale_id); // 0..9999
+        win = (rnd < rs_itr->win_ratio);  // 用 < 保证精确万分比
+        // 调试（可去掉）:
+        // eosio::print("rand=", rnd, ", ratio=", rs_itr->win_ratio, "\n");
+
         if (win) {
             std::vector<nasset> assets = { nasset(1, nsymbol(rs_itr->ticket_id)) };
             TRANSFER_NFT_OUT(_gstate.ticket_contract, from, assets, "grab ticket");
@@ -307,7 +341,7 @@ void grab_cisum::cfgrushsale(   uint64_t rush_sale_id,
 
     // perform checks
     if (win_ratio.has_value()) {
-        CHECKC(win_ratio.value() <= RATIO_BOOST, err::INVALID_FORMAT, "win_ratio can not larger than " + std::to_string(RATIO_BOOST));
+        CHECKC(win_ratio.value() <= RATIO_BASE, err::INVALID_FORMAT, "win_ratio can not larger than " + std::to_string(RATIO_BASE));
     }
     if (ended_at.has_value()) {
         CHECKC( rs_itr->started_at < ended_at.value(), err::INVALID_TIME, "ended_at must be greater than started_at");

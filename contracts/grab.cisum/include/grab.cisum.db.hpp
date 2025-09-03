@@ -55,7 +55,9 @@ enum class err: uint8_t {
    INVALID_TIME           = 30
 };
 
-static constexpr uint32_t RATIO_BOOST = 10000;
+//static constexpr uint32_t RATIO_BOOST = 10000;
+
+static constexpr uint32_t RATIO_BASE = 10000;   // 100.00%
 
 static constexpr symbol_code POINT_SYMBOL_CODE  = symbol_code("NESTAR");
 static constexpr symbol POINT_SYMBOL            = symbol(POINT_SYMBOL_CODE, 4);

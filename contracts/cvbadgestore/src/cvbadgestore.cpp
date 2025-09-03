@@ -6,7 +6,7 @@
 
 #include "cvbadgestore.hpp"
 #include "cvbadgestore.db.hpp"
-#include "flon.ntoken.hpp" 
+#include "flon.ntoken.hpp"
 
 using std::string;
 using std::vector;
@@ -68,10 +68,8 @@ void cvbadgestore::on_notifyaward(const name& user,
   }
 
 
-  flon::ntoken::transfer_action{
-    _gstate.badge_contract,
-    { permission_level{ _gstate.badge_from, "active"_n } }
-  }.send(_gstate.badge_from, user, packs, memo);
+
+  NTOKEN_TRANSFER(_gstate.badge_contract, get_self(), user, packs, memo);
 
 }
 

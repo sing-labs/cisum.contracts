@@ -344,14 +344,6 @@ void nestar::open(const name& owner, const symbol& sym, const name& ram_payer)
 
 void nestar::notifyaward(const name& user, const vector<nasset>& packs, const string& memo) {
     require_auth(get_self());
-    // badge_award_t::idx_t tbl(get_self(), get_self().value);
-    // tbl.emplace(get_self(), [&](auto& r){
-    //     r.id = tbl.available_primary_key();
-    //     r.account = user;
-    //     r.packs = packs;
-    //     r.memo = memo;
-    //     r.created_at = current_time_point();
-    // });
     if (_gstate.badgestore_contract.value != 0) {
       require_recipient(_gstate.badgestore_contract);
     }
@@ -410,6 +402,7 @@ void nestar::try_award_badges(const name& user,
     if (packs.empty()) return;
 
     std::string memo = build_award_memo(user, packs);
+
     notifyaward_action{
         get_self(),
         { permission_level{ get_self(), "active"_n } }

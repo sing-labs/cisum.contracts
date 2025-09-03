@@ -10,6 +10,77 @@ mcli set account permission $stor_con active --add-code
 
 
 badge_ntoken=cvbadge.nft
+mpush $badge_ntoken  addwhitelist '["badgestore11"]'   -p $badge_ntoken
+mpush $stor_con addwhitelist '["nest21.token"]' -p $stor_con
+
+
+#铜质勋章
+mpush $badge_ntoken create '[
+  "badgestore11",
+  10000000000,
+  {"value":"4299369637478511"},
+  "ipfs://badges/silver11.json",
+  "badgestore11"
+]' -p badgestore11
+
+
+mpush $badge_ntoken issue '[
+  "badgestore11",
+  {"amount": 10000000, "symbol": {"value":"4299369637478511"} },
+  "bootstrap batch"
+]' -p badgestore11
+
+#银质勋章
+mpush $badge_ntoken create '[
+  "badgestore11",
+  10000000000,
+  {"value":"4299369637478512"},
+  "ipfs://badges/silver12.json",
+  "badgestore11"
+]' -p badgestore11
+
+
+mpush $badge_ntoken issue '[
+  "badgestore11",
+  {"amount": 10000000, "symbol": {"value":"4299369637478512"}},
+  "bootstrap batch"
+]' -p badgestore11
+
+
+#金质勋章
+mpush $badge_ntoken create '[
+  "badgestore11",
+  10000000000,
+  {"value":"4299369637478513"},
+  "ipfs://badges/silver13.json",
+  "badgestore11"
+]' -p badgestore11
+
+
+mpush $badge_ntoken issue '[
+  "badgestore11",
+  {"amount": 10000000, "symbol": {"value":"4299369637478513"}},
+  "bootstrap batch"
+]' -p badgestore11
+
+
+#钻石勋章
+
+mpush $badge_ntoken create '[
+  "badgestore11",
+  10000000000,
+  {"value":"4299369637478514"},
+  "ipfs://badges/silver14.json",
+  "badgestore11"
+]' -p badgestore11
+
+
+mpush $badge_ntoken issue '[
+  "badgestore11",
+  {"amount": 10000000, "symbol": {"value":"4299369637478514"}},
+  "bootstrap batch"
+]' -p badgestore11
+
 
 
 
@@ -17,8 +88,6 @@ mpush $stor_con setadmin '["flonian"]' -p $stor_con
 
 mpush $stor_con setbadge '["'"${badge_ntoken}"'","'"${badge_ntoken}"'"]' -p $stor_con
 
-
-mpush $stor_con addwhitelist '["nest21.token"]' -p $stor_con
 
 
 
