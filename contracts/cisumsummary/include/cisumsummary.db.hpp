@@ -9,9 +9,9 @@ struct token_info {
     EOSLIB_SERIALIZE(token_info, (code)(balance)(coin))
 };
 
-struct Cisumsummaryresult {
+struct CisumSummary {
     std::vector<token_info> tokens;
-    EOSLIB_SERIALIZE(Cisumsummaryresult, (tokens))
+    EOSLIB_SERIALIZE(CisumSummary, (tokens))
 };
 
 

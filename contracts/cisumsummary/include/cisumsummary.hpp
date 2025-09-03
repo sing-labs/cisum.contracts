@@ -20,20 +20,12 @@ static constexpr name NESTAR_BANK   = "nest21.token"_n;
 static constexpr symbol NESTAR      = symbol(symbol_code("NESTAR"), 4);
 
 
-
-
-
-struct CisumSummary {
-    std::vector<asset> tokens;
-};
-
-
-class [[eosio::contract("cisumsummary")]] cisumsummary : public contract {
+class [[eosio::contract("cisumsummary")]] cisum_summary : public contract {
 public:
     using contract::contract;
 
     [[eosio::action, eosio::read_only]]
-    Cisumsummaryresult view(const name& account);
+    CisumSummary view(const name& account);
 
 private:
     asset get_balance(const name& bank, const symbol& symb, const name& account) ;

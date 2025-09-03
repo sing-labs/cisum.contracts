@@ -11,7 +11,7 @@ using namespace eosio;
 using namespace flon;
 
 
-asset cisumsummary::get_balance(const name& bank, const symbol& symb, const name& account) {
+asset cisum_summary::get_balance(const name& bank, const symbol& symb, const name& account) {
    tbl_accounts tmp(bank, account.value);
    auto itr = tmp.find(symb.code().raw());
 
@@ -22,7 +22,7 @@ asset cisumsummary::get_balance(const name& bank, const symbol& symb, const name
 }
 
 
-std::string cisumsummary::format_amount(int64_t amount, uint8_t precision) {
+std::string cisum_summary::format_amount(int64_t amount, uint8_t precision) {
     bool neg = amount < 0;
     if (neg) amount = -amount;
     std::string s = std::to_string(amount);
@@ -34,7 +34,7 @@ std::string cisumsummary::format_amount(int64_t amount, uint8_t precision) {
     return s;
 }
 
-Cisumsummaryresult cisumsummary::view(const name& account) {
+CisumSummary cisum_summary::view(const name& account) {
     std::vector<token_info> result;
     result.reserve(16);
 
@@ -54,7 +54,7 @@ Cisumsummaryresult cisumsummary::view(const name& account) {
         result.emplace_back(token_info{ item.first, bal_str, bal.symbol.code().to_string() });
     }
 
-    Cisumsummaryresult summary;
+    CisumSummary summary;
     summary.tokens = std::move(result);
     return summary;
 }
