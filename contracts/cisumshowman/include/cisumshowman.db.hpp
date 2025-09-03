@@ -33,7 +33,7 @@ struct ticket_info {
     string     ticket_type;               // 票种类型
     asset      price;                     // 原来币种的价格（NESTAR是免费票）
     asset      price_usd;                 // 转化的usd价格
-    uint32_t   total_count;               // 发行量
+    uint64_t   total_count;               // 发行量
     uint64_t   prerequisite_ticket_id = 0;// 前置票（无则 0）
     time_point sale_started_at;           // 售票开始
     time_point sale_ended_at;             // 售票结束
