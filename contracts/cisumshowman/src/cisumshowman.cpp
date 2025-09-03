@@ -9,8 +9,8 @@
 namespace flon {
 
 void cisumshow::publishshow(name creator,
-                            const show_arg& show,
-                            const vector<ticket_arg>& tickets)
+                            const show_info& show,
+                            const vector<ticket_info>& tickets)
 {
   require_auth(creator);
 
