@@ -22,17 +22,17 @@ asset cisum_summary::get_balance(const name& bank, const symbol& symb, const nam
 }
 
 
-// std::string cisum_summary::format_amount(int64_t amount, uint8_t precision) {
-//     bool neg = amount < 0;
-//     if (neg) amount = -amount;
-//     std::string s = std::to_string(amount);
-//     if (precision > 0) {
-//         if (s.size() <= precision) s.insert(0, precision - s.size() + 1, '0');
-//         s.insert(s.size() - precision, ".");
-//     }
-//     if (neg) s.insert(s.begin(), '-');
-//     return s;
-// }
+std::string cisum_summary::format_amount(int64_t amount, uint8_t precision) {
+    bool neg = amount < 0;
+    if (neg) amount = -amount;
+    std::string s = std::to_string(amount);
+    if (precision > 0) {
+        if (s.size() <= precision) s.insert(0, precision - s.size() + 1, '0');
+        s.insert(s.size() - precision, ".");
+    }
+    if (neg) s.insert(s.begin(), '-');
+    return s;
+}
 
 void cisum_summary::addtoken(const name& bank, const symbol& sym) {
     require_auth(get_self());
