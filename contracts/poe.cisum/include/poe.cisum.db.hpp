@@ -62,7 +62,7 @@ struct [[eosio::table, eosio::contract("poe.cisum")]] global_t {
 using global_singleton = eosio::singleton<"global"_n, global_t>;
 
 
-struct [[eosio::table, eosio::contract("poe.cisum")]] act_t {
+struct [[eosio::table, eosio::contract("poe.cisum")]] rewardact_t {
   uint64_t   id;                        // 主键，自增
   name       act_name;                  // 行为标识（signin / vote / short / invite / artist ...）
   asset      points;                    // 可领取积分（如 10.0000 NESTAR）
@@ -74,10 +74,10 @@ struct [[eosio::table, eosio::contract("poe.cisum")]] act_t {
   uint64_t primary_key() const { return id; }
   uint64_t byname()      const { return act_name.value; }
 
-  typedef eosio::multi_index<"acts"_n, act_t,
-      indexed_by<"byname"_n, const_mem_fun<act_t, uint64_t, &act_t::byname>>
+  typedef eosio::multi_index<"rewardacts"_n, rewardact_t,
+      indexed_by<"byname"_n, const_mem_fun<rewardact_t, uint64_t, &rewardact_t::byname>>
       > acts_idx;
-  EOSLIB_SERIALIZE(act_t, (id)(act_name)(points)(memo)(claimed_points)(create_at)(update_at))
+  EOSLIB_SERIALIZE(rewardact_t, (id)(act_name)(points)(memo)(claimed_points)(create_at)(update_at))
 };
 
 } // namespace flon

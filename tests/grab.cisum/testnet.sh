@@ -73,3 +73,6 @@ for i in {1..1000}; do
   mpush nest21.token  transfer '["nes11.issuer","grab21.cisum","200.0000 NESTAR","grab:25"]' -p nes11.issuer
   sleep 0.5  # 每次间隔 0.5 秒，避免节点压力过大
 done
+
+
+mpush  grab21.cisum  setrushsale '[23,1000,1000]' -p flonian

@@ -184,13 +184,16 @@ void grab_cisum::addrushsale(   uint64_t       show_id,
 void grab_cisum::on_transfer_point(const name& from, const name& to, const asset& quantity, const string& memo) {
     if (from == get_self() || to != get_self()) return;
 
-    // memo format: "grab:${rush_sale_id}"
+    // memo format: "grab:${rush_sale_id}:${grab_id}"
     auto memo_params = split(memo, ":");
     ASSERT(memo_params.size() > 1)
 
     auto now = current_time_point();
-    CHECKC(memo_params[0] == "grab", err::INVALID_FORMAT, "memo must start with 'grab'")
-    CHECKC(memo_params.size() > 1, err::INVALID_FORMAT, "ontransfer: params size must be larger than 1")
+    CHECKC(memo_params[0] == "grab",    err::INVALID_FORMAT, "memo must start with 'grab'")
+    CHECKC(memo_params.size() > 2,      err::INVALID_FORMAT, "ontransfer: params size must be larger than 2")
+    CHECKC(!memo_params[2].empty(),     err::INVALID_FORMAT, "ontransfer: 3rd param cannot be empty");
+
+
 
     auto rush_sale_id = std::stoul(string(memo_params[1]));
     rush_sale::idx_t rs_idx(get_self(), get_self().value);
@@ -210,7 +213,7 @@ void grab_cisum::on_transfer_point(const name& from, const name& to, const asset
 
     if (user_itr == user_idx.end()) {
         user_itr = user_idx.emplace(get_self(), [&](auto& u) {
-            u.grab_id = create_grab_id(from);
+            u.grab_id = memo_params[2];
             u.account = from;
             u.tickets = nasset(0, nsymbol(rs_itr->ticket_id));
             u.created_at = now;
@@ -354,6 +357,34 @@ void grab_cisum::cfgrushsale(   uint64_t rush_sale_id,
         r.updated_at = now;
     });
 }
+
+
+void grab_cisum::setrushsale(const uint64_t& rush_sale_id,
+                             const uint32_t  max_grabs_per_user,
+                             const uint32_t  win_ratio)
+{
+    require_auth(_gstate.admin);
+
+    rush_sale::idx_t rushsales(get_self(), get_self().value);
+    auto it = rushsales.find(rush_sale_id);
+    check(it != rushsales.end(), "rushsale not found");
+
+
+    check(win_ratio <= 10000, "win_ratio must be in [0,10000]");
+    check(max_grabs_per_user > 0, "max_grabs_per_user must be positive");
+
+    const auto now = current_time_point();
+
+    rushsales.modify(it, same_payer, [&](auto& r){
+        r.max_grabs_per_user = max_grabs_per_user;
+        r.win_ratio          = win_ratio;
+        r.updated_at         = now;
+    });
+}
+
+
+
+
 
 void grab_cisum::cfgpoint(const eosio::name& new_point_contract) {
     require_auth(_gstate.admin);

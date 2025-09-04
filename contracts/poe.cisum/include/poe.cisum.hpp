@@ -26,10 +26,10 @@ public:
 
 
   [[eosio::action]]
-  void setact(name act_name, asset points, string memo);
+  void addrewardact(name act_name, asset points, string memo);
 
   [[eosio::action]]
-  void delact(name act_name);
+  void delrewardact(name act_name);
 
   [[eosio::action]]
   void claimpoints(name claimer, name act_name);
@@ -38,8 +38,8 @@ public:
   void ontransfer(name from, name to, asset quantity, string memo);
 
   // 便捷别名
-  using setact_action     = eosio::action_wrapper<"setact"_n,     &poe_cisum::setact>;
-  using delact_action     = eosio::action_wrapper<"delact"_n,     &poe_cisum::delact>;
+  using addrewardact_action     = eosio::action_wrapper<"addrewardact"_n,     &poe_cisum::addrewardact>;
+  using delrewardact_action     = eosio::action_wrapper<"delrewardact"_n,     &poe_cisum::delrewardact>;
   using claimpts_action   = eosio::action_wrapper<"claimpoints"_n,&poe_cisum::claimpoints>;
 
 private:
@@ -48,7 +48,7 @@ private:
 
   void _pay_points(const name& to, const asset& quant, const string& memo);
 
-  act_t _get_act(const name& act_name);
+  rewardact_t _get_act(const name& act_name);
 };
 
 } // namespace flon

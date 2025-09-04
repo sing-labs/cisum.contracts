@@ -6,8 +6,8 @@ namespace flon {
 using std::string;
 
 
-act_t poe_cisum::_get_act(const name& act_name) {
-  act_t::acts_idx acts(get_self(), get_self().value);
+rewardact_t poe_cisum::_get_act(const name& act_name) {
+  rewardact_t::acts_idx acts(get_self(), get_self().value);
   auto byname = acts.get_index<"byname"_n>();
   auto it = byname.find(act_name.value);
   CHECKC(it != byname.end(), err::RECORD_NO_FOUND, "act not found: " + act_name.to_string());
@@ -18,13 +18,14 @@ void poe_cisum::_pay_points(const name& to, const asset& quant, const string& me
   TRANSFER(POINTS_BANK, to, quant, memo)
 }
 
-void poe_cisum::setact(name act_name, asset points, string memo) {
+void poe_cisum::addrewardact(name act_name, asset points, string memo) {
   require_auth(get_self());
   CHECKC(act_name.length() > 0,       err::INVALID_FORMAT,   "act_name cannot be empty");
   CHECKC(points.symbol == POINTS_SYM, err::SYMBOL_MISMATCH,  "points symbol mismatch");
   CHECKC(points.amount >= 0,          err::INVALID_FORMAT,   "points must be non-negative");
+  CHECKC(memo.size() <= 256,          err::INVALID_FORMAT,  "memo too long");
 
-  act_t::acts_idx acts(get_self(), get_self().value);
+  rewardact_t::acts_idx acts(get_self(), get_self().value);
   auto byname = acts.get_index<"byname"_n>();
   auto it = byname.find(act_name.value);
 
@@ -52,10 +53,10 @@ void poe_cisum::setact(name act_name, asset points, string memo) {
 }
 
 
-void poe_cisum::delact(name act_name) {
+void poe_cisum::delrewardact(name act_name) {
   require_auth(get_self());
 
-  act_t::acts_idx acts(get_self(), get_self().value);
+  rewardact_t::acts_idx acts(get_self(), get_self().value);
   auto byname = acts.get_index<"byname"_n>();
   auto it = byname.find(act_name.value);
   CHECKC(it != byname.end(), err::RECORD_NO_FOUND, "act not found: " + act_name.to_string());
@@ -66,7 +67,7 @@ void poe_cisum::delact(name act_name) {
 void poe_cisum::claimpoints(name claimer, name act_name) {
   require_auth(claimer);
 
-  act_t::acts_idx acts(get_self(), get_self().value);
+  rewardact_t::acts_idx acts(get_self(), get_self().value);
   auto byname = acts.get_index<"byname"_n>();
   auto it = byname.find(act_name.value);
   CHECKC(it != byname.end(), err::RECORD_NO_FOUND, "act not found: " + act_name.to_string());

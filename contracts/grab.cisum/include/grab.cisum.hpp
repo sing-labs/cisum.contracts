@@ -33,8 +33,7 @@ public:
    *
    * @param admin                The account to be set as admin.
    */
-  [[eosio::action]]
-  void init(const eosio::name& admin);
+  ACTION init(const eosio::name& admin);
 
   /**
    * Create a new rush sale event.
@@ -48,8 +47,7 @@ public:
    * @param max_grabs_per_user   Max grabs per user.
    * @param win_ratio            Win ratio (1-10000).
    */
-  [[eosio::action]]
-  void addrushsale(   uint64_t       show_id,
+  ACTION addrushsale(   uint64_t       show_id,
                       uint64_t       ticket_id,
                       time_point     started_at,
                       time_point     ended_at,
@@ -65,8 +63,7 @@ public:
    * @param rush_sale_id         The rush sale id to delete.
    * @param forced               If true, force delete even if tickets sold.
    */
-  [[eosio::action]]
-  void delrushsale( uint64_t rush_sale_id, bool forced );
+  ACTION delrushsale( uint64_t rush_sale_id, bool forced );
   /**
    * Update rush sale parameters. Only admin can call.
    * Each parameter is optional and only updated if provided.
@@ -75,8 +72,7 @@ public:
    * @param win_ratio            Optional new win ratio.
    * @param ended_at             Optional new end time.
    */
-  [[eosio::action]]
-  void cfgrushsale( uint64_t                  rush_sale_id,
+  ACTION cfgrushsale( uint64_t                  rush_sale_id,
                     std::optional<uint32_t>   win_ratio,
                     std::optional<time_point> ended_at
   );
@@ -87,9 +83,13 @@ public:
    * @param rush_sale_id         The rush sale id.
    * @param max_count            Max number of users to delete in one call.
    */
-  [[eosio::action]]
-  void delusers( uint64_t rush_sale_id, uint32_t max_count );
+  ACTION delusers( uint64_t rush_sale_id, uint32_t max_count );
 
+
+
+  ACTION setrushsale(const uint64_t&   rush_sale_id,
+                                uint32_t       max_grabs_per_user,
+                                uint32_t       win_ratio);
 
   // 处理 FT（积分）转账：来自积分合约
   [[eosio::on_notify("nest21.token::transfer")]]
