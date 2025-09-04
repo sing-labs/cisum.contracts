@@ -3,10 +3,18 @@
 #include "grab.cisum/grab.cisum.db.hpp"
 #include "grab.cisum/grab.cisum.hpp"
 #include "show.cisum/show.cisum.hpp"
-
+#include <algorithm>
+#include <string>
 
 
 namespace flon {
+
+
+static inline std::string to_lower(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(),
+                  [](unsigned char c){ return std::tolower(c); });
+    return s;
+}
 
 void cisumshow::publishshow(name creator,
                             const show_info& show,
@@ -53,7 +61,7 @@ void cisumshow::publishshow(name creator,
 
 
     // 免费票判定：金额是否为 0
-    const bool is_free = (ticket.price.symbol.code() == POINT_SYMBOL_CODE);
+    const bool is_free = (to_lower(ticket.ticket_type) == "free");
     if (is_free) {
       // 先在 grab 建 rush_sale（注意：目标合约应是 GRAB_CONTRACT）
 

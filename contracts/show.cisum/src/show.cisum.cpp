@@ -59,29 +59,15 @@ void show::require_any_admin() const {
   check(false, "requires admin/platform_admin/show_admin");
 }
 
-void show::record_ticket_increase(uint64_t               show_id,
+void show::tkincrease(uint64_t               show_id,
                                   uint64_t               ticket_id,
                                   uint64_t               ticket_count,
                                   uint64_t               prev_ticket_count,
                                   const name&            issuer,
-                                  const string&          memo)
+                                  const string&          memo,
+                                  uint64_t               created_at)
 {
-    ticket_increase_idx tbl(get_self(), get_self().value);
-
-    // 获取自增主键（multi_index 的 available_primary_key 在空表时返回 0）
-    uint64_t pk = tbl.available_primary_key();
-    if (pk == 0) pk = 1;
-
-    tbl.emplace(get_self(), [&](auto& row) {
-        row.id                    = pk;
-        row.show_id               = show_id;               // 由 scope 或 memo 解析得到
-        row.ticket_id             = ticket_id;             // nsymbol(raw)
-        row.ticket_count          = ticket_count;                // 与 nasset.amount 对齐
-        row.prev_ticket_count     = prev_ticket_count;           // 修改前的票数
-        row.memo                  = memo;
-        row.issuer                = issuer;                // 实际操作者（admin / show_admin / 合约）
-        row.created_at            = current_time_point();
-    });
+     require_auth(get_self());
 }
 
 static bool has_show_checker_auth(const show_t& s) {
@@ -203,15 +189,16 @@ void show::nftissue(const name&   issuer,
       row.updated_at = current_time_point();
   });
 
-  // 记录票量增加日志
-  record_ticket_increase(
-    show_id,                     // 演出ID
+  tkincrease_action{
+    get_self(),
+    { permission_level{ get_self(), "active"_n } }
+  }.send(    show_id,                     // 演出ID
     quantity.symbol.raw(),       // 票的symbol
-    static_cast<uint64_t>(quantity.amount),             // 增加数量
+    quantity.amount,             // 增加数量
     prev_amount,
     issuer,                      // 实际操作者
-    memo                         // 备注
-  );
+    memo,                         // 备注
+    current_time_point().time_since_epoch().count() / 1000);
 
 }
 

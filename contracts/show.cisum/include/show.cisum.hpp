@@ -24,36 +24,34 @@ public:
   ~show() { _global.set(_gstate, get_self()); }
 
   // ===== 全局设置 =====
-  [[eosio::action]] void init(const name& admin);
+  ACTION init(const name& admin);
 
   // show_admin 管理
-  [[eosio::action]] void addshowadm(const name& account);
-  [[eosio::action]] void delshowadm(const name& account);
+  ACTION addshowadm(const name& account);
+  ACTION delshowadm(const name& account);
 
   // ✅ platform_admin 管理（新增）
-  [[eosio::action]] void addplatadm(const name& account);
-  [[eosio::action]] void delplatadm(const name& account);
+  ACTION addplatadm(const name& account);
+  ACTION delplatadm(const name& account);
 
   // per-show 核销员
-  [[eosio::action]] void addchecker(const uint64_t& show_id, const name& account);
-  [[eosio::action]] void delchecker(const uint64_t& show_id, const name& account);
+  ACTION addchecker(const uint64_t& show_id, const name& account);
+  ACTION delchecker(const uint64_t& show_id, const name& account);
 
   // === cvticket.nft: 创建票种 ===
-  [[eosio::action]]
-  void nftcreate(
+  ACTION nftcreate(
                     const int64_t& max_supply,
                     const nsymbol& symbol,
                     const string&  token_uri);
 
   // === cvticket.nft: 发放（铸造到合约自身，再转出/或直接发放） ===
-  [[eosio::action]]
-void nftissue(  const name&   issuer,
+  ACTION nftissue(  const name&   issuer,
                 const name&   to,
                 const nasset& quantity,
                 const string& memo);
 
   // ===== 演出 =====
-  [[eosio::action]] void newshow(const uint64_t&   show_id,
+  ACTION newshow(const uint64_t&   show_id,
                                   const name&       category,
                                   const bool&       ticket_transferable,
                                   const bool&       ticket_refundable,
@@ -62,7 +60,7 @@ void nftissue(  const name&   issuer,
                                   const string&       show_name,
                                   const string&       show_address);
 
-  [[eosio::action]] void setshow(const uint64_t&   show_id,
+  ACTION setshow(const uint64_t&   show_id,
                                   const name&       category,
                                   const bool&       ticket_transferable,
                                   const bool&       ticket_refundable,
@@ -72,7 +70,7 @@ void nftissue(  const name&   issuer,
                                   const string&       show_address);
 
   // ===== 票档 =====
-  [[eosio::action]] void newticket(const uint64_t& show_id,
+  ACTION newticket(const uint64_t& show_id,
                                     const nsymbol&  ticket_nsym,
                                     const nsymbol&  prerequisite_nsym,
                                     const string&   ticket_type,
@@ -81,7 +79,7 @@ void nftissue(  const name&   issuer,
                                     const time_point& sale_started_at,
                                     const time_point& sale_ended_at);
 
-  [[eosio::action]] void setticket(const uint64_t& show_id,
+  ACTION setticket(const uint64_t& show_id,
                                     const uint64_t& ticket_id,
                                     const string&   ticket_type,
                                     const asset&    price,
@@ -90,18 +88,28 @@ void nftissue(  const name&   issuer,
                                     const time_point& sale_ended_at);
 
   // ===== 发放（从票档直接发 NFT）=====
-  [[eosio::action]] void issue(const name&     user,
+  ACTION issue(const name&     user,
                                const uint64_t& show_id,
                                const uint64_t& ticket_id,
                                const uint32_t& ticket_count,
                                const string&   memo);
 
 
-  [[eosio::action]]
-  void issuetograb(const name& to, const nasset& quantity, const string& memo);
+  ACTION issuetograb(const name& to, const nasset& quantity, const string& memo);
 
   using nftcreate_action     = eosio::action_wrapper<"nftcreate"_n,&show::nftcreate>;
 
+
+  ACTION tkincrease(uint64_t               show_id,
+                                  uint64_t               ticket_id,
+                                  uint64_t                ticket_count,
+                                  uint64_t                prev_ticket_count,
+                                  const eosio::name&     issuer,
+                                  const std::string&     memo,
+                                  uint64_t               created_at
+                                );
+
+  using tkincrease_action     = eosio::action_wrapper<"tkincrease"_n,&show::tkincrease>;
 
 private:
   void require_platform_admin() const;
@@ -110,12 +118,6 @@ private:
   void require_admin_or_platadm() const;
   void require_any_admin() const; // admin OR platform_admin OR show_admin
 
-  void record_ticket_increase(uint64_t               show_id,
-                              uint64_t               ticket_id,
-                              uint64_t                ticket_count,
-                              uint64_t                prev_ticket_count,
-                              const eosio::name&     issuer,
-                              const std::string&     memo);
 
 private:
   global_singleton _global;

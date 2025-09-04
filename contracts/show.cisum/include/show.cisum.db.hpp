@@ -86,28 +86,5 @@ TBL ticket_t {
    )
 };
 
-NTBL("tkincrease") ticket_increase_t {
-    uint64_t    id;             // 自增主键
-    uint64_t    show_id;        // 演出ID
-    uint64_t    ticket_id;      // 票种 symbol (nsymbol.raw())
-    uint64_t    ticket_count;         // 增加的票数
-    uint64_t    prev_ticket_count;    // 修改前的票数
-    string      memo;           // 备注
-    name        issuer;         // 操作者
-    time_point  created_at;     // 记录创建时间
-
-    uint64_t primary_key() const { return id; }
-    uint64_t by_show() const { return show_id; }
-    uint64_t by_ticket() const { return ticket_id; }
-
-    EOSLIB_SERIALIZE(ticket_increase_t, (id)(show_id)(ticket_id)(ticket_count)(prev_ticket_count)(memo)(issuer)(created_at))
-};
-
-typedef eosio::multi_index<
-    "tkincrease"_n, ticket_increase_t,
-    indexed_by<"byshow"_n, const_mem_fun<ticket_increase_t, uint64_t, &ticket_increase_t::by_show>>,
-    indexed_by<"byticket"_n, const_mem_fun<ticket_increase_t, uint64_t, &ticket_increase_t::by_ticket>>
-> ticket_increase_idx;
-
 
 } // namespace flon

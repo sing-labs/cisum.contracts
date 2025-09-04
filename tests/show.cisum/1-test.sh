@@ -25,7 +25,7 @@ mpush $show_con nftcreate '[
 
 
 mpush $show_con nftissue '[
-  {"amount": 10000000, "symbol": {"value": 21010001000010021} },
+  {"amount": 2000, "symbol": {"value": 21010001000010021} },
   "bootstrap batch"
 ]' -p flonian
 
@@ -37,7 +37,7 @@ mpush $show_con nftcreate '[
 ]' -p flonian
 
 
-mpush $show_con nftissue '["flonian","show23.cisum",{"amount": 100, "symbol": {"value": 21010001000010071} },"issue:20250025"]' -p flonian
+mpush $show_con nftissue '["flonian","show23.cisum",{"amount": 11, "symbol": {"value": 21010001000010128} },"issue:20250053"]' -p flonian
 
 
 mpush $show_con newshow '[41258,"concert", true, true, "2025-09-01T00:00:00", "2025-09-10T23:59:59","test" ,"gasgsgg gq gg sa gdf jhfd j" , "onshelf"]' -p flonian
