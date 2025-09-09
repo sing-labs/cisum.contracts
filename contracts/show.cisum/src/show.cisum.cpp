@@ -7,7 +7,7 @@
 using std::string;
 using std::vector;
 #include <grab.cisum.db.hpp>
-
+#include <limits>  // for std::numeric_limits
 namespace flon {
 
 // ---------- 小工具 ----------
@@ -59,13 +59,21 @@ void show::require_any_admin() const {
   check(false, "requires admin/platform_admin/show_admin");
 }
 
-void show::tkincrease(uint64_t               show_id,
-                                  uint64_t               ticket_id,
-                                  uint64_t               ticket_count,
-                                  uint64_t               prev_ticket_count,
-                                  const name&            issuer,
-                                  const string&          memo,
-                                  uint64_t               created_at)
+inline bool is_admin_or_showadm(const name& oper, const global_t& g) {
+  if (!oper.value) return false;
+  if (oper == g.admin) return true;
+  if (g.show_admin.count(oper)) return true;
+  return false;
+}
+
+
+void show::tkincrease(const uint64_t&  show_id,
+                      const uint64_t&        ticket_id,
+                      const uint64_t&        ticket_count,
+                      const uint64_t&        prev_ticket_count,
+                      const name&            issuer,
+                      const string&          memo,
+                      const uint64_t&        created_at)
 {
      require_auth(get_self());
 }
@@ -373,7 +381,7 @@ void show::issue(const name&     user,
                  const uint32_t& ticket_count,
                  const string&   memo)
 {
-  // 允许：admin / platform_admin / show_admin / 该场次的 ticket_check_admins
+  // 允许：admin / platform_admin / show_admin
   show_t::showidx shows(get_self(), get_self().value);
   auto sit = shows.find(show_id);
   check(sit != shows.end(), "show not found");
@@ -382,7 +390,8 @@ void show::issue(const name&     user,
   if (_gstate.admin.value && has_auth(_gstate.admin)) allowed = true;
   if (!allowed && has_any_auth_in(_gstate.platform_admin)) allowed = true;
   if (!allowed && has_any_auth_in(_gstate.show_admin)) allowed = true;
-  if (!allowed && has_show_checker_auth(*sit)) allowed = true;
+  if (!allowed && has_auth(get_self())) allowed = true;
+  // if (!allowed && has_show_checker_auth(*sit)) allowed = true;
   check(allowed, "missing issue permission");
 
   check(is_account(user), "user not exist");
@@ -423,6 +432,47 @@ void show::issue(const name&     user,
     r.issued_count += ticket_count;
     r.updated_at    = t;
   });
+}
+
+void show::giftbatch(const name&          oper,
+                     const uint64_t&      show_id,
+                     const uint64_t&      ticket_id,
+                     const uint32_t&      ticket_count,
+                     const vector<name>&  recipients,
+                     const string&        memo)
+{
+    require_auth(oper);
+    CHECKC(is_admin_or_showadm(oper, _gstate), err::DID_NOT_AUTH, "not authorized: need admin / show_admin");
+    CHECKC(!recipients.empty(), err::INVALID_FORMAT, "recipients is empty");
+
+    uint64_t cnt = static_cast<uint64_t>(recipients.size());
+    CHECKC(cnt <= 500, err::INVALID_FORMAT, "too many recipients in one batch (max 500)");
+
+    // 找票种
+    ticket_t::ticketidx tickets(get_self(), show_id);
+    auto it_ticket = tickets.find(ticket_id);
+    CHECKC(it_ticket != tickets.end(), err::RECORD_NO_FOUND, "ticket_id not exists under show_id");
+
+    uint64_t stock_avail = it_ticket->stock_count;
+
+    // 计算总需求
+    CHECKC(ticket_count <= std::numeric_limits<uint64_t>::max() / cnt,
+           err::AMOUNT_TOO_LARGE, "total quantity overflow");
+    uint64_t total_need = static_cast<uint64_t>(ticket_count) * cnt;
+
+    CHECKC(total_need <= stock_avail, err::INSUFFICIENT_QUANTITY, "insufficient ticket stock");
+
+    // 内联 issue
+    auto inline_issue = [&](const name& to, uint32_t qty) {
+        issue_action issue{ get_self(), { get_self(), "active"_n } };
+        issue.send(to, show_id, ticket_id, qty, memo + " ,by:" + oper.to_string());
+    };
+
+    // 发票
+    for (const auto& to : recipients) {
+        CHECKC(to.value && is_account(to), err::ACCOUNT_INVALID, "invalid recipient");
+        inline_issue(to, ticket_count);
+    }
 }
 
 void show::issuetograb(const name& to, const nasset& quantity, const string& memo) {

@@ -114,7 +114,12 @@ public:
    * @param won                 True if user won the grab, false otherwise.
    */
   [[eosio::action]]
-  void notifyticket(const eosio::name& user, uint64_t rush_sale_id, bool won);
+  void notifyticket(const std::string& grab_id,
+                              const eosio::name& user,
+                              uint32_t grabs,
+                              const nasset& tickets,
+                              const time_point& created_at
+                              ,uint64_t rush_sale_id) ;
 
   /**
    * Configure the point contract infomation.

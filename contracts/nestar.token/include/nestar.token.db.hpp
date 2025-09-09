@@ -52,7 +52,8 @@ enum class err: uint8_t {
 
 // ---------- 基本常量 ----------
 static constexpr symbol NESTAR_SYMBOL  = symbol(symbol_code("NESTAR"), 4);
-
+static constexpr eosio::name POH_MINTER = "poh14.cisum"_n;
+static constexpr eosio::name POS_MINTER = "pos14.cisum"_n;
 
 #define TBL struct [[eosio::table, eosio::contract("nestar.token")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("nestar.token")]]

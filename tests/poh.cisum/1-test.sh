@@ -1,9 +1,12 @@
-poh_con=poh12.cisum
+poh_con=poh14.cisum
 mreg flon $poh_con flonian
 mtran flonian $poh_con "100 FLON"
 mset $poh_con poh.cisum
 mcli set account permission $poh_con active --add-code
 
+
+
+mpush $nestar_token  addwhitelist '["poh14.cisum"]'   -p $nestar_token
 
 # 给合约开 CISUM 余额行（RAM 自付）
 mpush cisum.token open '[
@@ -16,7 +19,7 @@ mpush cisum.token open '[
 mpush cisum.token transfer '[
   "flonian",
   "'"${poh_con}"'",
-  "1000000.00000000 CISUM",
+  "500.00000000 CISUM",
   "seed for PoH rewards"
 ]' -p flonian
 
@@ -30,7 +33,10 @@ mpush $poh_con setplatform '["cisumplatfrm"]' -p $poh_con
 mpush $poh_con setregistrar '["registrar11"]' -p $poh_con
 
 
-mpush $poh_con setrewards '["2550000000.00000000 CISUM"]' -p $poh_con
-
 
 mpush $poh_con registreward '["registrar11","PoH signup reward"]' -p registrar11
+
+mpush $poh_con registreward '["gahbnbehaskk","PoH signup reward"]' -p registrar11
+
+mpush $poh_con registreward '["mywallet2","PoH signup reward"]' -p registrar11
+

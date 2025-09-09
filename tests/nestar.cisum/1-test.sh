@@ -81,4 +81,4 @@ mpush $nestar_token setrate '["100"]' -p $nestar_token
 
 
 
-mpush $nestar_token transfer '["gahbnbehaskk", "grab21.cisum", "300.0000 NESTAR", "airdrop"]' -p gahbnbehaskk
+mpush $nestar_token transfer '["gahbnbehaskk", "grab22.cisum", "300.0000 NESTAR", "airdrop"]' -p gahbnbehaskk

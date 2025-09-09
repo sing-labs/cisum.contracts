@@ -17,7 +17,7 @@ using std::set;
 #define TBL        struct [[eosio::table, eosio::contract("show.cisum")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("show.cisum")]]
 
-static constexpr name GRAB_CONTRACT = "grab21.cisum"_n;
+static constexpr name GRAB_CONTRACT = "grab22.cisum"_n;
 
 NTBL("global") global_t {
   name        admin;          // 超管
@@ -85,6 +85,5 @@ TBL ticket_t {
       (created_at)(updated_at)
    )
 };
-
 
 } // namespace flon

@@ -122,18 +122,28 @@ NTBL("rushsales") rush_sale {
 };
 
 // scope: rush_sale_id
-NTBL("users") user_t {
-   string         grab_id;
-   eosio::name    account;
-   uint32_t       grabs;
-   nasset         tickets;
-   time_point     created_at;
+NTBL("orders") order_t {
+   uint64_t       id;          // 自增主键
+   std::string    grab_id;     // md5 hex，业务唯一
+   eosio::name    account;     // 中奖账号
+   uint32_t       grabs;       // 固定写 1（表示一次抽奖）
+   nasset         tickets;     // 固定 1 * ticket_symbol
+   time_point     created_at;  // 中奖时间
 
-   uint64_t primary_key() const { return account.value; }
+   // —— 主键：用自增 id
+   uint64_t primary_key() const { return id; }
 
-   typedef eosio::multi_index<"users"_n, user_t> idx_t;
+   // —— 二级索引：grab_id 唯一
+   checksum256 by_grabid() const {
+       return sha256(grab_id.data(), grab_id.size());
+   }
 
-   EOSLIB_SERIALIZE(user_t, (grab_id)(account)(grabs)(tickets)(created_at))
+   typedef eosio::multi_index<
+     "orders"_n, order_t,
+     indexed_by<"bygrabid"_n, const_mem_fun<order_t, checksum256, &order_t::by_grabid>>
+   > idx_t;
+
+   EOSLIB_SERIALIZE(order_t, (id)(grab_id)(account)(grabs)(tickets)(created_at))
 };
 
 } // namespace flon

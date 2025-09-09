@@ -30,7 +30,6 @@ public:
   [[eosio::action]] void init(name platform, name registrar);
   [[eosio::action]] void setplatform(name platform);
   [[eosio::action]] void setregistrar(name registrar);
-  [[eosio::action]] void setrewards(const asset& available);
 
   [[eosio::action]] void registreward(name user, string memo);
 
@@ -91,15 +90,6 @@ private:
     return asset{ cisum_units, CISUM_SYM };
   }
 
-  // 从 cisum.token 给平台打款（需要 poh.cisum@active add-code）
-  void pay_reward_to_platform(const asset& reward, const string& memo) {
-    action(
-      permission_level{ get_self(), "active"_n },
-      REWARD_BANK,
-      "transfer"_n,
-      std::make_tuple(get_self(), _gstate.platform_acct, reward, memo)
-    ).send();
-  }
 };
 
 } // namespace flon

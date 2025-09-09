@@ -1,7 +1,7 @@
 cisum_token=cisum.token
 mreg flon $cisum_token flonian
 mtran flonian $cisum_token "100 FLON"
-mset $cisum_token flon.token
+mset $cisum_token cisum.token
 mcli set account permission $cisum_token active --add-code
 
 

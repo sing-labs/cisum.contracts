@@ -50,26 +50,31 @@ enum class err: uint8_t {
 
 // -------- 常量 --------
 static constexpr name   SWAP_CONTRACT   = "flon.swap"_n;      // 价格来源
-static constexpr name   REWARD_BANK     = "cisum.token"_n;    // 奖励币合约
+static constexpr name   CISUM_BANK     = "cisum.token"_n;    // 奖励币合约
 static constexpr symbol CISUM_SYM       = symbol(symbol_code("CISUM"), 8);
 static constexpr symbol USDT_SYM        = symbol(symbol_code("USDT"), 6);
 
 static const asset      MAX_REWARD      = asset(25'5000'0000'0000'0000, CISUM_SYM);
+
+static constexpr symbol NESTAR_SYM  = symbol(symbol_code("NESTAR"), 4);
+static constexpr name   NESTAR_BANK = "nest21.token"_n;
+
+//发 100 NESTAR 给注册者
+static const asset      NESTAR_BONUS    = asset(100'0000, NESTAR_SYM);
+
 
 // -------- 表：全局 --------
 struct [[eosio::table, eosio::contract("poh.cisum")]] global_t {
   name   platform_acct;                                   // 平台账户（奖励接收方）
   name   registrar;                                       // 合约调用账户
   asset  usd_per_user     = asset(20'000000, USDT_SYM);   // 默认 20 USDT
-  asset  max_reward       = MAX_REWARD;                   // 全网最大发放
-  asset  available_rewards= asset(0, CISUM_SYM);          // 可用奖励池（CISUM）
-  asset  issued_rewards   = asset(0, CISUM_SYM);          // 已发放累计（CISUM）
-
+  asset  cisum_issued     = asset(0, CISUM_SYM);          // 已发放累计（CISUM）
+  asset  nestar_issued    = asset(0, NESTAR_SYM);         // 已发放累计（NESTAR）
 
 
   EOSLIB_SERIALIZE(global_t,
     (platform_acct)(registrar)(usd_per_user)
-    (max_reward)(available_rewards)(issued_rewards))
+    (cisum_issued)(nestar_issued))
 };
 using global_singleton = eosio::singleton<"global"_n, global_t>;
 

@@ -16,6 +16,9 @@ mpush $show_con addshowadm '["myadmin"]' -p flonian
 
 mpush $show_con addshowadm '["testtest"]' -p flonian
 
+mpush $show_con addshowadm '["fulgwxvwfw1m"]' -p flonian
+mpush $show_con addshowadm '["flontest"]' -p flonian
+
 
 #普通票
 mpush $show_con nftcreate '[
@@ -51,6 +54,11 @@ mpush $show_con addchecker '[41260,"myadmin"]'   -p flonian
 mpush $show_con addchecker '[41260,"flonian"]'   -p flonian
 
 
+mpush $show_con addchecker '[1757054921640,"cvohdzu2awu4"]'   -p flonian
+mpush $show_con addchecker '[1757382785471,"cvohdzu2awu4"]'   -p flonian
+
+
+
 
 
 mpush $show_con newticket '[41258, {"value": 21010001000010021}, {"value": 0}, "普通票", "100.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
@@ -66,4 +74,12 @@ mpush $show_con issue '["gahbnbehaskk",41258,21010001000010021,1,"send to gahbnb
 
 
 
+# 批量赠票：show_id=1, ticket_id=101，memo=批量赠票测试
 
+mpush $show_con giftbatch '["flonian",
+  20250057,
+  21010001000010137,
+  1,
+  ["myadmin","testtest","fulgwxvwfw1m","flontest"],
+  "batch gift issue"
+]' -p flonian

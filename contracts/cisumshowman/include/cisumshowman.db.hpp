@@ -14,7 +14,7 @@ using std::vector;
 namespace flon {
 
 static constexpr name SHOW_CONTRACT = "show23.cisum"_n;
-static constexpr name GRAB_CONTRACT = "grab21.cisum"_n;
+static constexpr name GRAB_CONTRACT = "grab22.cisum"_n;
 \
 static constexpr symbol_code POINT_SYMBOL_CODE = symbol_code("NESTAR");
 static constexpr symbol POINT_SYMBOL            = symbol(POINT_SYMBOL_CODE, 4);

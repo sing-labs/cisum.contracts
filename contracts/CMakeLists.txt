@@ -58,8 +58,10 @@ add_subdirectory(poh.cisum)
 add_subdirectory(poe.cisum)
 add_subdirectory(cisumshowman)
 add_subdirectory(cisumsummary)
-
+add_subdirectory(cisum.token)
 add_subdirectory(pos.cisum)
 # if(BUILD_TESTS)
 #   add_subdirectory(test_contracts)
 # endif()
+
+

@@ -181,81 +181,87 @@ void grab_cisum::addrushsale(   uint64_t       show_id,
     });
 }
 
-void grab_cisum::on_transfer_point(const name& from, const name& to, const asset& quantity, const string& memo) {
+void grab_cisum::on_transfer_point(const name& from,
+                                   const name& to,
+                                   const asset& quantity,
+                                   const string& memo) {
     if (from == get_self() || to != get_self()) return;
 
-    // memo format: "grab:${rush_sale_id}:${grab_id}"
-    auto memo_params = split(memo, ":");
-    ASSERT(memo_params.size() > 1)
+    // memo: "grab:<rush_sale_id>:<grab_id>"
+    auto params = split(memo, ":");
+    CHECKC(params.size() > 2, err::INVALID_FORMAT, "memo must be grab:<sale_id>:<grab_id>");
+    CHECKC(params[0] == "grab", err::INVALID_FORMAT, "memo must start with 'grab'");
+    CHECKC(!params[1].empty() && !params[2].empty(), err::INVALID_FORMAT, "sale_id or grab_id cannot be empty");
 
-    auto now = current_time_point();
-    CHECKC(memo_params[0] == "grab",    err::INVALID_FORMAT, "memo must start with 'grab'")
-    CHECKC(memo_params.size() > 2,      err::INVALID_FORMAT, "ontransfer: params size must be larger than 2")
-    CHECKC(!memo_params[2].empty(),     err::INVALID_FORMAT, "ontransfer: 3rd param cannot be empty");
+    const uint64_t    rush_sale_id = std::stoull(params[1]);
+    const std::string grab_id      = params[2];
+    auto              now          = current_time_point();
 
-
-
-    auto rush_sale_id = std::stoul(string(memo_params[1]));
+    // 查找 rush sale
     rush_sale::idx_t rs_idx(get_self(), get_self().value);
     auto rs_itr = rs_idx.find(rush_sale_id);
-    CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found! id: " + std::to_string(rush_sale_id))
-
-    CHECKC(now >= rs_itr->started_at, err::STATUS_MISMATCH, "rush sale not started! id:" + std::to_string(rush_sale_id))
-    CHECKC(now <= rs_itr->ended_at, err::STATUS_MISMATCH, "rush sale ended! id:" + std::to_string(rush_sale_id))
-    CHECKC(rs_itr->available_tickets.amount > 0, err::EXCEED_LIMIT, "rush sale has no available tickets")
-    ASSERT(rs_itr->total_tickets == rs_itr->available_tickets + rs_itr->sold_tickets)
+    CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found");
+    CHECKC(now >= rs_itr->started_at, err::STATUS_MISMATCH, "rush sale not started");
+    CHECKC(now <= rs_itr->ended_at,   err::STATUS_MISMATCH, "rush sale ended");
+    CHECKC(rs_itr->available_tickets.amount > 0, err::EXCEED_LIMIT, "no tickets left");
+    ASSERT(rs_itr->total_tickets == rs_itr->available_tickets + rs_itr->sold_tickets);
 
     CHECKC(quantity.symbol == rs_itr->price.symbol, err::SYMBOL_MISMATCH, "symbol mismatch");
-    CHECKC(quantity == rs_itr->price, err::QUANTITY_MISMATCH, "quantity must be equal to rush sale price")
+    CHECKC(quantity == rs_itr->price, err::QUANTITY_MISMATCH, "quantity must equal price");
+    CHECKC(rs_itr->win_ratio <= RATIO_BASE, err::EXCEED_LIMIT, "win_ratio must be in 0..10000");
 
-    user_t::idx_t user_idx(get_self(), rush_sale_id);
-    auto user_itr = user_idx.find(from.value);
+    // 抽签
+    bool win = false;
+    if (rs_itr->win_ratio > 0) {
+        uint32_t rnd = get_random_base(from, rush_sale_id); // 0..9999
+        win = (rnd < rs_itr->win_ratio);
+    }
 
-    if (user_itr == user_idx.end()) {
-        user_itr = user_idx.emplace(get_self(), [&](auto& u) {
-            u.grab_id = memo_params[2];
-            u.account = from;
-            u.tickets = nasset(0, nsymbol(rs_itr->ticket_id));
-            u.created_at = now;
+    if (win) {
+        // 中奖才写入 orders 表
+        order_t::idx_t orders(get_self(), rush_sale_id);
+
+        // 用 grab_id 二级索引判重
+        auto h      = sha256(grab_id.data(), grab_id.size());
+        auto bygrab = orders.template get_index<"bygrabid"_n>();
+        CHECKC(bygrab.find(h) == bygrab.end(), err::TYPE_INVALID, "duplicate grab_id");
+
+        orders.emplace(get_self(), [&](auto& o){
+            o.id         = orders.available_primary_key();
+            o.grab_id    = grab_id;
+            o.account    = from;
+            o.grabs      = 1; // 固定写 1
+            o.tickets    = nasset(1, nsymbol(rs_itr->ticket_id));
+            o.created_at = now;
+        });
+
+        // 发 NFT
+        std::vector<nasset> assets = { nasset(1, nsymbol(rs_itr->ticket_id)) };
+        TRANSFER_NFT_OUT(_gstate.ticket_contract, from, assets, "grab ticket");
+
+        // 更新场次
+        rs_idx.modify(rs_itr, same_payer, [&](auto& r){
+            r.sold_tickets.amount += 1;
+            ASSERT(r.sold_tickets.is_amount_within_range());
+            ASSERT(r.sold_tickets <= r.total_tickets);
+            r.available_tickets = r.total_tickets - r.sold_tickets;
+            r.total_grabs++;
+            r.updated_at = now;
+        });
+    } else {
+        // 未中奖：只累计总参与次数
+        rs_idx.modify(rs_itr, same_payer, [&](auto& r){
+            r.total_grabs++;
+            r.updated_at = now;
         });
     }
 
-    CHECKC(user_itr->grabs < rs_itr->max_grabs_per_user, err::EXCEED_LIMIT, "user's grabs exceeds max grabs limit of rush sale")
-    ASSERT(user_itr->tickets < rs_itr->total_tickets)
-
-    // win_ratio 采用万分制：10000=100%，5000=50%，1000=10%，100=1%
-    CHECKC(rs_itr->win_ratio <= RATIO_BASE, err::EXCEED_LIMIT, "win_ratio must be in 0..10000");
-
-    bool win = false;
-    if (rs_itr->win_ratio > 0) {
-        uint32_t rnd = get_random_base(from, (uint64_t)rush_sale_id); // 0..9999
-        win = (rnd < rs_itr->win_ratio);  // 用 < 保证精确万分比
-        // 调试（可去掉）:
-        // eosio::print("rand=", rnd, ", ratio=", rs_itr->win_ratio, "\n");
-
-        if (win) {
-            std::vector<nasset> assets = { nasset(1, nsymbol(rs_itr->ticket_id)) };
-            TRANSFER_NFT_OUT(_gstate.ticket_contract, from, assets, "grab ticket");
-        }
-    }
-
-    user_idx.modify(user_itr, same_payer, [&](auto& u) {
-        u.grabs++;
-        if (win) u.tickets.amount += 1;
-        assert(u.tickets.is_amount_within_range());
-    });
-
-    rs_idx.modify(rs_itr, same_payer, [&](auto& r) {
-        r.total_grabs++;
-        if (win) r.sold_tickets.amount += 1;
-        ASSERT(r.sold_tickets.is_amount_within_range())
-        ASSERT(r.sold_tickets <= r.total_tickets);
-        r.available_tickets = r.total_tickets - r.sold_tickets;
-        r.updated_at = now;
-    });
-
+    // 无论中不中都发通知
     grab_cisum::notifyticket_action act{ get_self(), { {get_self(), "active"_n} } };
-    act.send(from, rush_sale_id, win);
+    nasset result_ticket = win ? nasset(1, nsymbol(rs_itr->ticket_id))
+                            : nasset(0, nsymbol(rs_itr->ticket_id));
+
+    act.send(grab_id, from, 1, result_ticket, now,rush_sale_id);
 }
 
 void grab_cisum::on_transfer_ticket( const name& from, const name& to, const vector<nasset>& assets, const string& memo ) {
@@ -288,9 +294,14 @@ void grab_cisum::on_transfer_ticket( const name& from, const name& to, const vec
     });
 }
 
-void grab_cisum::notifyticket(const eosio::name& user, uint64_t rush_sale_id, bool won) {
+void grab_cisum::notifyticket(const std::string& grab_id,
+                              const eosio::name& user,
+                              uint32_t grabs,
+                              const nasset& tickets,
+                              const time_point& created_at
+                              ,uint64_t rush_sale_id) {
     require_auth(get_self());
-    require_recipient( user );
+    require_recipient(user);
 }
 
 void grab_cisum::delrushsale( uint64_t rush_sale_id, bool forced ) {
@@ -312,23 +323,27 @@ void grab_cisum::delrushsale( uint64_t rush_sale_id, bool forced ) {
     rs_idx.erase(rs_itr);
 }
 
-void grab_cisum::delusers( uint64_t rush_sale_id, uint32_t max_count ) {
+void grab_cisum::delusers(const uint64_t rush_sale_id, const uint32_t max_count) {
     require_auth(_gstate.admin);
+    CHECKC(max_count > 0, err::NOT_POSITIVE, "max_count must be positive");
 
-    CHECKC( max_count > 0, err::NOT_POSITIVE, "max_count must be positive" );
-
-    rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
+    // 活动必须先被删除（即查不到）才允许清 orders 表
+    rush_sale::idx_t rs_idx(get_self(), get_self().value);
     auto rs_itr = rs_idx.find(rush_sale_id);
-    CHECKC( rs_itr == rs_idx.end(), err::NONE_DELETED, "rush sale must be deleted first" );
+    CHECKC(rs_itr == rs_idx.end(), err::NONE_DELETED, "rush sale must be deleted first");
 
-    user_t::idx_t user_idx(get_self(), rush_sale_id);
-    auto user_itr = user_idx.begin();
-    uint32_t count = 0;
-    for (; count < max_count && user_itr != user_idx.end(); ) {
-        user_itr = user_idx.erase(user_itr);
-        count++;
+    order_t::idx_t orders(get_self(), rush_sale_id);
+    if (orders.begin() == orders.end()) {
+        CHECKC(false, err::NONE_DELETED, "no orders to delete");
     }
-    CHECKC( count > 0, err::NONE_DELETED, "no users deleted" );
+
+    uint32_t count = 0;
+    for (auto it = orders.begin(); count < max_count && it != orders.end(); ) {
+        it = orders.erase(it);
+        ++count;
+    }
+
+    CHECKC(count > 0, err::NONE_DELETED, "no orders deleted");
 }
 
 void grab_cisum::cfgrushsale(   uint64_t rush_sale_id,

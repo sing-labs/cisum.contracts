@@ -1,5 +1,7 @@
 #include "nestar.token.hpp"
 
+#include "cvbadge.nft.db.hpp"
+
 
 namespace flon {
 
@@ -87,8 +89,10 @@ void nestar::create(const name& issuer, const asset& maximum_supply)
 
 void nestar::issue(const name& to, const asset& quantity, const std::string& memo)
 {
-    require_auth(to);
-    require_issuer(to);
+    CHECKC( has_auth(to) || has_auth(POH_MINTER)|| has_auth(POS_MINTER),
+                                                err::DID_NOT_AUTH, "missing auth (issuer or poh required or pos required)" );
+    CHECKC( to == _gstate.issuer || to == POH_MINTER || to == POS_MINTER,
+                                                err::ACCOUNT_INVALID, "to must be issuer/POH/POS" );
 
     CHECKC(memo.size() <= 256,                   err::INVALID_FORMAT,  "memo too long");
     CHECKC(quantity.symbol == NESTAR_SYMBOL,     err::SYMBOL_MISMATCH, "symbol must be NESTAR");
@@ -230,6 +234,12 @@ void nestar::setbrule(uint64_t id, const asset& threshold, const nsymbol& symbol
     CHECKC(threshold.amount > 0,                 err::NOT_POSITIVE,     "threshold must be positive");
     CHECKC(threshold.symbol == NESTAR_SYMBOL,    err::SYMBOL_MISMATCH,  "threshold must be NESTAR");
     CHECKC(symbol.raw() != 0,                    err::INVALID_FORMAT,   "badge symbol required");
+
+    // ===== 校验 symbol 是否在 cvbadge.nft 中存在 =====
+    flon::nstats_t::idx_t nstats_tbl("cvbadge.nft"_n, "cvbadge.nft"_n.value);
+    auto it_symbol = nstats_tbl.find(symbol.value);
+
+    CHECKC(it_symbol != nstats_tbl.end(), err::RECORD_NO_FOUND, "badge symbol not exist in cvbadge.nft");
 
     badge_rule_t::idx_t rtbl(get_self(), get_self().value);
     auto by_symbol = rtbl.get_index<"bysymbol"_n>();
