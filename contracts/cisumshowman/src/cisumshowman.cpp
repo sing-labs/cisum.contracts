@@ -55,7 +55,6 @@ void cisumshow::publishshow(name creator,
     // (C) 先铸到 show（保持现有流程：再由 show 转到 grab）
     ISSUE_NFT(SHOW_CONTRACT,
               creator,   // issuer
-              SHOW_CONTRACT,
               qty,
               "issue:" + std::to_string(show.show_id) );
 

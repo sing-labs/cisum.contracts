@@ -1,4 +1,4 @@
-poh_con=poh14.cisum
+poh_con=poh15.cisum
 mreg flon $poh_con flonian
 mtran flonian $poh_con "100 FLON"
 mset $poh_con poh.cisum
@@ -6,7 +6,7 @@ mcli set account permission $poh_con active --add-code
 
 
 
-mpush $nestar_token  addwhitelist '["poh14.cisum"]'   -p $nestar_token
+mpush $nestar_token  addwhitelist '["poh15.cisum"]'   -p $nestar_token
 
 # 给合约开 CISUM 余额行（RAM 自付）
 mpush cisum.token open '[
@@ -24,11 +24,11 @@ mpush cisum.token transfer '[
 ]' -p flonian
 
 
-mpush $poh_con init '["cisumplatfrm","registrar11"]' -p $poh_con
+mpush $poh_con init '["cisumplatfrm","registrar11","2500000000.00000000 CISUM"]' -p $poh_con
+
+mpush $poh_con setmaxissued '["5100000000.00000000 CISUM"]' -p $poh_con
 
 mpush $poh_con setplatform '["cisumplatfrm"]' -p $poh_con
-
-
 
 mpush $poh_con setregistrar '["registrar11"]' -p $poh_con
 

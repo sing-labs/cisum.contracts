@@ -27,11 +27,16 @@ public:
 
   ~poh_cisum() { _global.set(_gstate, get_self()); }
 
-  [[eosio::action]] void init(name platform, name registrar);
+  [[eosio::action]] void init(name platform, name registrar, asset max_issued) ;
+  [[eosio::action]] void setmaxissued(asset max_issued);
+
   [[eosio::action]] void setplatform(name platform);
   [[eosio::action]] void setregistrar(name registrar);
 
   [[eosio::action]] void registreward(name user, string memo);
+
+
+
 
   using registreward_action = eosio::action_wrapper<"registreward"_n, &poh_cisum::registreward>;
 

@@ -42,7 +42,6 @@ mpush $show_con issue '["'$USER1'", '$SHOW_ID_OK', '$TK_VIP', 1, "unauth"]' -p $
 # 管理员给 VIP 档 +100
 mpush $show_con nftissue '[
   "'$ADMIN'",
-  "'$show_con'",
   {"amount":100,"symbol":{"value":'$TK_VIP'}},
   "issue:'$SHOW_ID_OK'"
 ]' -p $ADMIN
@@ -52,7 +51,6 @@ mpush $show_con nftissue '[
 # 非管理员尝试（应失败）
 mpush $show_con nftissue '[
   "'$ADMIN'",
-  "'$show_con'",
   {"amount":100,"symbol":{"value":'$TK_VIP'}},
   "issue:'$SHOW_ID_OK'"
 ]' -p $USER1
@@ -67,7 +65,6 @@ mpush $show_con issue '["'$USER2'", '$SHOW_ID_OK', '$TK_VIP', 50, "after-increas
 # 管理员给 FREE 档 +100
 mpush $show_con nftissue '[
   "'$ADMIN'",
-  "'$show_con'",
   {"amount":100,"symbol":{"value":'$TK_STD'}},
   "issue:'$SHOW_ID_OK'"
 ]' -p $ADMIN
@@ -77,7 +74,6 @@ mpush $show_con nftissue '[
 # 非管理员尝试（应失败）
 mpush $show_con nftissue '[
   "'$ADMIN'",
-  "'$show_con'",
   {"amount":100,"symbol":{"value":'$TK_STD'}},
   "issue:'$SHOW_ID_OK'"
 ]' -p $USER1

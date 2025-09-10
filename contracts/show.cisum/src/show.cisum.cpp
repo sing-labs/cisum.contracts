@@ -8,7 +8,32 @@ using std::string;
 using std::vector;
 #include <grab.cisum.db.hpp>
 #include <limits>  // for std::numeric_limits
+#include <eosio/crypto.hpp>
+
 namespace flon {
+
+static std::string to_hex(const checksum256& c) {
+    auto bytes = c.extract_as_byte_array();
+    static const char* lut = "0123456789abcdef";
+    std::string out;
+    out.resize(64);
+    for (size_t i = 0; i < 32; ++i) {
+        unsigned char b = bytes[i];
+        out[2*i]     = lut[(b >> 4) & 0xF];
+        out[2*i + 1] = lut[b & 0xF];
+    }
+    return out;
+}
+
+// 生成“批次哈希”：oper + 当前秒级时间戳 -> sha256 -> hex（取前16位，缩短 memo）
+static std::string make_batch_hash(const eosio::name& oper) {
+    uint64_t ts = eosio::current_time_point().sec_since_epoch();
+    std::string input = oper.to_string();
+    input += std::to_string(ts);
+    checksum256 d = sha256(input.c_str(), input.size());
+    std::string hex = to_hex(d);
+    return hex.substr(0, 32); // 控制长度，避免 memo 超 256
+}
 
 // ---------- 小工具 ----------
 static inline time_point nowtp() { return current_time_point(); }
@@ -163,7 +188,6 @@ void show::nftcreate(
 }
 
 void show::nftissue(const name&   issuer,
-                    const name&   to,
                     const nasset& quantity,
                     const string& memo)
 {
@@ -184,7 +208,7 @@ void show::nftissue(const name&   issuer,
   flon::cvticket::issue_action{
     _gstate.nft_bank,
     { permission_level{ get_self(), "active"_n } }
-  }.send(to, quantity, memo);
+  }.send(_self, quantity, memo);
 
   // 更新库存
   ticket_t::ticketidx tickets(get_self(), show_id);
@@ -206,7 +230,7 @@ void show::nftissue(const name&   issuer,
     prev_amount,
     issuer,                      // 实际操作者
     memo,                         // 备注
-    current_time_point().time_since_epoch().count() / 1000);
+    current_time_point().time_since_epoch().count() / 1'000'000);
 
 }
 
@@ -463,9 +487,18 @@ void show::giftbatch(const name&          oper,
     CHECKC(total_need <= stock_avail, err::INSUFFICIENT_QUANTITY, "insufficient ticket stock");
 
     // 内联 issue
+    // giftissue:$<show_id>:$<ticket_id>:$<md5>:$<oper>
     auto inline_issue = [&](const name& to, uint32_t qty) {
+        std::string batch_hash = make_batch_hash(to);
+        std::string full_memo = "giftissue:"
+                          + std::to_string(show_id)
+                          + ":"
+                          + std::to_string(ticket_id)
+                          + ":"
+                          + batch_hash
+                           + ":"+oper.to_string()+":"+memo;
         issue_action issue{ get_self(), { get_self(), "active"_n } };
-        issue.send(to, show_id, ticket_id, qty, memo + " ,by:" + oper.to_string());
+        issue.send(to, show_id, ticket_id, qty,full_memo);
     };
 
     // 发票

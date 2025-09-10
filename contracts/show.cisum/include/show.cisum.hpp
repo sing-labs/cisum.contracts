@@ -12,10 +12,6 @@ using namespace eosio;
 using std::string;
 using flon::nsymbol;
 
-#define CHECK(exp, msg) { if (!(exp)) eosio::check(false, msg); }
-#ifndef ASSERT
-    #define ASSERT(exp) CHECK(exp, #exp)
-#endif
 #define CHECKC(exp, code, msg) \
    { if (!(exp)) eosio::check(false, string("[[") + std::to_string((int)code) + string("]] ") + msg); }
 
@@ -86,7 +82,6 @@ public:
 
   // === cvticket.nft: 发放（铸造到合约自身，再转出/或直接发放） ===
   ACTION nftissue(  const name&   issuer,
-                const name&   to,
                 const nasset& quantity,
                 const string& memo);
 

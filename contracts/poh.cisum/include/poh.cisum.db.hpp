@@ -68,23 +68,24 @@ struct [[eosio::table, eosio::contract("poh.cisum")]] global_t {
   name   platform_acct;                                   // 平台账户（奖励接收方）
   name   registrar;                                       // 合约调用账户
   asset  usd_per_user     = asset(20'000000, USDT_SYM);   // 默认 20 USDT
+  asset  max_issued       = asset(0, CISUM_SYM);          // 最大发放（CISUM）
   asset  cisum_issued     = asset(0, CISUM_SYM);          // 已发放累计（CISUM）
   asset  nestar_issued    = asset(0, NESTAR_SYM);         // 已发放累计（NESTAR）
 
 
   EOSLIB_SERIALIZE(global_t,
     (platform_acct)(registrar)(usd_per_user)
-    (cisum_issued)(nestar_issued))
+    (max_issued)(cisum_issued)(nestar_issued))
 };
 using global_singleton = eosio::singleton<"global"_n, global_t>;
 
-// -------- 表：防重（已领取） --------
-struct [[eosio::table, eosio::contract("poh.cisum")]] claimed_t {
-  name        user;
-  time_point  claimed_at;
+// // -------- 表：防重（已领取） --------
+// struct [[eosio::table, eosio::contract("poh.cisum")]] claimed_t {
+//   name        user;
+//   time_point  claimed_at;
 
-  uint64_t primary_key() const { return user.value; }
-};
-using claimed_idx = eosio::multi_index<"claimed"_n, claimed_t>;
+//   uint64_t primary_key() const { return user.value; }
+// };
+// using claimed_idx = eosio::multi_index<"claimed"_n, claimed_t>;
 
 } // namespace flon

@@ -14,9 +14,9 @@ using flon::nsymbol;
     {	flon::show::nftcreate_action act{ bank, { {get_self(), "active"_n} } };\
 			act.send( max_supply, symbol, token_uri);}
 
-#define ISSUE_NFT(bank,issuer,to,quantity,memo) \
+#define ISSUE_NFT(bank,issuer,quantity,memo) \
     {	flon::show::nftissue_action act{ bank, { {get_self(), "active"_n} } };\
-			act.send( issuer,to,quantity,memo);}
+			act.send( issuer,quantity,memo);}
 
 #define NEW_SHOW(bank,show_id,category,ticket_transferable,ticket_refundable,show_started_at,show_ended_at,show_name,show_address) \
     {	flon::show::newshow_action act{ bank, { {get_self(), "active"_n} } };\
@@ -46,7 +46,6 @@ public:
   // === cvticket.nft: 发放（铸造到合约自身，再转出/或直接发放） ===
   [[eosio::action]]
   void nftissue(    const name&   issuer,
-                    const name&   to,
                     const nasset& quantity,
                     const string& memo);
 
