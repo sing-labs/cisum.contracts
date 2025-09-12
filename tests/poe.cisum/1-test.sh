@@ -1,4 +1,4 @@
-poe_con=poe11.cisum
+poe_con=poe12.cisum
 mreg flon $poe_con flonian
 mtran flonian $poe_con "100 FLON"
 mset $poe_con poe.cisum
@@ -26,44 +26,52 @@ mpush nest21.token transfer '[
 
 
 # 日常签到 - 10 NESTAR
-mpush $poe_con setact '[
+mpush $poe_con addrewardact '[
   "signin",
   "10.0000 NESTAR",
   "日常签到奖励"
 ]' -p $poe_con
 
+
 # 投票 - 50 NESTAR
-mpush $poe_con setact '[
+mpush $poe_con addrewardact '[
   "vote",
   "50.0000 NESTAR",
   "投票奖励"
 ]' -p $poe_con
 
 # 发布短视频内容 - 100 NESTAR
-mpush $poe_con setact '[
+mpush $poe_con addrewardact '[
   "shortvideo",
   "100.0000 NESTAR",
   "发布短视频内容奖励"
 ]' -p $poe_con
 
 # 邀请好友注册 - 300 NESTAR
-mpush $poe_con setact '[
+mpush $poe_con addrewardact '[
   "invite",
   "300.0000 NESTAR",
   "邀请好友注册奖励"
 ]' -p $poe_con
 
 # 上传艺人内容 - 200 NESTAR
-mpush $poe_con setact '[
+mpush $poe_con addrewardact '[
   "uploadartist",
   "200.0000 NESTAR",
   "上传艺人内容奖励"
 ]' -p $poe_con
 
+mpush $poe_con addoracle '[
+  "myadmin"
+]' -p $poe_con
+
 
 
 # 用户领取日常签到积分
-mpush $poe_con claimpoints '["flonian", "signin"]' -p flonian
+mpush $poe_con claimpoints '["myadmin","fulgwxvwfw1m",1]' -p myadmin
 
-# 用户领取上传艺人内容积分
-mpush $poe_con claimpoints '["flonian", "uploadartist"]' -p flonian
+
+
+
+
+claimpoints(const name& leader, const name& claimer, const uint64_t& rewardact_id)

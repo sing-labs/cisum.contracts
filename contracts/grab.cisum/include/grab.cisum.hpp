@@ -72,10 +72,14 @@ public:
    * @param win_ratio            Optional new win ratio.
    * @param ended_at             Optional new end time.
    */
-  ACTION cfgrushsale( uint64_t                  rush_sale_id,
-                    std::optional<uint32_t>   win_ratio,
-                    std::optional<time_point> ended_at
-  );
+  ACTION setrushsale(uint64_t rush_sale_id,
+                      std::optional<uint32_t> max_grabs_per_user,
+                      std::optional<uint32_t> win_ratio,
+                      std::optional<time_point> ended_at) ;
+
+  ACTION  settoken(const symbol& sym, const name& bank);
+
+  ACTION  deltoken(const symbol& sym, const name& bank);
 
   /**
    * Batch delete users for a rush sale. Only admin can call.
@@ -84,12 +88,6 @@ public:
    * @param max_count            Max number of users to delete in one call.
    */
   ACTION delusers( uint64_t rush_sale_id, uint32_t max_count );
-
-
-
-  ACTION setrushsale(const uint64_t&   rush_sale_id,
-                                uint32_t       max_grabs_per_user,
-                                uint32_t       win_ratio);
 
   // 处理 FT（积分）转账：来自积分合约
   [[eosio::on_notify("nest21.token::transfer")]]
@@ -144,7 +142,7 @@ public:
   // -------- Inline wrappers --------
   using addrushsale_action        = eosio::action_wrapper<"addrushsale"_n,        &grab_cisum::addrushsale>;
   using delrushsale_action        = eosio::action_wrapper<"delrushsale"_n,        &grab_cisum::delrushsale>;
-  using cfgrushsale_action        = eosio::action_wrapper<"cfgrushsale"_n,        &grab_cisum::cfgrushsale>;
+  using setrushsale_action        = eosio::action_wrapper<"setrushsale"_n,        &grab_cisum::setrushsale>;
   using notifyticket_action        = eosio::action_wrapper<"notifyticket"_n,        &grab_cisum::notifyticket>;
 
 private:

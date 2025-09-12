@@ -1,17 +1,17 @@
-ops_con=ops15.cisum
+ops_con=ops21.cisum
 mreg flon $ops_con flonian
 mtran flonian $ops_con "100 FLON"
 mset $ops_con cisumshowman
 mcli set account permission $ops_con active --add-code
 
 
-mpush $show_con addshowadm '["ops15.cisum"]' -p flonian
+mpush $show_con addshowadm '["ops21.cisum"]' -p flonian
 
 # ========= 一把提交：cisumshowman::publishshow =========
 mpush $ops_con publishshow '[
   "flonian",
   {
-    "show_id": 20250059,
+    "show_id": 20250070,
     "category": "concert",
     "ticket_transferable": true,
     "ticket_refundable": true,
@@ -22,11 +22,11 @@ mpush $ops_con publishshow '[
   },
   [
     {
-      "ticket_id": 21010001000010140,
-      "token_uri": "ipfs://free_ticket58_metadata",
+      "ticket_id": 21010001000010250,
+      "token_uri": "ipfs://free_ticket74_metadata",
       "ticket_type": "free",
       "price": "200.0000 NESTAR",
-      "price_usd": "0.0000 USD",
+      "price_usdt": "0 USDT",
       "total_count": 100,
       "prerequisite_ticket_id": 0,
       "sale_started_at": "2025-08-01T00:00:00",
@@ -35,11 +35,11 @@ mpush $ops_con publishshow '[
       "max_grabs_per_user":10000
     },
     {
-      "ticket_id": 21010001000010141,
-      "token_uri": "ipfs://vip_ticket58_metadata",
+      "ticket_id": 21010001000010251,
+      "token_uri": "ipfs://vip_ticket74_metadata",
       "ticket_type": "VIP",
       "price": "199.00 USDT",
-      "price_usd": "199.00 USD",
+      "price_usdt": "199 USDT",
       "total_count": 2000,
       "prerequisite_ticket_id": 0,
       "sale_started_at": "2025-08-01T00:00:00",

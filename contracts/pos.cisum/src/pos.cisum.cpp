@@ -1,13 +1,7 @@
 #include <pos.cisum/pos.cisum.hpp>
 #include "safemath.hpp"
 #include <utils.hpp>
-#include <flon.token.hpp>
-
-
-static constexpr eosio::name active_perm{"active"_n};
-#define TRANSFER(bank, to, quantity, memo) \
-    {	flon::token::transfer_action act{ bank, { {_self, active_perm} } };\
-			act.send( _self, to, quantity , memo );}
+#include <flon/flon.token.hpp>
 
 namespace flon {
 

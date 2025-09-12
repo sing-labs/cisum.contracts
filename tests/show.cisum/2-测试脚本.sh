@@ -1,9 +1,9 @@
 # ===== env.sh =====
-export show_con=show23.cisum      # show.cisum 合约账号
+export show_con=show24.cisum      # show.cisum 合约账号
 export ADMIN=myadmin               # 管理员/发行账号（issue很可能只允许管理员）
 export USER1=fulgwxvwfw1m
 export USER2=flontest
-export GRAB_CON=grab22.cisum      # 如 issuetograb 需要的接收合约
+export GRAB_CON=grab23.cisum      # 如 issuetograb 需要的接收合约
 export NFT_BANK=cvticket.nft      # 如 nasset 里需要的 NFT 合约（按你的实现替）
 # 约定一组 show/ticket
 export SHOW_ID_OK=20250057

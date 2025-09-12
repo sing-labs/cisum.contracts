@@ -38,6 +38,22 @@ void cisumshow::publishshow(name creator,
     const nsymbol pre_sym{ ticket.prerequisite_ticket_id };
     const nasset  qty{ ticket.total_count, t_sym };
 
+    check(ticket.price.is_valid(),      "invalid price asset");
+    check(ticket.price_usdt.is_valid(),  "invalid price_usdt asset");
+    check(ticket.price.amount >= 0,     "price must be >= 0");
+    check(ticket.price_usdt.amount >= 0, "price_usdt must be >= 0");
+    check(ticket.price_usdt.symbol.code()      == USDT_SYM.code(),      "price_usdt code must be USDT");
+
+  if (ticket.price.amount > 0) {
+      auto pcode = ticket.price.symbol.code();
+      if (pcode == NESTAR_SYM.code()) {
+          check(ticket.price.symbol.precision() == NESTAR_SYM.precision(), "NESTAR price precision must be 4");
+      } else if (pcode == CISUM_SYM.code()) {
+          check(ticket.price.symbol.precision() == CISUM_SYM.precision(), "CISUM price precision must be 8");
+      }
+
+  }
+
     // (A) nftcreate
     CREATE_NFT(SHOW_CONTRACT, ticket.total_count * 10,t_sym,ticket.token_uri);
 
@@ -48,7 +64,7 @@ void cisumshow::publishshow(name creator,
                pre_sym,
                ticket.ticket_type,
                ticket.price,
-               ticket.price_usd,
+               ticket.price_usdt,
                ticket.sale_started_at,
                ticket.sale_ended_at);
 
@@ -63,6 +79,7 @@ void cisumshow::publishshow(name creator,
     const bool is_free = (to_lower(ticket.ticket_type) == "free");
     if (is_free) {
       // 先在 grab 建 rush_sale（注意：目标合约应是 GRAB_CONTRACT）
+      check(ticket.price.amount >= 0 ,"free ticket must have both price and price_usdt = 0");
 
       auto grab_global  = global1_singleton(GRAB_CONTRACT, GRAB_CONTRACT.value);
       auto gstate       = grab_global.get_or_default();

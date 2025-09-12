@@ -1,4 +1,4 @@
-show_con=show23.cisum
+show_con=show24.cisum
 mreg flon $show_con flonian
 mtran flonian $show_con "100 FLON"
 mset $show_con show.cisum
@@ -6,7 +6,7 @@ mcli set account permission $show_con active --add-code
 
 
 
-mpush $ticket_ntoken  addwhitelist '["'"${show_con}"'"]'   -p $ticket_ntoken
+mpush cvticket.nft  addwhitelist '["'"${show_con}"'"]'   -p cvticket.nft
 
 mpush $show_con init '["flonian", "cvticket.nft"]' -p $show_con
 
@@ -18,6 +18,11 @@ mpush $show_con addshowadm '["testtest"]' -p flonian
 
 mpush $show_con addshowadm '["fulgwxvwfw1m"]' -p flonian
 mpush $show_con addshowadm '["flontest"]' -p flonian
+
+
+
+
+
 
 
 #普通票
@@ -40,7 +45,7 @@ mpush $show_con nftcreate '[
 ]' -p flonian
 
 
-mpush $show_con nftissue '["flonian",{"amount": 11, "symbol": {"value": 21010001000010128} },"issue:20250053"]' -p flonian
+mpush $show_con nftissue '["flonian",{"amount": 11, "symbol": {"value": 21010001000010241} },"issue:20250064"]' -p flonian
 
 
 mpush $show_con newshow '[41258,"concert", true, true, "2025-09-01T00:00:00", "2025-09-10T23:59:59","test" ,"gasgsgg gq gg sa gdf jhfd j" , "onshelf"]' -p flonian
@@ -70,7 +75,7 @@ mpush $show_con newticket '[41258, {"value": 21010001000010026}, {"value": 21010
 mpush $show_con newticket '[41258, {"value": 21010001000010027}, {"value": 21010001000010022}, "VIP5", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
 
 
-mpush $show_con issue '["gahbnbehaskk",41258,21010001000010021,1,"send to gahbnbehaskk 1 ticket NFT"]' -p flonian
+mpush $show_con issue '["gahbnbehaskk",1757500247480,2101025469022,1,"send to gahbnbehaskk 1 ticket NFT"]' -p flonian
 
 
 
@@ -79,7 +84,13 @@ mpush $show_con issue '["gahbnbehaskk",41258,21010001000010021,1,"send to gahbnb
 mpush $show_con giftbatch '["flonian",
   20250057,
   21010001000010137,
-  1,
+  3,
   ["myadmin","testtest","fulgwxvwfw1m","flontest"],
   "batch gift issue"
 ]' -p flonian
+
+
+mpush $pop_con addexecutor '["show24.cisum"]' -p $pop_con
+mpush show24.cisum addplatadm '["myadmin"]'  -p flonian
+
+mpush show24.cisum buyticket '["myadmin", "5.000000 USDT", 20250057, 21010001000010137, 3, "order:12345"]' -p flonian

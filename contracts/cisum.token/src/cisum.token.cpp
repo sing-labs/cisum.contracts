@@ -44,12 +44,12 @@ void cisum::issue(const eosio::name& to, const eosio::asset& quantity, const std
 
     // 允许的签名方：issuer / POH_MINTER / POS_MINTER / 合约自身
     bool auth_ok = eosio::has_auth(st.issuer) || eosio::has_auth(POH_MINTER)
-                || eosio::has_auth(POS_MINTER) ;
-    check(auth_ok, "missing auth (issuer/POH/POS)");
+                || eosio::has_auth(POS_MINTER)  || eosio::has_auth(POP_MINTER);
+    check(auth_ok, "missing auth (issuer/POH/POS/POP)");
 
     // 允许的收币账户：issuer / POH_MINTER / POS_MINTER
-    check(to == st.issuer || to == POH_MINTER || to == POS_MINTER,
-          "issue 'to' must be issuer, POH_MINTER or POS_MINTER");
+    check(to == st.issuer || to == POH_MINTER || to == POS_MINTER|| to == POP_MINTER,
+          "issue 'to' must be issuer, POH_MINTER or POS_MINTER or POP_MINTER");
 
     check(quantity.is_valid(), "invalid quantity");
     check(quantity.amount > 0, "must issue positive quantity");

@@ -69,11 +69,11 @@ void poh_cisum::registreward(name user, string memo) {
     CHECKC(_gstate.platform_acct.value != 0, err::RECORD_NO_FOUND, "platform not set");
 
     // USDT -> CISUM
-    asset usd = _gstate.usd_per_user;
-    CHECKC(usd.symbol == USDT_SYM, err::SYMBOL_MISMATCH, "usd_per_user symbol mismatch");
-    CHECKC(usd.amount > 0,         err::NOT_POSITIVE,    "usd_per_user not positive");
+    asset usdt = _gstate.usdt_per_user;
+    CHECKC(usdt.symbol == USDT_SYM, err::SYMBOL_MISMATCH, "usdt_per_user symbol mismatch");
+    CHECKC(usdt.amount > 0,         err::NOT_POSITIVE,    "usdt_per_user not positive");
 
-    asset reward = usd_to_cisum(usd);
+    asset reward = usdt_to_cisum(usdt);
     CHECKC(reward.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "reward symbol mismatch");
     CHECKC(reward.amount > 0,          err::NOT_POSITIVE,    "reward too small");
 

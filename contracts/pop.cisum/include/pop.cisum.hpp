@@ -36,18 +36,15 @@ public:
    * @param pay_amount   The pay amount.
    * @param memo         Additional information or remarks.
    */
-  [[eosio::action]]
-  void mine(  name        payer,
-              asset       pay_amount,
-              string      memo
-   );
+  ACTION mine(  name  payer,asset pay_amount,string  memo);
 
 
-  [[eosio::action]]
-  void  settle(const asset& amount, const string& memo) ;
+  ACTION  settle(const asset& amount, const string& memo) ;
 
+  ACTION setmaxreward(const asset& max_rewards);
 
-
+  ACTION addexecutor(const name& acct);
+  ACTION delexecutor(const name& acct);
 
   // -------- Inline wrappers --------
   using mine_action        = eosio::action_wrapper<"mine"_n,        &pop_cisum::mine>;

@@ -72,15 +72,14 @@ static constexpr symbol       USDT_SYMBOL                = symbol(USDT_SYMBOL_CO
 
 
 NTBL("global") global_t {
-   eosio::name    oracle_contract      = ORACLE_CONTRACT_DEFAULT;
-   eosio::name    reward_contract      = REWARD_CONTRACT_DEFAULT;
+   name           oracle_contract      = ORACLE_CONTRACT_DEFAULT;
+   name           reward_contract      = REWARD_CONTRACT_DEFAULT;
    asset          max_rewards          = MAX_REWARDS_DEFAULT;
    asset          available_rewards    = MAX_REWARDS_DEFAULT;
    asset          issued_rewards       = asset(0, REWARD_SYMBOL);
    asset          receivable           = asset(0, USDT_SYMBOL);
-   name           cisumreserve         = "cisumreserve"_n;
-
-   EOSLIB_SERIALIZE(global_t, (oracle_contract)(reward_contract)(max_rewards)(available_rewards)(issued_rewards)(receivable)(cisumreserve))
+   std::set<name> executors;
+   EOSLIB_SERIALIZE(global_t, (oracle_contract)(reward_contract)(max_rewards)(available_rewards)(issued_rewards)(receivable)(executors))
 };
 
 typedef eosio::singleton< "global"_n, global_t > global_singleton;

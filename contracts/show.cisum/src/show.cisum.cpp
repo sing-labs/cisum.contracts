@@ -9,6 +9,8 @@ using std::vector;
 #include <grab.cisum.db.hpp>
 #include <limits>  // for std::numeric_limits
 #include <eosio/crypto.hpp>
+#include <pop.cisum.hpp>
+
 
 namespace flon {
 
@@ -322,7 +324,7 @@ void show::newticket(const uint64_t& show_id,
                      const nsymbol&  prerequisite_nsym,
                      const string&   ticket_type,
                      const asset&    price,
-                     const asset&    price_usd,
+                     const asset&    price_usdt,
                      const time_point& sale_started_at,
                      const time_point& sale_ended_at)
 {
@@ -330,7 +332,9 @@ void show::newticket(const uint64_t& show_id,
 
   check(is_account(_gstate.nft_bank), "nft_bank not exist");
   check(price.amount >= 0, "price must be >= 0");
-  check(price_usd.amount >= 0, "price_usd must be >= 0");
+  check(price_usdt.amount >= 0, "price_usdt must be >= 0");
+  check(price_usdt.symbol.code() == USDT_SYM.code(),"price_usdt symbol mismatch, must be USDT");
+  check(price_usdt.symbol.precision() <= 6,"price_usdt precision must be <= 6");
   check(ticket_type.size() <= 64, "ticket_type too long");
 
   check(sale_started_at != time_point{}, "sale_started_at is required");
@@ -351,7 +355,7 @@ void show::newticket(const uint64_t& show_id,
     r.prerequisite_ticket_id  = prerequisite_nsym.raw();
     r.ticket_type             = ticket_type;
     r.price                   = price;
-    r.price_usd               = price_usd;
+    r.price_usdt               = price_usdt;
     r.total_count             = 0;
     r.sold_count              = 0;
     r.stock_count             = 0;
@@ -367,7 +371,7 @@ void show::setticket(const uint64_t& show_id,
                      const uint64_t& ticket_id,
                      const string&   ticket_type,
                      const asset&    price,
-                     const asset&    price_usd,
+                     const asset&    price_usdt,
                      const time_point& sale_started_at,
                      const time_point& sale_ended_at)
 {
@@ -379,7 +383,9 @@ void show::setticket(const uint64_t& show_id,
 
   // 基本校验
   check(price.amount >= 0, "price must be >= 0");
-  check(price_usd.amount >= 0, "price_usd must be >= 0");
+  check(price_usdt.amount >= 0, "price_usdt must be >= 0");
+  check(price_usdt.symbol.code() == USDT_SYM.code(),"price_usdt symbol mismatch, must be USDT");
+  check(price_usdt.symbol.precision() <= 6,"price_usdt precision must be <= 6");
   check(ticket_type.size() <= 64, "ticket_type too long");
 
   // 售卖窗口校验
@@ -391,7 +397,7 @@ void show::setticket(const uint64_t& show_id,
   tks.modify(it, same_payer, [&](auto& r){
     r.ticket_type     = ticket_type;
     r.price           = price;
-    r.price_usd       = price_usd;
+    r.price_usdt       = price_usdt;
     r.sale_started_at = sale_started_at;
     r.sale_ended_at   = sale_ended_at;
     r.updated_at      = t;
@@ -543,6 +549,42 @@ void show::issuetograb(const name& to, const nasset& quantity, const string& mem
     { permission_level{ get_self(), "active"_n } }
   }.send(get_self(), to, std::vector<nasset>{ quantity }, "add:"+std::to_string(rush_sale_id) );
 }
+
+void show::buyticket(const name&          payer,
+                     const asset&         pay_amount,
+                     const uint64_t&      show_id,
+                     const uint64_t&      ticket_id,
+                     const uint32_t&      ticket_count,
+                     const string&        memo)
+{
+    require_admin_or_platadm();
+
+    check(is_account(payer), "invalid payer");
+    check(pay_amount.is_valid(),   "invalid pay_amount");
+    check(pay_amount.symbol == USDT_SYM, "pay_amount symbol mismatch,must be USDT");
+    check(pay_amount.amount > 0,   "pay_amount must be positive");
+    check(ticket_count > 0,  "ticket_count must be positive");
+
+    // ===== 查票价 =====
+    ticket_t::ticketidx tickets(get_self(), show_id);   // scope 用 show_id
+    auto it = tickets.find(ticket_id);
+    check(it != tickets.end(), "ticket not found");
+
+    asset total_price = it->price_usdt * ticket_count;
+
+    check(pay_amount.amount <= total_price.amount,
+                "overpayment not allowed: require " + total_price.to_string()
+              + ", got " + pay_amount.to_string());
+
+    // ===== 调用 pop::mine 奖励 =====
+    pop_cisum::mine_action mine{ POP_CONTRACT, { get_self(), "active"_n } };
+    mine.send(payer, pay_amount, memo);
+
+    // ===== 发票（issue） =====
+    issue_action issue{ get_self(), { get_self(), "active"_n } };
+    issue.send(payer, show_id, ticket_id, ticket_count, memo);
+}
+
 
 
 } // namespace flon

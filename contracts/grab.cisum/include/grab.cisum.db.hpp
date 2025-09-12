@@ -64,8 +64,8 @@ static constexpr symbol POINT_SYMBOL            = symbol(POINT_SYMBOL_CODE, 4);
 static constexpr name   POINT_CONTRACT_DEFAULT  = "nestar.token"_n;
 static constexpr name   TICKET_CONTRACT_DEFAULT = "cvticket.nft"_n;
 
-static constexpr name SHOW_CONTRACT = "show23.cisum"_n;
-static constexpr name OPS_CONTRACT = "ops15.cisum"_n;   // ops  操作调度中心合约账户
+static constexpr name SHOW_CONTRACT = "show24.cisum"_n;
+static constexpr name OPS_CONTRACT = "ops21.cisum"_n;   // ops  操作调度中心合约账户
 
 #define TBL struct [[eosio::table, eosio::contract("grab.cisum")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("grab.cisum")]]
@@ -145,5 +145,29 @@ NTBL("orders") order_t {
 
    EOSLIB_SERIALIZE(order_t, (id)(grab_id)(account)(grabs)(tickets)(created_at))
 };
+
+// scope: self
+NTBL("allowtokens") allowed_token_t {
+    uint64_t    id;          // 自增主键
+    symbol      sym;         // 币种(含精度)，例如 4,NESTAR / 8,CISUM
+    name        bank;        // 发行/转账合约账号，例如 nest21.token / cisum.token
+    time_point  created_at;
+    time_point  updated_at;
+
+    uint64_t primary_key() const { return id; }
+    uint64_t bycode()      const { return sym.code().raw(); } // 便于按币种代码查找（忽略精度）
+    uint128_t bysymbol()   const {
+        return (uint128_t(sym.code().raw()) << 64) | (uint128_t) sym.precision();
+    }
+
+    typedef eosio::multi_index<
+        "allowtokens"_n, allowed_token_t,
+        indexed_by<"bycode"_n,   const_mem_fun<allowed_token_t, uint64_t,  &allowed_token_t::bycode>>,
+        indexed_by<"bysymbol"_n, const_mem_fun<allowed_token_t, uint128_t, &allowed_token_t::bysymbol>>
+    > idx_t;
+
+    EOSLIB_SERIALIZE(allowed_token_t, (id)(sym)(bank)(created_at)(updated_at))
+};
+
 
 } // namespace flon

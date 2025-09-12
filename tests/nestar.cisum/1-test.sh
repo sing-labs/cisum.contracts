@@ -58,7 +58,6 @@ mpush $nestar_token delbrule '["0"]' -p $nestar_token
 
 
 
-nes11.issuer
 
 
 mpush $nestar_token transfer '["'"${issuer_owner}"'", "gahbnbehaskk", "500.0000 NESTAR", "airdrop"]' -p $issuer_owner
@@ -81,4 +80,8 @@ mpush $nestar_token setrate '["100"]' -p $nestar_token
 
 
 
-mpush $nestar_token transfer '["gahbnbehaskk", "grab22.cisum", "300.0000 NESTAR", "airdrop"]' -p gahbnbehaskk
+mpush $nestar_token transfer '["gahbnbehaskk", "grab23.cisum", "300.0000 NESTAR", "airdrop"]' -p gahbnbehaskk
+
+issuer_owner=nes11.issuer
+mpush $nestar_token transfer '["'"${issuer_owner}"'", "cvph53ao15sq", "2000.0000 NESTAR", "airdrop"]' -p $issuer_owner
+

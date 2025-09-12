@@ -13,11 +13,11 @@ using std::vector;
 
 namespace flon {
 
-static constexpr name SHOW_CONTRACT = "show23.cisum"_n;
-static constexpr name GRAB_CONTRACT = "grab22.cisum"_n;
-\
-static constexpr symbol_code POINT_SYMBOL_CODE = symbol_code("NESTAR");
-static constexpr symbol POINT_SYMBOL            = symbol(POINT_SYMBOL_CODE, 4);
+static constexpr name SHOW_CONTRACT             = "show24.cisum"_n;
+static constexpr name GRAB_CONTRACT             = "grab23.cisum"_n;
+static constexpr symbol NESTAR_SYM              = symbol(symbol_code("NESTAR"), 4);
+static constexpr symbol CISUM_SYM               = symbol(symbol_code("CISUM"), 8);
+static constexpr symbol USDT_SYM                 = symbol(symbol_code("USDT"), 6);
 
 struct [[eosio::table, eosio::contract("cisumshowman")]] global_t {
     name admin;
@@ -32,7 +32,7 @@ struct ticket_info {
     string     token_uri;                 // NFT 元数据 URI
     string     ticket_type;               // 票种类型
     asset      price;                     // 原来币种的价格（NESTAR是免费票）
-    asset      price_usd;                 // 转化的usd价格
+    asset      price_usdt;                 // 转化的usd价格
     uint64_t   total_count;               // 发行量
     uint64_t   prerequisite_ticket_id = 0;// 前置票（无则 0）
     time_point sale_started_at;           // 售票开始
@@ -41,7 +41,7 @@ struct ticket_info {
     uint32_t   max_grabs_per_user;        // 每人最大抢票数
 
     EOSLIB_SERIALIZE(ticket_info,
-        (ticket_id)(token_uri)(ticket_type)(price)(price_usd)
+        (ticket_id)(token_uri)(ticket_type)(price)(price_usdt)
         (total_count)(prerequisite_ticket_id)
         (sale_started_at)(sale_ended_at)(win_ratio)(max_grabs_per_user)
     )

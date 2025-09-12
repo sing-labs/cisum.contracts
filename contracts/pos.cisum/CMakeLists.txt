@@ -11,3 +11,4 @@ set_target_properties(pos.cisum
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/ricardian/pos.cisum.contracts.md.in ${CMAKE_CURRENT_BINARY_DIR}/ricardian/pos.cisum.contracts.md @ONLY )
 
 target_compile_options( pos.cisum PUBLIC -R${CMAKE_CURRENT_SOURCE_DIR}/ricardian -R${CMAKE_CURRENT_BINARY_DIR}/ricardian )
+target_link_libraries(pos.cisum flon_base)

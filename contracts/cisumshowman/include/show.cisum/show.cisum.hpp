@@ -22,9 +22,9 @@ using flon::nsymbol;
     {	flon::show::newshow_action act{ bank, { {get_self(), "active"_n} } };\
 			act.send( show_id,category,ticket_transferable,ticket_refundable,show_started_at,show_ended_at,show_name,show_address);}
 
-#define NEW_TICKET(bank,show_id,ticket_nsym,prerequisite_nsym,ticket_type,price,price_usd,sale_started_at,sale_ended_at) \
+#define NEW_TICKET(bank,show_id,ticket_nsym,prerequisite_nsym,ticket_type,price,price_usdt,sale_started_at,sale_ended_at) \
     {	flon::show::newticket_action act{ bank, { {get_self(), "active"_n} } };\
-			act.send( show_id,ticket_nsym,prerequisite_nsym,ticket_type,price,price_usd,sale_started_at,sale_ended_at);}
+			act.send( show_id,ticket_nsym,prerequisite_nsym,ticket_type,price,price_usdt,sale_started_at,sale_ended_at);}
 
 
 #define ISSUE_TO_GRAB(bank, to, quantity, memo) \
@@ -74,7 +74,7 @@ public:
                                     const nsymbol&  prerequisite_nsym,
                                     const string&   ticket_type,
                                     const asset&    price,
-                                    const asset&    price_usd,
+                                    const asset&    price_usdt,
                                     const time_point& sale_started_at,
                                     const time_point& sale_ended_at);
 
@@ -82,7 +82,7 @@ public:
                                     const uint64_t& ticket_id,
                                     const string&   ticket_type,
                                     const asset&    price,
-                                    const asset&    price_usd,
+                                    const asset&    price_usdt,
                                     const time_point& sale_started_at,
                                     const time_point& sale_ended_at);
 

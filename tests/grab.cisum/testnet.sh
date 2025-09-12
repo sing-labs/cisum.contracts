@@ -12,10 +12,10 @@ mcli set account permission $grab_con active --add-code
 
 
 ## env: see client.env
-grab_contract="grab22.cisum"
+grab_contract="grab23.cisum"
 point_contract="nest21.token"
 ticket_contract="cvticket.nft"
-show_contract="show23.cisum"
+show_contract="show24.cisum"
 admin="flonian"
 user="user1"
 
@@ -55,24 +55,28 @@ tpush ${point_contract} transfer "[\"${user}\", \"${grab_contract}\", \"100.0000
 
 mpush $grab_con init '["flonian"]' -p $grab_con
 #增加消费白名单
-mpush $nestar_token  addconsumewl '["grab22.cisum"]'   -p $nestar_token
-mpush  cvticket.nft  addwhitelist '["grab22.cisum"]'   -p cvticket.nft
+mpush $nestar_token  addconsumewl '["grab23.cisum"]'   -p $nestar_token
+mpush  cvticket.nft  addwhitelist '["grab23.cisum"]'   -p cvticket.nft
 
 
-mpush  grab22.cisum  delrushsale '["21010001000010026",true]' -p flonian
+mpush  grab23.cisum  delrushsale '["21010001000010026",true]' -p flonian
 
-mpush nest21.token  transfer '["gahbnbehaskk","grab22.cisum","200.0000 NESTAR","grab:1:a1799ae8e1ea62a20a5f47510342a401"]' -p gahbnbehaskk
-mpush nest21.token  transfer '["ipowner.111","grab22.cisum","200.0000 NESTAR","grab:2"]' -p ipowner.111
-mpush nest21.token  transfer '["myadmin","grab22.cisum","200.0000 NESTAR","grab:2"]' -p myadmin
-mpush nest21.token  transfer '["nes11.issuer","grab22.cisum","200.0000 NESTAR","grab:2"]' -p nes11.issuer
+mpush nest21.token  transfer '["gahbnbehaskk","grab23.cisum","200.0000 NESTAR","grab:16:a1799ae8e1ea62a20a5f56710342a401"]' -p gahbnbehaskk
+mpush nest21.token  transfer '["ipowner.111","grab23.cisum","200.0000 NESTAR","grab:16:a1799ae8e1ea62a20a5f56810342a401"]' -p ipowner.111
+mpush nest21.token  transfer '["myadmin","grab23.cisum","200.0000 NESTAR","grab:16:a1799ae8e1ea62a20a5f56910342a401"]' -p myadmin
+mpush nest21.token  transfer '["nes11.issuer","grab23.cisum","200.0000 NESTAR","grab:16:a1799ae8e1ea62a20a5f57010342a401"]' -p nes11.issuer
 
 
 
 for i in {1..1000}; do
   echo "第 $i 次执行..."
-  mpush nest21.token  transfer '["nes11.issuer","grab22.cisum","200.0000 NESTAR","grab:25"]' -p nes11.issuer
+  mpush nest21.token  transfer '["gahbnbehaskk","grab23.cisum","200.0000 NESTAR","grab:16:a1799ae8e1ea62a20a5f56710342a401"]' -p gahbnbehaskk
   sleep 0.5  # 每次间隔 0.5 秒，避免节点压力过大
 done
 
 
-mpush  grab22.cisum  setrushsale '[23,1000,1000]' -p flonian
+mpush  grab23.cisum  setrushsale '[10,1000,1000,null]' -p flonian
+
+
+mpush grab23.cisum cfgpoint '["nest21.token"]' -p flonian
+mpush grab23.cisum settoken '["4,NESTAR","nest21.token"]' -p grab23.cisum

@@ -82,15 +82,15 @@ private:
     return asset{ price_amount, right_sym };
   }
 
-  // usd(asset,6) -> cisum(asset,8)，按 swap 价格换算
-  asset usd_to_cisum(const asset& usd) {
-    check(usd.symbol == USDT_SYM, "usd_to_cisum: usd symbol mismatch");
+  // usdt(asset,6) -> cisum(asset,8)，按 swap 价格换算
+  asset usdt_to_cisum(const asset& usdt) {
+    check(usdt.symbol == USDT_SYM, "usdt_to_cisum: usdt symbol mismatch");
     asset price = this->get_price_from_swap_as_asset(CISUM_SYM, USDT_SYM);
     check(price.amount > 0, "invalid price");
 
-    // cisum_amount = usd.amount * 10^8 / price.amount
+    // cisum_amount = usdt.amount * 10^8 / price.amount
     const int64_t p10C = pow10(CISUM_SYM.precision());
-    __int128 num = (__int128)usd.amount * (__int128)p10C;
+    __int128 num = (__int128)usdt.amount * (__int128)p10C;
     int64_t cisum_units = (int64_t)(num / (__int128)price.amount);
     return asset{ cisum_units, CISUM_SYM };
   }

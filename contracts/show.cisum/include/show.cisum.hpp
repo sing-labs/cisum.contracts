@@ -110,7 +110,7 @@ public:
                     const nsymbol&          prerequisite_nsym,
                     const string&           ticket_type,
                     const asset&            price,
-                    const asset&            price_usd,
+                    const asset&            price_usdt,
                     const time_point&       sale_started_at,
                     const time_point&       sale_ended_at);
 
@@ -118,7 +118,7 @@ public:
                     const uint64_t&         ticket_id,
                     const string&           ticket_type,
                     const asset&            price,
-                    const asset&            price_usd,
+                    const asset&            price_usdt,
                     const time_point&       sale_started_at,
                     const time_point&       sale_ended_at);
 
@@ -144,6 +144,16 @@ public:
                       const name&            issuer,
                       const string&          memo,
                       const uint64_t&        created_at);
+
+
+  ACTION buyticket(const name&          payer,
+                     const asset&         pay_amount,
+                     const uint64_t&      show_id,
+                     const uint64_t&      ticket_id,
+                     const uint32_t&      ticket_count,
+                     const string&        memo);
+
+
 
   ACTION issuetograb(const name& to, const nasset& quantity, const string& memo);
 

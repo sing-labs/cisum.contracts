@@ -4,7 +4,7 @@
 #include <eosio/time.hpp>
 #include <eosio/singleton.hpp>
 #include <string>
-
+#include <set>
 using namespace eosio;
 using std::string;
 
@@ -55,9 +55,10 @@ struct [[eosio::table, eosio::contract("poe.cisum")]] global_t {
   asset      available_points = asset(0, POINTS_SYM); // 可用积分
   asset      claimed_points   = asset(0, POINTS_SYM); // 已发放累计
   asset      total_points     = asset(0, POINTS_SYM); // 总额度（= available + claimed）
-  uint64_t   last_act_id      = 0;                    // 行为自增ID
+  std::set<name>  oracles;
+  uint64_t   last_act_id      = 0;                      // 行为自增ID
 
-  EOSLIB_SERIALIZE(global_t, (available_points)(claimed_points)(total_points)(last_act_id))
+  EOSLIB_SERIALIZE(global_t, (available_points)(claimed_points)(total_points)(oracles)(last_act_id))
 };
 using global_singleton = eosio::singleton<"global"_n, global_t>;
 

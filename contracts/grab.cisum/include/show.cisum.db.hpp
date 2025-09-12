@@ -47,7 +47,7 @@ struct [[eosio::table, eosio::contract("show.cisum")]] ticket_t {
    uint64_t   prerequisite_ticket_id;   // 前置/父票（nsymbol.raw()，无则 0）
    string     ticket_type;              // 普通/合影/晚宴…
    asset      price;                    // 本地币价格
-   asset      price_usd;                // 美元价格（例："100.00 USD"）
+   asset      price_usdt;                // 美元价格（例："100.00 USDT"）
    uint32_t   total_count;              // 总量（<= NFT 总发行量）
    uint32_t   sold_count;               // 已售/已分配（含待发）
    uint32_t   stock_count;              // 剩余库存（= total_count - sold_count）
@@ -63,7 +63,7 @@ struct [[eosio::table, eosio::contract("show.cisum")]] ticket_t {
 
    EOSLIB_SERIALIZE(ticket_t,
       (ticket_id)(prerequisite_ticket_id)
-      (ticket_type)(price)(price_usd)
+      (ticket_type)(price)(price_usdt)
       (total_count)(sold_count)(stock_count)(issued_count)
       (sale_started_at)(sale_ended_at)
       (created_at)(updated_at)

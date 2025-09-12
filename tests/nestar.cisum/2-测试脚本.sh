@@ -9,7 +9,7 @@ export user_owner=gahbnbehaskk     # 普通用户
 export user_admin=myadmin          # 管理员
 export artist_contract=art14.token # 艺人合约
 export badgestore_contract=badgestore11
-export GRAB_CON=grab22.cisum       # grab合约
+export GRAB_CON=grab23.cisum       # grab合约
 
 # 预置 FLON 资金 & 注册账号
 mreg flon $nestar_token flonian

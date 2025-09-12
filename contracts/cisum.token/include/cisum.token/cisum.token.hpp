@@ -14,6 +14,7 @@ namespace eosio {
    using std::string;
    static constexpr eosio::name POH_MINTER = "poh15.cisum"_n;
    static constexpr eosio::name POS_MINTER = "pos14.cisum"_n;
+   static constexpr eosio::name POP_MINTER = "pop14.cisum"_n;
    /**
     * The `flon.token` sample system contract defines the structures and actions that allow users to create, issue, and manage tokens for EOSIO based blockchains. It demonstrates one way to implement a smart contract which allows for creation and management of tokens. It is possible for one to create a similar contract which suits different needs. However, it is recommended that if one only needs a token with the below listed actions, that one uses the `flon.token` contract instead of developing their own.
     *
