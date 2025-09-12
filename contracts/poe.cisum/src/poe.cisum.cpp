@@ -1,5 +1,4 @@
 #include "poe.cisum.hpp"
-#include <flon/flon.token.hpp>
 
 namespace flon {
 
@@ -15,13 +14,13 @@ rewardact_t poe_cisum::_get_act(const name& act_name) {
 }
 
 void poe_cisum::_pay_points(const name& to, const asset& quant, const string& memo) {
-  TRANSFER(POINTS_BANK, to, quant, memo)
+  TRANSFER(NESTAR_BANK, to, quant, memo)
 }
 
 void poe_cisum::addrewardact(const name& act_name,const asset& points,const string& memo){
   require_auth(get_self());
   CHECKC(act_name.length() > 0,       err::INVALID_FORMAT,   "act_name cannot be empty");
-  CHECKC(points.symbol == POINTS_SYM, err::SYMBOL_MISMATCH,  "points symbol mismatch");
+  CHECKC(points.symbol == NESTAR_SYM, err::SYMBOL_MISMATCH,  "points symbol mismatch");
   CHECKC(points.amount >= 0,          err::INVALID_FORMAT,   "points must be non-negative");
   CHECKC(memo.size() <= 256,          err::INVALID_FORMAT,  "memo too long");
 
@@ -37,7 +36,7 @@ void poe_cisum::addrewardact(const name& act_name,const asset& points,const stri
       row.act_name        = act_name;
       row.points          = points;
       row.memo            = memo;
-      row.claimed_points  = asset(0, POINTS_SYM);
+      row.claimed_points  = asset(0, NESTAR_SYM);
       row.create_at       = now;
       row.update_at       = now;
     });
@@ -98,11 +97,11 @@ void poe_cisum::claimpoints(const name& leader, const name& claimer, const uint6
     CHECKC(it != acts.end(), err::RECORD_NO_FOUND, "rewardact not found by id: " + std::to_string(rewardact_id));
 
     const asset reward = it->points;
-    CHECKC(reward.amount > 0 && reward.symbol == POINTS_SYM, err::SYMBOL_MISMATCH, "invalid act points");
+    CHECKC(reward.amount > 0 && reward.symbol == NESTAR_SYM, err::SYMBOL_MISMATCH, "invalid act points");
 
-    CHECKC(_gstate.available_points.symbol == POINTS_SYM, err::SYMBOL_MISMATCH, "global available_points symbol mismatch");
-    CHECKC(_gstate.claimed_points.symbol   == POINTS_SYM, err::SYMBOL_MISMATCH, "global claimed_points symbol mismatch");
-    CHECKC(_gstate.total_points.symbol     == POINTS_SYM, err::SYMBOL_MISMATCH, "global total_points symbol mismatch");
+    CHECKC(_gstate.available_points.symbol == NESTAR_SYM, err::SYMBOL_MISMATCH, "global available_points symbol mismatch");
+    CHECKC(_gstate.claimed_points.symbol   == NESTAR_SYM, err::SYMBOL_MISMATCH, "global claimed_points symbol mismatch");
+    CHECKC(_gstate.total_points.symbol     == NESTAR_SYM, err::SYMBOL_MISMATCH, "global total_points symbol mismatch");
     CHECKC(_gstate.available_points.amount >= reward.amount, err::INSUFFICIENT_QUANTITY, "insufficient available_points");
 
     // 防溢出：claimed_points += reward
@@ -144,26 +143,26 @@ void poe_cisum::ontransfer(const name& from, const name& to,const asset& quantit
   if (from == get_self() || to != get_self()) return;
 
   // 基础校验
-  CHECKC(get_first_receiver() == POINTS_BANK, err::INVALID_FORMAT, "invalid token contract");
-  CHECKC(quantity.symbol == POINTS_SYM,       err::SYMBOL_MISMATCH, "symbol mismatch");
+  CHECKC(get_first_receiver() == NESTAR_BANK, err::INVALID_FORMAT, "invalid token contract");
+  CHECKC(quantity.symbol == NESTAR_SYM,       err::SYMBOL_MISMATCH, "symbol mismatch");
   CHECKC(quantity.is_valid(),                 err::INVALID_FORMAT,  "invalid asset");
   CHECKC(quantity.amount > 0,                 err::NOT_POSITIVE,    "must transfer positive");
 
   // —— 初始化全局资产符号（首次使用时）
   if (_gstate.available_points.symbol.code().raw() == 0) {
-    _gstate.available_points = asset(0, POINTS_SYM);
+    _gstate.available_points = asset(0, NESTAR_SYM);
   } else {
-    CHECKC(_gstate.available_points.symbol == POINTS_SYM, err::SYMBOL_MISMATCH, "available_points symbol mismatch");
+    CHECKC(_gstate.available_points.symbol == NESTAR_SYM, err::SYMBOL_MISMATCH, "available_points symbol mismatch");
   }
   if (_gstate.claimed_points.symbol.code().raw() == 0) {
-    _gstate.claimed_points = asset(0, POINTS_SYM);
+    _gstate.claimed_points = asset(0, NESTAR_SYM);
   } else {
-    CHECKC(_gstate.claimed_points.symbol == POINTS_SYM, err::SYMBOL_MISMATCH, "claimed_points symbol mismatch");
+    CHECKC(_gstate.claimed_points.symbol == NESTAR_SYM, err::SYMBOL_MISMATCH, "claimed_points symbol mismatch");
   }
   if (_gstate.total_points.symbol.code().raw() == 0) {
-    _gstate.total_points = asset(0, POINTS_SYM);
+    _gstate.total_points = asset(0, NESTAR_SYM);
   } else {
-    CHECKC(_gstate.total_points.symbol == POINTS_SYM, err::SYMBOL_MISMATCH, "total_points symbol mismatch");
+    CHECKC(_gstate.total_points.symbol == NESTAR_SYM, err::SYMBOL_MISMATCH, "total_points symbol mismatch");
   }
 
   // ========= 溢出保护 #1：available_points += quantity =========

@@ -7,7 +7,7 @@
 #include <string>
 #include <set>
 #include <flon/nasset.hpp>
-
+#include <flon/consts.hpp>
 using std::set;
 using std::string;
 using namespace eosio;
@@ -59,14 +59,6 @@ enum class err: uint8_t {
 
 static constexpr uint32_t RATIO_BASE = 10000;   // 100.00%
 
-static constexpr symbol_code POINT_SYMBOL_CODE  = symbol_code("NESTAR");
-static constexpr symbol POINT_SYMBOL            = symbol(POINT_SYMBOL_CODE, 4);
-static constexpr name   POINT_CONTRACT_DEFAULT  = "nestar.token"_n;
-static constexpr name   TICKET_CONTRACT_DEFAULT = "cvticket.nft"_n;
-
-static constexpr name SHOW_CONTRACT = "show24.cisum"_n;
-static constexpr name OPS_CONTRACT = "ops21.cisum"_n;   // ops  操作调度中心合约账户
-
 #define TBL struct [[eosio::table, eosio::contract("grab.cisum")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("grab.cisum")]]
 
@@ -74,8 +66,8 @@ static constexpr name OPS_CONTRACT = "ops21.cisum"_n;   // ops  操作调度中�
 NTBL("global") global_t {
    uint64_t       last_rush_sale_id;
    eosio::name    admin;
-   eosio::name    point_contract = POINT_CONTRACT_DEFAULT;
-   eosio::name    ticket_contract = TICKET_CONTRACT_DEFAULT;
+   eosio::name    point_contract    = NESTAR_CONTRACT;
+   eosio::name    ticket_contract   = CVTICKET_CONTRACT;
 
    EOSLIB_SERIALIZE(global_t, (last_rush_sale_id)(admin)(point_contract)(ticket_contract))
 };

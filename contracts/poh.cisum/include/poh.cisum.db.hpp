@@ -4,6 +4,7 @@
 #include <eosio/time.hpp>
 #include <eosio/singleton.hpp>
 #include <string>
+#include <flon/consts.hpp>
 
 using namespace eosio;
 using std::string;
@@ -48,16 +49,8 @@ enum class err: uint8_t {
 #define CHECKC(exp, code, msg) \
   { if (!(exp)) eosio::check(false, string("[[") + std::to_string((int)code) + string("]] ") + msg); }
 
-// -------- 常量 --------
-static constexpr name   SWAP_CONTRACT   = "flon.swap"_n;      // 价格来源
-static constexpr name   CISUM_BANK     = "cisum.token"_n;    // 奖励币合约
-static constexpr symbol CISUM_SYM       = symbol(symbol_code("CISUM"), 8);
-static constexpr symbol USDT_SYM        = symbol(symbol_code("USDT"), 6);
 
 static const asset      MAX_REWARD      = asset(25'5000'0000'0000'0000, CISUM_SYM);
-
-static constexpr symbol NESTAR_SYM  = symbol(symbol_code("NESTAR"), 4);
-static constexpr name   NESTAR_BANK = "nest21.token"_n;
 
 //发 100 NESTAR 给注册者
 static const asset      NESTAR_BONUS    = asset(100'0000, NESTAR_SYM);

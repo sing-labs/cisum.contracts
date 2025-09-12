@@ -6,18 +6,18 @@
 #include <eosio/singleton.hpp>
 #include <vector>
 #include <string>
-
+#include <flon/consts.hpp>
 using namespace eosio;
 using std::string;
 using std::vector;
 
 namespace flon {
 
-static constexpr name SHOW_CONTRACT             = "show24.cisum"_n;
-static constexpr name GRAB_CONTRACT             = "grab23.cisum"_n;
-static constexpr symbol NESTAR_SYM              = symbol(symbol_code("NESTAR"), 4);
-static constexpr symbol CISUM_SYM               = symbol(symbol_code("CISUM"), 8);
-static constexpr symbol USDT_SYM                 = symbol(symbol_code("USDT"), 6);
+// static constexpr name SHOW_CONTRACT             = "show24.cisum"_n;
+// static constexpr name GRAB_CONTRACT             = "grab23.cisum"_n;
+// static constexpr symbol NESTAR_SYM              = symbol(symbol_code("NESTAR"), 4);
+// static constexpr symbol CISUM_SYM               = symbol(symbol_code("CISUM"), 8);
+// static constexpr symbol USDT_SYM                 = symbol(symbol_code("USDT"), 6);
 
 struct [[eosio::table, eosio::contract("cisumshowman")]] global_t {
     name admin;

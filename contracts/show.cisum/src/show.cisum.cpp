@@ -569,6 +569,10 @@ void show::buyticket(const name&          payer,
     ticket_t::ticketidx tickets(get_self(), show_id);   // scope 用 show_id
     auto it = tickets.find(ticket_id);
     check(it != tickets.end(), "ticket not found");
+    const auto now = current_time_point();
+    check(it->sale_started_at <= now, "ticket not started yet");
+    check(now <= it->sale_ended_at,   "ticket already ended");
+
 
     asset total_price = it->price_usdt * ticket_count;
 

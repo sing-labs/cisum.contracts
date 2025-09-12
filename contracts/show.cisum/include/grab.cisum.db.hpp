@@ -13,8 +13,7 @@ using std::string;
 using namespace eosio;
 
 namespace flon {
-static constexpr symbol_code POINT_SYMBOL_CODE  = symbol_code("NESTAR");
-static constexpr symbol POINT_SYMBOL            = symbol(POINT_SYMBOL_CODE, 4);
+
 static constexpr uint32_t RATIO_BOOST = 10000;
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("grab.cisum")]]
 // scope: self

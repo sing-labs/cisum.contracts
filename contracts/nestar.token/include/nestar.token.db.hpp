@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 #include <flon/nasset.hpp>
+#include <flon/consts.hpp>
 
 using std::set;
 using std::string;
@@ -49,11 +50,6 @@ enum class err: uint8_t {
    DID_PACK_SYMBOL_ERR    = 26,
    STATUS_MISMATCH        = 27
 };
-
-// ---------- 基本常量 ----------
-static constexpr symbol NESTAR_SYMBOL  = symbol(symbol_code("NESTAR"), 4);
-static constexpr eosio::name POH_MINTER = "poh15.cisum"_n;
-static constexpr eosio::name POS_MINTER = "pos14.cisum"_n;
 
 #define TBL struct [[eosio::table, eosio::contract("nestar.token")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("nestar.token")]]

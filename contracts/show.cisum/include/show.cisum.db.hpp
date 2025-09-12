@@ -7,7 +7,7 @@
 #include <string>
 
 #include <cvticket.nft.hpp>
-
+#include <flon/consts.hpp>
 namespace flon {
 
 using namespace eosio;
@@ -16,11 +16,6 @@ using std::set;
 
 #define TBL        struct [[eosio::table, eosio::contract("show.cisum")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("show.cisum")]]
-
-static constexpr name GRAB_CONTRACT = "grab23.cisum"_n;
-
-static constexpr eosio::name POP_CONTRACT = "pop14.cisum"_n;
-static constexpr eosio::symbol USDT_SYM   = eosio::symbol(eosio::symbol_code("USDT"), 6);
 
 NTBL("global") global_t {
   name        admin;          // 超管

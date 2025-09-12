@@ -7,7 +7,7 @@
 #include <string>
 #include <set>
 #include <flon/nasset.hpp>
-
+#include <flon/consts.hpp>
 using std::set;
 using std::string;
 using namespace eosio;
@@ -57,27 +57,20 @@ enum class err: uint8_t {
 
 // static constexpr uint32_t RATIO_BOOST = 10000;
 
-static constexpr name         REWARD_CONTRACT_DEFAULT    = "cisum.token"_n;
-static constexpr symbol_code  REWARD_SYMBOL_CODE         = symbol_code("CISUM");
-static constexpr symbol       REWARD_SYMBOL              = symbol(REWARD_SYMBOL_CODE, 8);
-static const asset            MAX_REWARDS_DEFAULT        = asset(25'5000'0000'0000, REWARD_SYMBOL);
 
-
-static constexpr name         ORACLE_CONTRACT_DEFAULT    = "cisum.token"_n;
-static constexpr symbol_code  USDT_SYMBOL_CODE           = symbol_code("USDT");
-static constexpr symbol       USDT_SYMBOL                = symbol(USDT_SYMBOL_CODE, 6); // TODO: precision == 6?
+static const asset            MAX_REWARDS_DEFAULT        = asset(25'5000'0000'0000, CISUM_SYM);
 
 #define TBL struct [[eosio::table, eosio::contract("pop.cisum")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("pop.cisum")]]
 
 
 NTBL("global") global_t {
-   name           oracle_contract      = ORACLE_CONTRACT_DEFAULT;
-   name           reward_contract      = REWARD_CONTRACT_DEFAULT;
+   name           oracle_contract      = CISUM_BANK;
+   name           reward_contract      = CISUM_BANK;
    asset          max_rewards          = MAX_REWARDS_DEFAULT;
    asset          available_rewards    = MAX_REWARDS_DEFAULT;
-   asset          issued_rewards       = asset(0, REWARD_SYMBOL);
-   asset          receivable           = asset(0, USDT_SYMBOL);
+   asset          issued_rewards       = asset(0, CISUM_SYM);
+   asset          receivable           = asset(0, USDT_SYM);
    std::set<name> executors;
    EOSLIB_SERIALIZE(global_t, (oracle_contract)(reward_contract)(max_rewards)(available_rewards)(issued_rewards)(receivable)(executors))
 };
