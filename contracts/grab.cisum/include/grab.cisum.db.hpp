@@ -63,16 +63,17 @@ static constexpr uint32_t RATIO_BASE = 10000;   // 100.00%
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("grab.cisum")]]
 
 
-NTBL("global") global_t {
+NTBL("grabglobal") global_t {
    uint64_t       last_rush_sale_id;
    eosio::name    admin;
    eosio::name    point_contract    = NESTAR_CONTRACT;
    eosio::name    ticket_contract   = CVTICKET_CONTRACT;
+   set<name>      oracles;
 
-   EOSLIB_SERIALIZE(global_t, (last_rush_sale_id)(admin)(point_contract)(ticket_contract))
+   EOSLIB_SERIALIZE(global_t, (last_rush_sale_id)(admin)(point_contract)(ticket_contract)(oracles))
 };
 
-typedef eosio::singleton< "global"_n, global_t > global_singleton;
+typedef eosio::singleton< "grabglobal"_n, global_t > global_singleton;
 
 // scope: self
 NTBL("rushsales") rush_sale {

@@ -72,10 +72,10 @@ struct [[eosio::table, eosio::contract("poe.cisum")]] rewardact_t {
   time_point update_at;
 
   uint64_t primary_key() const { return id; }
-  uint64_t byname()      const { return act_name.value; }
+  uint64_t by_name() const { return act_name.value; }
 
   typedef eosio::multi_index<"rewardacts"_n, rewardact_t,
-      indexed_by<"byname"_n, const_mem_fun<rewardact_t, uint64_t, &rewardact_t::byname>>
+      indexed_by<"byname"_n, const_mem_fun<rewardact_t, uint64_t, &rewardact_t::by_name>>
       > acts_idx;
   EOSLIB_SERIALIZE(rewardact_t, (id)(act_name)(points)(memo)(claimed_points)(create_at)(update_at))
 };

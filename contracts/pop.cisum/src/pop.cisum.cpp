@@ -24,7 +24,7 @@ void pop_cisum::mine(name payer, asset pay_amount, string memo)
 
     // —— 基础校验 ——
     CHECKC(payer.value != 0 && is_account(payer),   err::ACCOUNT_INVALID, "payer account not exists");
-    CHECKC(pay_amount.symbol == USDT_SYM,         err::SYMBOL_MISMATCH, "pay_amount symbol must be USDT");
+    CHECKC(pay_amount.symbol == USDT_SYM,           err::SYMBOL_MISMATCH, "pay_amount symbol must be USDT");
     CHECKC(pay_amount.is_valid(),                   err::INVALID_FORMAT,  "invalid pay_amount");
     CHECKC(pay_amount.amount > 0,                   err::NOT_POSITIVE,    "pay_amount must be positive");
     CHECKC(memo.size() <= 256,                      err::INVALID_FORMAT,  "memo too long");

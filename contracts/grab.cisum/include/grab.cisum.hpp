@@ -81,6 +81,9 @@ public:
 
   ACTION  deltoken(const symbol& sym, const name& bank);
 
+  ACTION  addoracle(const name& account);
+  ACTION  deloracle(const name& account);
+
   /**
    * Batch delete users for a rush sale. Only admin can call.
    *

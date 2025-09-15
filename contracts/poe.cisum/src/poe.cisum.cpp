@@ -51,6 +51,8 @@ void poe_cisum::addrewardact(const name& act_name,const asset& points,const stri
   _global.set(_gstate, get_self());
 }
 
+
+
 void poe_cisum::delrewardact(const name &act_name)
 {
     require_auth(get_self());
@@ -85,31 +87,37 @@ void poe_cisum::deloracle(const name&  account) {
     }
 }
 
-
-
-void poe_cisum::claimpoints(const name& leader, const name& claimer, const uint64_t& rewardact_id) {
-    require_auth(leader);
-    CHECKC(_gstate.oracles.count(leader) > 0, err::DID_NOT_AUTH, "leader not in oracles whitelist: " + leader.to_string());
+void poe_cisum::claimpoints(const name& submitter, const name& claimer, const name& act_name) {
+    require_auth(submitter);
+    CHECKC(_gstate.oracles.count(submitter) > 0, err::DID_NOT_AUTH,
+           "submitter not in oracles whitelist: " + submitter.to_string());
     CHECKC(claimer.value != 0 && is_account(claimer), err::ACCOUNT_INVALID, "invalid claimer");
 
     rewardact_t::acts_idx acts(get_self(), get_self().value);
-    auto it = acts.find(rewardact_id);
-    CHECKC(it != acts.end(), err::RECORD_NO_FOUND, "rewardact not found by id: " + std::to_string(rewardact_id));
+    auto byact = acts.get_index<"byname"_n>();
+    auto it    = byact.find(act_name.value);
+    CHECKC(it != byact.end(), err::RECORD_NO_FOUND,
+           "rewardact not found by act_name: " + act_name.to_string());
 
     const asset reward = it->points;
-    CHECKC(reward.amount > 0 && reward.symbol == NESTAR_SYM, err::SYMBOL_MISMATCH, "invalid act points");
+    CHECKC(reward.amount > 0 && reward.symbol == NESTAR_SYM,
+           err::SYMBOL_MISMATCH, "invalid act points");
 
-    CHECKC(_gstate.available_points.symbol == NESTAR_SYM, err::SYMBOL_MISMATCH, "global available_points symbol mismatch");
-    CHECKC(_gstate.claimed_points.symbol   == NESTAR_SYM, err::SYMBOL_MISMATCH, "global claimed_points symbol mismatch");
-    CHECKC(_gstate.total_points.symbol     == NESTAR_SYM, err::SYMBOL_MISMATCH, "global total_points symbol mismatch");
-    CHECKC(_gstate.available_points.amount >= reward.amount, err::INSUFFICIENT_QUANTITY, "insufficient available_points");
+    CHECKC(_gstate.available_points.symbol == NESTAR_SYM, err::SYMBOL_MISMATCH,
+           "global available_points symbol mismatch");
+    CHECKC(_gstate.claimed_points.symbol   == NESTAR_SYM, err::SYMBOL_MISMATCH,
+           "global claimed_points symbol mismatch");
+    CHECKC(_gstate.total_points.symbol     == NESTAR_SYM, err::SYMBOL_MISMATCH,
+           "global total_points symbol mismatch");
+    CHECKC(_gstate.available_points.amount >= reward.amount, err::INSUFFICIENT_QUANTITY,
+           "insufficient available_points");
 
     // 防溢出：claimed_points += reward
     {
-      const int64_t cur_claimed = _gstate.claimed_points.amount;
-      const int64_t inc         = reward.amount;
-      CHECKC(cur_claimed <= std::numeric_limits<int64_t>::max() - inc,
-            err::AMOUNT_TOO_LARGE, "amount too large (claimed_points overflow)");
+        const int64_t cur_claimed = _gstate.claimed_points.amount;
+        const int64_t inc         = reward.amount;
+        CHECKC(cur_claimed <= std::numeric_limits<int64_t>::max() - inc,
+              err::AMOUNT_TOO_LARGE, "amount too large (claimed_points overflow)");
     }
 
     _gstate.available_points -= reward;
@@ -117,26 +125,43 @@ void poe_cisum::claimpoints(const name& leader, const name& claimer, const uint6
 
     // 防溢出：total_points = available + claimed
     {
-      const int64_t avail   = _gstate.available_points.amount;
-      const int64_t claimed = _gstate.claimed_points.amount;
-      CHECKC(avail <= std::numeric_limits<int64_t>::max() - claimed,
-            err::AMOUNT_TOO_LARGE, "amount too large (total_points overflow)");
-      _gstate.total_points.amount = avail + claimed;
+        const int64_t avail   = _gstate.available_points.amount;
+        const int64_t claimed = _gstate.claimed_points.amount;
+        CHECKC(avail <= std::numeric_limits<int64_t>::max() - claimed,
+              err::AMOUNT_TOO_LARGE, "amount too large (total_points overflow)");
+        _gstate.total_points.amount = avail + claimed;
     }
 
-    acts.modify(it, same_payer, [&](auto& row){
-      row.claimed_points += reward;
-      row.update_at       = current_time_point();
+    byact.modify(it, same_payer, [&](auto& row){
+        row.claimed_points += reward;
+        row.update_at       = current_time_point();
     });
 
     _global.set(_gstate, get_self());
 
     std::string memo = "claimer:" + claimer.to_string()
-                    + ":" + std::to_string(rewardact_id)
-                    + " by " + leader.to_string();
+                     + ":" + act_name.to_string()
+                     + " by " + submitter.to_string();
     CHECKC(memo.size() <= 256, err::INVALID_FORMAT, "memo too long");
     _pay_points(claimer, reward, memo);
 }
+
+void poe_cisum::consumeact(const name& caller, const name& act_name, const asset& amount) {
+    require_auth(caller);
+    check(amount.symbol == NESTAR_SYM && amount.amount >= 0, "bad amount");
+
+    rewardact_t::acts_idx acts(get_self(), get_self().value);
+    auto byname = acts.get_index<"byname"_n>();
+    auto it = byname.find(act_name.value);
+    check(it != byname.end(), "act not found");
+
+    byname.modify(it, same_payer, [&](auto& r){
+        // 溢出检查按你风格加
+        r.claimed_points += amount;
+        r.update_at = current_time_point();
+    });
+}
+
 
 void poe_cisum::ontransfer(const name& from, const name& to,const asset& quantity, const string& memo) {
   // 只处理打入本合约的转账

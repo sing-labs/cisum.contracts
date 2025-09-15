@@ -15,16 +15,6 @@ class [[eosio::contract("poe.cisum")]] poe_cisum : public contract {
 public:
     using contract::contract;
 
-    poe_cisum(eosio::name receiver, eosio::name code, datastream<const char*> ds)
-    : contract(receiver, code, ds),
-      _global(get_self(), get_self().value)
-    {
-      _gstate = _global.exists() ? _global.get() : global_t{};
-    }
-
-    ~poe_cisum() { _global.set(_gstate, get_self()); }
-
-
     ACTION addrewardact(const name& act_name,const asset& points,const string& memo);
 
     ACTION delrewardact(const name& act_name);
@@ -45,14 +35,8 @@ public:
     using addrewardact_action     = eosio::action_wrapper<"addrewardact"_n,     &poe_cisum::addrewardact>;
     using delrewardact_action     = eosio::action_wrapper<"delrewardact"_n,     &poe_cisum::delrewardact>;
     using claimpts_action         = eosio::action_wrapper<"claimpoints"_n,      &poe_cisum::claimpoints>;
+    using consumeact_action         = eosio::action_wrapper<"consumeact"_n,      &poe_cisum::consumeact>;
 
-private:
-    global_singleton _global;
-    global_t         _gstate;
-
-    void _pay_points(const name& to, const asset& quant, const string& memo);
-
-    rewardact_t _get_act(const name& act_name);
 };
 
 } // namespace flon

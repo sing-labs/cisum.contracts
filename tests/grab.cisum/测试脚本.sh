@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-grab_con=grab23.cisum
+grab_con=grab24.cisum
 
 echo "==== 环境初始化 ===="
 mreg flon $grab_con flonian

@@ -18,6 +18,8 @@ mpush grab23.cisum cfgpoint '["nest21.token"]' -p flonian
 mpush grab23.cisum cfgticket '["cvticket.nft"]' -p flonian
 mpush grab23.cisum settoken '["4,NESTAR","nest21.token"]' -p grab23.cisum
 
+mpush grab23.cisum addoracle '["fulgwxvwfw1m"]' -p flonian
+mpush grab23.cisum addoracle '["myadmin"]' -p flonian
 
 
 mpush  grab23.cisum  delrushsale '["21010001000010026",true]' -p flonian
@@ -36,6 +38,6 @@ for i in {1..1000}; do
 done
 
 
-mpush  grab23.cisum  setrushsale '[10,1000,1000,null]' -p flonian
+mpush  grab23.cisum  setrushsale '[5,10,1000,null]' -p myadmin
 
 

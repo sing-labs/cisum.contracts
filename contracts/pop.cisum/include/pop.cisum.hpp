@@ -46,8 +46,9 @@ public:
   ACTION addexecutor(const name& acct);
   ACTION delexecutor(const name& acct);
 
+
   // -------- Inline wrappers --------
-  using mine_action        = eosio::action_wrapper<"mine"_n,        &pop_cisum::mine>;
+  using mine_action               = eosio::action_wrapper<"mine"_n,        &pop_cisum::mine>;
 
 private:
   global_singleton _global;

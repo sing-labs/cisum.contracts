@@ -60,8 +60,12 @@ add_subdirectory(cisumshowman)
 add_subdirectory(cisumsummary)
 add_subdirectory(cisum.token)
 add_subdirectory(pos.cisum)
+
+add_subdirectory(rolemanage)
 # if(BUILD_TESTS)
 #   add_subdirectory(test_contracts)
 # endif()
+
+
 
 

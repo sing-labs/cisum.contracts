@@ -5,7 +5,9 @@
 
 #include "poh.cisum.hpp"
 #include "flon/flon.token.hpp"
-
+#include "poe.cisum.db.hpp"
+#include "poe.cisum.hpp"
+#include "flon/consts.hpp"
 namespace flon {
 
 using eosio::asset;
@@ -57,62 +59,158 @@ void poh_cisum::setregistrar(name registrar) {
     _global.set(_gstate, get_self());
 }
 
-// -------------------- 业务动作 --------------------
+void poh_cisum::awardnotice(const name&  from,
+                                const name&  to,
+                                const asset&        award_amount,
+                                const string&          memo,
+                                const uint64_t&        created_at)
+{
+     require_auth(get_self());
+}
 
-void poh_cisum::registreward(name user, string memo) {
-    // 基本校验
-    CHECKC(_gstate.registrar.value != 0, err::RECORD_NO_FOUND, "registrar not set");
-    require_auth(_gstate.registrar);
 
-    CHECKC(is_account(user), err::ACCOUNT_INVALID, "user not exist");
-    CHECKC(memo.size() <= 256, err::INVALID_FORMAT, "memo too long");
-    CHECKC(_gstate.platform_acct.value != 0, err::RECORD_NO_FOUND, "platform not set");
+void poh_cisum::registreward(const name& submitter,
+                             const name& inviter,   // 可为空：inviter.value == 0 表示无邀请人
+                             const name& invitee,   // 被邀请人（拿主奖励）
+                             const string& memo)
+{
 
-    // USDT -> CISUM
-    asset usdt = _gstate.usdt_per_user;
-    CHECKC(usdt.symbol == USDT_SYM, err::SYMBOL_MISMATCH, "usdt_per_user symbol mismatch");
-    CHECKC(usdt.amount > 0,         err::NOT_POSITIVE,    "usdt_per_user not positive");
+    CHECKC(_gstate.registrar.value != 0,        err::RECORD_NO_FOUND, "registrar not set");
+    CHECKC(is_account(_gstate.registrar),       err::ACCOUNT_INVALID, "registrar not exist");
+    CHECKC(is_account(invitee),                 err::ACCOUNT_INVALID, "invitee not exist");
+    CHECKC(memo.size() <= 256,                  err::INVALID_FORMAT,  "memo too long");
 
-    asset reward = usdt_to_cisum(usdt);
-    CHECKC(reward.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "reward symbol mismatch");
-    CHECKC(reward.amount > 0,          err::NOT_POSITIVE,    "reward too small");
+    CHECKC(submitter == _gstate.registrar,      err::DID_NOT_AUTH,    "submitter must be registrar");
+    require_auth(submitter);
 
-    bool can_issue_cisum = (_gstate.max_issued.amount > 0) &&
-                           (_gstate.cisum_issued.amount + reward.amount <= _gstate.max_issued.amount);
-
-    // ===== CISUM：若额度足够则发放，否则跳过 =====
-    if (can_issue_cisum) {
-        ISSUE(
-          CISUM_BANK,
-          _self,
-          reward,
-          std::string("poh cisum mint: ") + user.to_string() + " | " + memo
-        );
-        TRANSFER(
-          CISUM_BANK,
-          _gstate.platform_acct,
-          reward,
-          std::string("poh reward: ") + user.to_string() + " | " + memo + " ;amount: " + reward.to_string()
-        );
-        _gstate.cisum_issued += reward;
+    if (inviter.value != 0) {
+        CHECKC(is_account(inviter),             err::ACCOUNT_INVALID, "inviter not exist");
+        CHECKC(inviter != invitee,              err::INVALID_FORMAT,  "inviter cannot equal invitee");
     }
 
-    // ===== NESTAR：总是发放 =====
-    ISSUE(
-      NESTAR_BANK,
-      _self,
-      NESTAR_BONUS,
-      std::string("poh nestar mint: ") + user.to_string() + " ;amount: " + NESTAR_BONUS.to_string()
-    );
-    TRANSFER(
-      NESTAR_BANK,
-      user,
-      NESTAR_BONUS,
-      std::string("poh bonus: ") + user.to_string() + " ;amount: " + NESTAR_BONUS.to_string()
-    );
-    _gstate.nestar_issued += NESTAR_BONUS;
+    CHECKC(_gstate.platform_acct.value != 0,    err::RECORD_NO_FOUND, "platform not set");
 
-    _global.set(_gstate, get_self());
+    // ===== 主奖励：USDT -> CISUM 给平台（平台再按你的业务分配），NESTAR 给 invitee =====
+    //  USDT -> CISUM（平台入账）
+    {
+        asset usdt = _gstate.usdt_per_user;
+        CHECKC(usdt.symbol == USDT_SYM,         err::SYMBOL_MISMATCH, "usdt_per_user symbol mismatch");
+        CHECKC(usdt.amount > 0,                 err::NOT_POSITIVE,    "usdt_per_user not positive");
+
+        asset reward_cisum = usdt_to_cisum(usdt);
+        CHECKC(reward_cisum.symbol == CISUM_SYM,err::SYMBOL_MISMATCH, "reward_cisum symbol mismatch");
+        CHECKC(reward_cisum.amount > 0,         err::NOT_POSITIVE,    "reward_cisum too small");
+
+        // 额度控制：仅在未超上限时铸造 CISUM
+        bool can_issue_cisum = (_gstate.max_issued.amount > 0) &&
+                               (_gstate.cisum_issued.amount + reward_cisum.amount <= _gstate.max_issued.amount);
+
+        if (can_issue_cisum) {
+            ISSUE(
+                CISUM_BANK,
+                _self,
+                reward_cisum,
+                std::string("poh cisum mint: ") + invitee.to_string() + " | " + memo
+            );
+            TRANSFER(
+                CISUM_BANK,
+                _gstate.platform_acct,
+                reward_cisum,
+                std::string("poh reward: invitee=") + invitee.to_string()
+                + " | " + memo + " ;amount: " + reward_cisum.to_string()
+            );
+            _gstate.cisum_issued += reward_cisum;
+        }
+    }
+
+    //  NESTAR 给被邀请人（invitee）
+    {
+        ISSUE(
+            NESTAR_BANK,
+            _self,
+            NESTAR_BONUS,
+            std::string("poh nestar mint: ") + invitee.to_string()
+            + " ;amount: " + NESTAR_BONUS.to_string()
+        );
+        TRANSFER(
+            NESTAR_BANK,
+            invitee,
+            NESTAR_BONUS,
+            std::string("poh bonus: invitee=") + invitee.to_string()
+            + " ;amount: " + NESTAR_BONUS.to_string()
+        );
+
+        // 通知（保持你原有的事件）
+        awardnotice_action{
+            get_self(),
+            { permission_level{ get_self(), "active"_n } }
+        }.send(
+            NESTAR_BANK,
+            invitee,
+            NESTAR_BONUS,
+            std::string("poh bonus: invitee=") + invitee.to_string()
+            + " ;amount: " + NESTAR_BONUS.to_string(),
+            current_time_point().time_since_epoch().count() / 1'000'000
+        );
+
+        _gstate.nestar_issued += NESTAR_BONUS;
+    }
+
+    // =====  邀请人奖励：从 rewardacts 读取 act_name="invite" 的配置并发放 =====
+    if (inviter.value != 0) {
+        // 从 rewardacts 表中读取邀请奖励
+        rewardact_t::acts_idx  acts(POE_CONTRACT, POE_CONTRACT.value);
+
+        auto byname = acts.get_index<"byname"_n>();
+        auto it     = byname.find("invite"_n.value);
+
+        CHECKC(it != byname.end(),               err::RECORD_NO_FOUND, "invite rewardact not found");
+        CHECKC(it->points.symbol == NESTAR_SYM,  err::SYMBOL_MISMATCH, "invite reward symbol mismatch");
+        CHECKC(it->points.amount > 0,            err::NOT_POSITIVE,    "invite reward not positive");
+
+        const asset invite_bonus = it->points;
+
+        // 发放邀请人奖励（NESTAR：mint -> transfer）
+        ISSUE(
+            NESTAR_BANK,
+            _self,
+            invite_bonus,
+            std::string("poh invite mint: ") + inviter.to_string()
+            + " ;amount: " + invite_bonus.to_string()
+        );
+        TRANSFER(
+            NESTAR_BANK,
+            inviter,
+            invite_bonus,
+            std::string("invite bonus: inviter=") + inviter.to_string()
+            + " invitee=" + invitee.to_string()
+            + " ;amount: " + invite_bonus.to_string()
+        );
+
+        // 发送一条 awardnotice 给邀请人
+        awardnotice_action{
+            get_self(),
+            { permission_level{ get_self(), "active"_n } }
+        }.send(
+            NESTAR_BANK,
+            inviter,
+            invite_bonus,
+            std::string("poh bonus: inviter=") + inviter.to_string()
+            + " invitee=" + invitee.to_string()
+            + " ;amount: " + invite_bonus.to_string(),
+            current_time_point().time_since_epoch().count() / 1'000'000
+        );
+
+        _gstate.nestar_issued += invite_bonus;
+
+        // 发完 invitee / inviter 奖励后，记账到 poe
+        flon::poe_cisum::consumeact_action consume{
+            POE_CONTRACT, { permission_level{ get_self(), "active"_n } }
+        };
+        // 让 poe.cisum 校验 caller 是否在白名单，这里传入 get_self()
+        consume.send(get_self(), "invite"_n, invite_bonus);  // 或者把发出两份的总和上报
+      }
+
 }
 
 } // namespace flon

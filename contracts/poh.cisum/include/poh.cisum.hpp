@@ -27,18 +27,25 @@ public:
 
   ~poh_cisum() { _global.set(_gstate, get_self()); }
 
-  [[eosio::action]] void init(name platform, name registrar, asset max_issued) ;
-  [[eosio::action]] void setmaxissued(asset max_issued);
+  ACTION init(name platform, name registrar, asset max_issued) ;
+  ACTION setmaxissued(asset max_issued);
 
-  [[eosio::action]] void setplatform(name platform);
-  [[eosio::action]] void setregistrar(name registrar);
+  ACTION setplatform(name platform);
+  ACTION setregistrar(name registrar);
 
-  [[eosio::action]] void registreward(name user, string memo);
+  ACTION registreward(const name& submitter,
+                              const name& inviter,    // 可为空：inviter.value==0 表示无邀请人
+                              const name& invitee,    // 被邀请人（拿主奖励）
+                              const string& memo);
 
-
-
+  ACTION awardnotice(const name&  from,
+                      const name&  to,
+                      const asset&        award_amount,
+                      const string&          memo,
+                      const uint64_t&        created_at);
 
   using registreward_action = eosio::action_wrapper<"registreward"_n, &poh_cisum::registreward>;
+  using awardnotice_action  = eosio::action_wrapper<"awardnotice"_n, &poh_cisum::awardnotice>;
 
 private:
   global_singleton _global;

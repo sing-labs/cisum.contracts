@@ -560,35 +560,63 @@ void show::buyticket(const name&          payer,
     require_admin_or_platadm();
 
     check(is_account(payer), "invalid payer");
-    check(pay_amount.is_valid(),   "invalid pay_amount");
-    check(pay_amount.symbol == USDT_SYM, "pay_amount symbol mismatch,must be USDT");
-    check(pay_amount.amount > 0,   "pay_amount must be positive");
-    check(ticket_count > 0,  "ticket_count must be positive");
+    check(pay_amount.is_valid(), "invalid pay_amount");
+
+    // 只要求符号代码为 USDT，精度不超过 6
+    check(pay_amount.symbol.code() == USDT_SYM.code(),
+          "[[5]] pay_amount symbol must be USDT");
+    check(pay_amount.symbol.precision() <= 6,
+          "[[6]] pay_amount precision must be <= 6");
+
+    check(pay_amount.amount > 0, "pay_amount must be positive");
+    check(ticket_count > 0, "ticket_count must be positive");
 
     // ===== 查票价 =====
-    ticket_t::ticketidx tickets(get_self(), show_id);   // scope 用 show_id
+    ticket_t::ticketidx tickets(get_self(), show_id);
     auto it = tickets.find(ticket_id);
     check(it != tickets.end(), "ticket not found");
+
     const auto now = current_time_point();
-    check(it->sale_started_at <= now, "ticket not started yet");
-    check(now <= it->sale_ended_at,   "ticket already ended");
+    check(it->sale_started_at <= now,
+          std::string("ticket not started yet, now=") + now.to_string() +
+          ", sale_started_at=" + it->sale_started_at.to_string());
+    check(now <= it->sale_ended_at,
+          std::string("ticket already ended, now=") + now.to_string() +
+          ", sale_ended_at=" + it->sale_ended_at.to_string());
 
+    // ===== 归一化金额比较（统一到 USDT_SYM 的精度）=====
+    auto normalize_amount = [&](const asset& a, const symbol& target) -> __int128 {
+        check(a.symbol.code() == target.code(), "symbol code mismatch");
+        int sp = a.symbol.precision();
+        int dp = target.precision();
+        __int128 v = (__int128)a.amount;
+        if (sp < dp) {
+            for (int i = 0; i < dp - sp; i++) v *= 10;
+        } else if (sp > dp) {
+            for (int i = 0; i < sp - dp; i++) v /= 10; // 截断到目标精度
+        }
+        return v;
+    };
 
-    asset total_price = it->price_usdt * ticket_count;
+    __int128 due_units = normalize_amount(it->price_usdt, USDT_SYM) * (__int128)ticket_count;
+    __int128 pay_units = normalize_amount(pay_amount,    USDT_SYM);
 
-    check(pay_amount.amount <= total_price.amount,
-                "overpayment not allowed: require " + total_price.to_string()
-              + ", got " + pay_amount.to_string());
+    check(pay_units <= due_units,
+          "overpayment not allowed: require "
+          + asset((int64_t)due_units, USDT_SYM).to_string()
+          + ", got " + pay_amount.to_string());
 
-    // ===== 调用 pop::mine 奖励 =====
+    // 把归一化后的最小单位装回 asset（6 位 USDT）
+    asset normalized_pay{ (int64_t)pay_units, USDT_SYM };
+
+    // ===== pop 奖励（传 6 位 USDT 的 normalized_pay）=====
     pop_cisum::mine_action mine{ POP_CONTRACT, { get_self(), "active"_n } };
-    mine.send(payer, pay_amount, memo);
+    mine.send(payer, normalized_pay, memo);
 
-    // ===== 发票（issue） =====
+    // ===== 发票 =====
     issue_action issue{ get_self(), { get_self(), "active"_n } };
     issue.send(payer, show_id, ticket_id, ticket_count, memo);
 }
-
 
 
 } // namespace flon

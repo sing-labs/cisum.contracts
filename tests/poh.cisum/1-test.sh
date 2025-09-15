@@ -30,13 +30,13 @@ mpush $poh_con setmaxissued '["5100000000.00000000 CISUM"]' -p $poh_con
 
 mpush $poh_con setplatform '["cisumplatfrm"]' -p $poh_con
 
-mpush $poh_con setregistrar '["registrar11"]' -p $poh_con
+mpush $poh_con setregistrar '["flonian"]' -p $poh_con
 
 
 
-mpush $poh_con registreward '["registrar11","PoH signup reward"]' -p registrar11
+mpush $poh_con registreward '[flonian,flonian,"registrar11","PoH signup reward"]' -p flonian
 
-mpush $poh_con registreward '["gahbnbehaskk","PoH signup reward"]' -p registrar11
+mpush $poh_con registreward '["gahbnbehaskk","PoH signup reward"]' -p flonian
 
-mpush $poh_con registreward '["mywallet2","PoH signup reward"]' -p registrar11
+mpush $poh_con registreward '["mywallet2","PoH signup reward"]' -p flonian
 
