@@ -11,6 +11,17 @@ namespace flon {
 using namespace eosio;
 using std::string;
 
+void pop_cisum::awardnotice(const name&  from,
+                                const name&       to,
+                                const asset&      award_amount,
+                                const string&     memo,
+                                const name&       reward_type,
+                                const string&     reward_ref_id,
+                                const uint64_t&   created_at)
+{
+     require_auth(get_self());
+}
+
 void pop_cisum::mine(name payer, asset pay_amount, string memo)
 {
     // ===== 0) 授权：合约自身 或 白名单任一账号 =====
@@ -102,14 +113,28 @@ void pop_cisum::mine(name payer, asset pay_amount, string memo)
         _gstate.reward_contract,              // 银行合约
         _self,                                // 先铸到本合约
         reward,
-        std::string("pop cisum mint: ") + payer.to_string() + " | " + memo
+        std::string("purchasemint: ") + payer.to_string()
     );
     TRANSFER(
         _gstate.reward_contract,              // 从银行合约转账
         payer,                               // 发给付款人
         reward,
-        std::string("pop reward: ") + payer.to_string() + " | " + memo + " ;amount: " + reward.to_string()
+        std::string("type:purchasemint|") + "amount: " + reward.to_string()+"|account:"+ payer.to_string()
     );
+
+    awardnotice_action{
+            get_self(),
+            { permission_level{ get_self(), "active"_n } }
+    }.send(
+        _gstate.reward_contract,
+        payer,
+        reward,
+        std::string("type:purchasemint|") + "amount: " + reward.to_string()+"|account:"+ payer.to_string(),
+        "purchasemint",
+        payer.to_string(),
+        current_time_point().time_since_epoch().count() / 1'000'000
+    );
+
 }
 
 //memo： order:12345

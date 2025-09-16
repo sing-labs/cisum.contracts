@@ -35,7 +35,7 @@ public:
 
     ACTION claimpoints(const name& submitter, const name& claimer, const name& act_name);
 
-    ACTION consumeact(const name& caller, const name& act_name, const asset& amount);
+    ACTION consumeact(const name& submitter, const name& act_name, const asset& amount);
 
     [[eosio::on_notify("nest21.token::transfer")]]
     void ontransfer(const name& from, const name& to,const asset& quantity, const string& memo);

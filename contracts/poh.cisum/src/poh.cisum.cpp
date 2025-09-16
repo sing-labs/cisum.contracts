@@ -60,10 +60,12 @@ void poh_cisum::setregistrar(name registrar) {
 }
 
 void poh_cisum::awardnotice(const name&  from,
-                                const name&  to,
-                                const asset&        award_amount,
-                                const string&          memo,
-                                const uint64_t&        created_at)
+                                const name&       to,
+                                const asset&      award_amount,
+                                const string&     memo,
+                                const name&       reward_type,
+                                const string&     reward_ref_id,
+                                const uint64_t&   created_at)
 {
      require_auth(get_self());
 }
@@ -71,14 +73,12 @@ void poh_cisum::awardnotice(const name&  from,
 
 void poh_cisum::registreward(const name& submitter,
                              const name& inviter,   // 可为空：inviter.value == 0 表示无邀请人
-                             const name& invitee,   // 被邀请人（拿主奖励）
-                             const string& memo)
+                             const name& invitee)
 {
 
     CHECKC(_gstate.registrar.value != 0,        err::RECORD_NO_FOUND, "registrar not set");
     CHECKC(is_account(_gstate.registrar),       err::ACCOUNT_INVALID, "registrar not exist");
     CHECKC(is_account(invitee),                 err::ACCOUNT_INVALID, "invitee not exist");
-    CHECKC(memo.size() <= 256,                  err::INVALID_FORMAT,  "memo too long");
 
     CHECKC(submitter == _gstate.registrar,      err::DID_NOT_AUTH,    "submitter must be registrar");
     require_auth(submitter);
@@ -110,14 +110,13 @@ void poh_cisum::registreward(const name& submitter,
                 CISUM_BANK,
                 _self,
                 reward_cisum,
-                std::string("poh cisum mint: ") + invitee.to_string() + " | " + memo
+                std::string("SignupMining:") + invitee.to_string()
             );
             TRANSFER(
                 CISUM_BANK,
                 _gstate.platform_acct,
                 reward_cisum,
-                std::string("poh reward: invitee=") + invitee.to_string()
-                + " | " + memo + " ;amount: " + reward_cisum.to_string()
+                std::string("type:signupreward|") + "amount: " + reward_cisum.to_string()+"|account:"+ invitee.to_string()
             );
             _gstate.cisum_issued += reward_cisum;
         }
@@ -129,15 +128,14 @@ void poh_cisum::registreward(const name& submitter,
             NESTAR_BANK,
             _self,
             NESTAR_BONUS,
-            std::string("poh nestar mint: ") + invitee.to_string()
+            std::string("signupmining:") + invitee.to_string()
             + " ;amount: " + NESTAR_BONUS.to_string()
         );
         TRANSFER(
             NESTAR_BANK,
             invitee,
             NESTAR_BONUS,
-            std::string("poh bonus: invitee=") + invitee.to_string()
-            + " ;amount: " + NESTAR_BONUS.to_string()
+            std::string("type:signupmining|") + "amount: " + NESTAR_BONUS.to_string()+"|account:"+ invitee.to_string()
         );
 
         // 通知（保持你原有的事件）
@@ -148,11 +146,11 @@ void poh_cisum::registreward(const name& submitter,
             NESTAR_BANK,
             invitee,
             NESTAR_BONUS,
-            std::string("poh bonus: invitee=") + invitee.to_string()
-            + " ;amount: " + NESTAR_BONUS.to_string(),
+            std::string("type:signupmining|") + "amount: " + NESTAR_BONUS.to_string()+"|account:"+ invitee.to_string(),
+            "signupmining",
+            "",
             current_time_point().time_since_epoch().count() / 1'000'000
         );
-
         _gstate.nestar_issued += NESTAR_BONUS;
     }
 
@@ -175,16 +173,13 @@ void poh_cisum::registreward(const name& submitter,
             NESTAR_BANK,
             _self,
             invite_bonus,
-            std::string("poh invite mint: ") + inviter.to_string()
-            + " ;amount: " + invite_bonus.to_string()
+            std::string("type:invitemining|") + "amount: " + invite_bonus.to_string()+"|invitee:"+ invitee.to_string()
         );
         TRANSFER(
             NESTAR_BANK,
             inviter,
             invite_bonus,
-            std::string("invite bonus: inviter=") + inviter.to_string()
-            + " invitee=" + invitee.to_string()
-            + " ;amount: " + invite_bonus.to_string()
+            std::string("type:invitemining|") + "amount: " + invite_bonus.to_string()+"|invitee:"+ invitee.to_string()
         );
 
         // 发送一条 awardnotice 给邀请人
@@ -195,9 +190,9 @@ void poh_cisum::registreward(const name& submitter,
             NESTAR_BANK,
             inviter,
             invite_bonus,
-            std::string("poh bonus: inviter=") + inviter.to_string()
-            + " invitee=" + invitee.to_string()
-            + " ;amount: " + invite_bonus.to_string(),
+            std::string("type:invitemining|") + "amount: " + invite_bonus.to_string()+"|invitee:"+ invitee.to_string(),
+            "invitemining",
+            invitee.to_string(),
             current_time_point().time_since_epoch().count() / 1'000'000
         );
 
@@ -207,8 +202,8 @@ void poh_cisum::registreward(const name& submitter,
         flon::poe_cisum::consumeact_action consume{
             POE_CONTRACT, { permission_level{ get_self(), "active"_n } }
         };
-        // 让 poe.cisum 校验 caller 是否在白名单，这里传入 get_self()
-        consume.send(get_self(), "invite"_n, invite_bonus);  // 或者把发出两份的总和上报
+
+        consume.send(get_self(), "invite"_n, invite_bonus);
       }
 
 }

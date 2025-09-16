@@ -36,6 +36,16 @@ public:
    * @param pay_amount   The pay amount.
    * @param memo         Additional information or remarks.
    */
+
+
+  ACTION awardnotice(const name&  from,
+                                const name&       to,
+                                const asset&      award_amount,
+                                const string&     memo,
+                                const name&       reward_type,
+                                const string&     reward_ref_id,
+                                const uint64_t&   created_at);
+
   ACTION mine(  name  payer,asset pay_amount,string  memo);
 
 
@@ -48,8 +58,8 @@ public:
 
 
   // -------- Inline wrappers --------
-  using mine_action               = eosio::action_wrapper<"mine"_n,        &pop_cisum::mine>;
-
+  using mine_action                       = eosio::action_wrapper<"mine"_n,        &pop_cisum::mine>;
+  using awardnotice_action                = eosio::action_wrapper<"awardnotice"_n,        &pop_cisum::awardnotice>;
 private:
   global_singleton _global;
   global_t         _gstate;
