@@ -24,6 +24,7 @@ void cisumshow::publishshow(name creator,
 
   // 1) newshow 由 cisumshowman 自签（确保 show 合约已把 cisumshowman 加入 admin/白名单）
    NEW_SHOW(SHOW_CONTRACT,
+            _self,
             show.show_id,
             show.category,
             show.ticket_transferable,
@@ -55,10 +56,11 @@ void cisumshow::publishshow(name creator,
   }
 
     // (A) nftcreate
-    CREATE_NFT(SHOW_CONTRACT, ticket.total_count * 10,t_sym,ticket.token_uri);
+    CREATE_NFT(SHOW_CONTRACT, _self,ticket.total_count * 10,t_sym,ticket.token_uri);
 
     // (B) newticket（免费票这里把售卖总量记 0，库存由实收 NFT 再增）
     NEW_TICKET(SHOW_CONTRACT,
+               _self,
                show.show_id,
                t_sym,
                pre_sym,
@@ -70,6 +72,7 @@ void cisumshow::publishshow(name creator,
 
     // (C) 先铸到 show（保持现有流程：再由 show 转到 grab）
     ISSUE_NFT(SHOW_CONTRACT,
+              _self,
               creator,   // issuer
               qty,
               "issue:" + std::to_string(show.show_id) );
@@ -87,6 +90,7 @@ void cisumshow::publishshow(name creator,
       // 直接读取最新的 rush_sale_id
       auto rush_sale_id = gstate.last_rush_sale_id + 1;
       ADDRUSHSALE(GRAB_CONTRACT,
+                  _self,
                   show.show_id,
                   ticket.ticket_id,
                   ticket.sale_started_at,
@@ -99,6 +103,7 @@ void cisumshow::publishshow(name creator,
       auto memo = "add:" + std::to_string(rush_sale_id)+":"+ std::to_string(show.show_id);
 
       ISSUE_TO_GRAB(SHOW_CONTRACT,
+                    _self,
                     GRAB_CONTRACT,
                     ( nasset{ ticket.total_count, nsymbol(ticket.ticket_id) } ),
                     memo);

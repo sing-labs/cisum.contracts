@@ -17,6 +17,8 @@ static constexpr eosio::name GRAB_CONTRACT          {"grab23.cisum"_n};
 static constexpr eosio::name CVTICKET_CONTRACT      {"cvticket.nft"_n};
 static constexpr eosio::name CVBADGE_CONTRACT       {"cvbadge.nft"_n};
 static constexpr eosio::name CVBADGESTORE_CONTRACT  {"badgestore11"_n};
+static constexpr eosio::name FLONAUTH_CONTRACT      {"flon.auth111"_n};
+
 
 static constexpr eosio::name NESTAR_CONTRACT         {"nest21.token"_n};
 static constexpr eosio::name POE_CONTRACT           {"poe12.cisum"_n};
@@ -30,6 +32,7 @@ static constexpr eosio::name OPS_CONTRACT           {"ops21.cisum"_n};
 static constexpr eosio::name CISUM_BANK             {"cisum.token"_n};
 static constexpr eosio::name NESTAR_BANK            {"nest21.token"_n};
 static constexpr eosio::name MUSIC_BANK             {"cisum.token"_n};
+static constexpr eosio::name USDT_BANK              {"flon.mtoken"_n};
 
 
 

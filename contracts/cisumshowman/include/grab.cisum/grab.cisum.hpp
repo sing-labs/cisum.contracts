@@ -10,9 +10,9 @@
 
 
 
-#define ADDRUSHSALE(bank, show_id,ticket_id,started_at,ended_at,price,max_grabs_per_user,win_ratio) \
-    {	flon::grab_cisum::addrushsale_action act{ bank, { {get_self(), "active"_n} } };\
-			act.send( show_id,ticket_id,started_at,ended_at,price,max_grabs_per_user,win_ratio);}
+#define ADDRUSHSALE(bank,submitter, show_id,ticket_id,started_at,ended_at,price,max_grabs_per_user,win_ratio) \
+    {	flon::grab_cisum::addrushsale_action act{ bank, { {submitter, "active"_n} } };\
+			act.send(submitter, show_id,ticket_id,started_at,ended_at,price,max_grabs_per_user,win_ratio);}
 
 namespace flon {
 
@@ -24,112 +24,44 @@ class [[eosio::contract("grab.cisum")]] grab_cisum : public contract {
 public:
   using contract::contract;
 
-  /**
-   * Initialize the contract and set the admin account.
-   * Only contract self can call this action.
-   *
-   * @param admin                The account to be set as admin.
-   */
-  [[eosio::action]]
-  void init(const eosio::name& admin);
+  ACTION init(const eosio::name& admin);
 
-  /**
-   * Create a new rush sale event.
-   * Only admin can call this action.
-   *
-   * @param show_id              The show id.
-   * @param ticket_id            The ticket id.
-   * @param started_at           Sale start time.
-   * @param ended_at             Sale end time.
-   * @param price                Ticket price.
-   * @param max_grabs_per_user   Max grabs per user.
-   * @param win_ratio            Win ratio (1-10000).
-   */
-  [[eosio::action]]
-  void addrushsale(   uint64_t       show_id,
-                      uint64_t       ticket_id,
-                      time_point     started_at,
-                      time_point     ended_at,
-                      asset          price,
-                      uint32_t       max_grabs_per_user,
-                      uint32_t       win_ratio
-   );
+  ACTION addrushsale(const name&  submitter,
+                    const  uint64_t&       show_id,
+                    const  uint64_t&       ticket_id,
+                    const  time_point&     started_at,
+                    const  time_point&     ended_at,
+                    const  asset&          price,
+                    const  uint32_t&       max_grabs_per_user,
+                    const  uint32_t&       win_ratio );
 
-  /**
-   * Delete a rush sale event.
-   * Only admin can call this action.
-   *
-   * @param rush_sale_id         The rush sale id to delete.
-   * @param forced               If true, force delete even if tickets sold.
-   */
-  [[eosio::action]]
-  void delrushsale( uint64_t rush_sale_id, bool forced );
-  /**
-   * Update rush sale parameters. Only admin can call.
-   * Each parameter is optional and only updated if provided.
-   *
-   * @param rush_sale_id         The rush sale id to update.
-   * @param win_ratio            Optional new win ratio.
-   * @param ended_at             Optional new end time.
-   */
-  [[eosio::action]]
-  void cfgrushsale( uint64_t                  rush_sale_id,
-                    std::optional<uint32_t>   win_ratio,
-                    std::optional<time_point> ended_at
-  );
+  ACTION delrushsale(const name& submitter,
+                    const uint64_t& rush_sale_id,
+                    const bool& forced );
+  ACTION setrushsale(const name& submitter,
+                      const uint64_t& rush_sale_id,
+                      std::optional<uint32_t> max_grabs_per_user,
+                      std::optional<uint32_t> win_ratio,
+                      std::optional<time_point> ended_at) ;
 
-  /**
-   * Batch delete users for a rush sale. Only admin can call.
-   *
-   * @param rush_sale_id         The rush sale id.
-   * @param max_count            Max number of users to delete in one call.
-   */
-  [[eosio::action]]
-  void delusers( uint64_t rush_sale_id, uint32_t max_count );
+  ACTION notifyticket(const std::string& grab_id,
+                              const eosio::name& user,
+                              uint32_t grabs,
+                              const nasset& tickets,
+                              const time_point& created_at
+                              ,uint64_t rush_sale_id) ;
 
-  /**
-   * Handle incoming token transfer for grabbing tickets.
-   * Called automatically on transfer from token contract.
-   */
-  [[eosio::on_notify("*::transfer")]]
-  void on_transfer();
+  ACTION cfgpoint(const name& submitter,const name& new_point_contract);
 
-  /**
-   * Notify user of ticket grab result.
-   * Called internally after on_transfer.
-   *
-   * @param user                The user account.
-   * @param rush_sale_id        The rush sale event id.
-   * @param won                 True if user won the grab, false otherwise.
-   */
-  [[eosio::action]]
-  void notifyticket(const eosio::name& user, uint64_t rush_sale_id, bool won);
 
-  /**
-   * Configure the point contract infomation.
-   * Only admin can call this action.
-   * Only for test
-   *
-   * @param new_point_contract   The new point contract account name.
-   */
-  [[eosio::action]]
-  void cfgpoint(const eosio::name& new_point_contract);
+  ACTION cfgticket(const name& submitter,const name& new_ticket_contract) ;
 
-  /**
-   * Configure the ticket contract infomation.
-   * Only admin can call this action.
-   * Only for test
-   *
-   * @param new_ticket_contract   The new ticket contract account name.
-   */
-  [[eosio::action]]
-  void cfgticket(const eosio::name& new_ticket_contract);
 
   // -------- Inline wrappers --------
   using addrushsale_action        = eosio::action_wrapper<"addrushsale"_n,        &grab_cisum::addrushsale>;
   using delrushsale_action        = eosio::action_wrapper<"delrushsale"_n,        &grab_cisum::delrushsale>;
-  using cfgrushsale_action        = eosio::action_wrapper<"cfgrushsale"_n,        &grab_cisum::cfgrushsale>;
-  using notifyticket_action        = eosio::action_wrapper<"notifyticket"_n,        &grab_cisum::notifyticket>;
+  using cfgrushsale_action        = eosio::action_wrapper<"setrushsale"_n,        &grab_cisum::setrushsale>;
+  using notifyticket_action       = eosio::action_wrapper<"notifyticket"_n,        &grab_cisum::notifyticket>;
 
 };
 

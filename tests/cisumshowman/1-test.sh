@@ -7,11 +7,16 @@ mcli set account permission $ops_con active --add-code
 
 mpush $show_con addshowadm '["ops21.cisum"]' -p flonian
 
+
+mpush $rolemanage_con grantrole '["show24.cisum","flonian","ops21.cisum","showadmin"]' -p flonian
+
+ops21.cisum
+
 # ========= 一把提交：cisumshowman::publishshow =========
 mpush $ops_con publishshow '[
   "flonian",
   {
-    "show_id": 20250073,
+    "show_id": 20250078,
     "category": "concert",
     "ticket_transferable": true,
     "ticket_refundable": true,
@@ -22,8 +27,8 @@ mpush $ops_con publishshow '[
   },
   [
     {
-      "ticket_id": 21010001000010256,
-      "token_uri": "ipfs://free_ticket77_metadata",
+      "ticket_id": 21010001000010266,
+      "token_uri": "ipfs://free_ticket82_metadata",
       "ticket_type": "free",
       "price": "200.0000 NESTAR",
       "price_usdt": "0 USDT",
@@ -35,8 +40,8 @@ mpush $ops_con publishshow '[
       "max_grabs_per_user":10000
     },
     {
-      "ticket_id": 21010001000010257,
-      "token_uri": "ipfs://vip_ticket77_metadata",
+      "ticket_id": 21010001000010267,
+      "token_uri": "ipfs://vip_ticket82_metadata",
       "ticket_type": "VIP",
       "price": "199.00 USDT",
       "price_usdt": "199 USDT",
@@ -48,7 +53,56 @@ mpush $ops_con publishshow '[
       "max_grabs_per_user":0
     }
   ]
+]' -p flonian
+
+
+
+mpush $ops_con publishshow '[
+  "flonian",
+  {
+    "show_id": 1758008184540,
+        "category": "concert",
+        "ticket_transferable": false,
+        "ticket_refundable": false,
+        "show_started_at": "2025-09-30T08:29:11",
+        "show_ended_at": "2025-09-30T08:29:11",
+        "show_name": "测试9月16日演出",
+        "show_address": ""
+  },
+  [
+    {
+      "ticket_id": "2101025153580",
+            "token_uri": "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreieeznew2nyyezwll3rtd5n2m5xjcbo4r3t5usmz47iubowd2m2vuu",
+            "ticket_type": "vip",
+            "price": "10000 VND",
+            "price_usdt": "10 USDT",
+            "total_count": "100",
+            "prerequisite_ticket_id": 0,
+            "sale_started_at": "2025-09-16T08:29:16",
+            "sale_ended_at": "2025-09-17T08:29:16",
+            "win_ratio": 0,
+            "max_grabs_per_user": 0
+    },
+    {
+            "ticket_id": "2101025783564",
+            "token_uri": "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreib7dku4gtzormtkhboihs4jxpq526lzwbyxqx4ccegveq4wrzp64i",
+            "ticket_type": "free",
+            "price": "100.0000 NESTAR",
+            "price_usdt": "0.0000 USDT",
+            "total_count": "100",
+            "prerequisite_ticket_id": 0,
+            "sale_started_at": "2025-09-16T08:29:11",
+            "sale_ended_at": "2025-09-17T08:29:11",
+            "win_ratio": 1000,
+            "max_grabs_per_user": 1
+    }
+  ]
 ]' -p flonian  -p $ops_con
+
+
+
+
+
 
 
 

@@ -37,4 +37,4 @@ mpush $pop_con addexecutor '["myadmin"]' -p $pop_con
 mpush $pop_con addexecutor '["show24.cisum"]' -p $pop_con
 
 
-mpush $pop_con mine '["myadmin","0.000010 USDT","order Reward:1001"]' -p myadmin
+mpush $pop_con mine '["myadmin","0.000010 USDT","1001"]' -p myadmin

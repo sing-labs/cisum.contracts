@@ -110,13 +110,13 @@ void poh_cisum::registreward(const name& submitter,
                 CISUM_BANK,
                 _self,
                 reward_cisum,
-                std::string("SignupMining:") + invitee.to_string()
+                std::string("NewReg Reward:") + invitee.to_string()
             );
             TRANSFER(
                 CISUM_BANK,
                 _gstate.platform_acct,
                 reward_cisum,
-                std::string("type:signupreward|") + "amount: " + reward_cisum.to_string()+"|account:"+ invitee.to_string()
+                std::string("type:NewReg Reward|") + "amount: " + reward_cisum.to_string()+"|account:"+ invitee.to_string()
             );
             _gstate.cisum_issued += reward_cisum;
         }
@@ -128,14 +128,14 @@ void poh_cisum::registreward(const name& submitter,
             NESTAR_BANK,
             _self,
             NESTAR_BONUS,
-            std::string("signupmining:") + invitee.to_string()
+            std::string("NewReg Reward:") + invitee.to_string()
             + " ;amount: " + NESTAR_BONUS.to_string()
         );
         TRANSFER(
             NESTAR_BANK,
             invitee,
             NESTAR_BONUS,
-            std::string("type:signupmining|") + "amount: " + NESTAR_BONUS.to_string()+"|account:"+ invitee.to_string()
+            std::string("type:NewReg Reward|") + "amount: " + NESTAR_BONUS.to_string()+"|account:"+ invitee.to_string()
         );
 
         // 通知（保持你原有的事件）
@@ -146,7 +146,7 @@ void poh_cisum::registreward(const name& submitter,
             NESTAR_BANK,
             invitee,
             NESTAR_BONUS,
-            std::string("type:signupmining|") + "amount: " + NESTAR_BONUS.to_string()+"|account:"+ invitee.to_string(),
+            std::string("type:NewReg Reward|") + "amount: " + NESTAR_BONUS.to_string()+"|account:"+ invitee.to_string(),
             "signupmining",
             "",
             current_time_point().time_since_epoch().count() / 1'000'000
@@ -173,13 +173,13 @@ void poh_cisum::registreward(const name& submitter,
             NESTAR_BANK,
             _self,
             invite_bonus,
-            std::string("type:invitemining|") + "amount: " + invite_bonus.to_string()+"|invitee:"+ invitee.to_string()
+            std::string("type:Invite Reward|") + "amount: " + invite_bonus.to_string()+"|invitee:"+ invitee.to_string()
         );
         TRANSFER(
             NESTAR_BANK,
             inviter,
             invite_bonus,
-            std::string("type:invitemining|") + "amount: " + invite_bonus.to_string()+"|invitee:"+ invitee.to_string()
+            std::string("type:Invite Reward|") + "amount: " + invite_bonus.to_string()+"|invitee:"+ invitee.to_string()
         );
 
         // 发送一条 awardnotice 给邀请人
@@ -190,7 +190,7 @@ void poh_cisum::registreward(const name& submitter,
             NESTAR_BANK,
             inviter,
             invite_bonus,
-            std::string("type:invitemining|") + "amount: " + invite_bonus.to_string()+"|invitee:"+ invitee.to_string(),
+            std::string("type:Invite Reward|") + "amount: " + invite_bonus.to_string()+"|invitee:"+ invitee.to_string(),
             "invitemining",
             invitee.to_string(),
             current_time_point().time_since_epoch().count() / 1'000'000

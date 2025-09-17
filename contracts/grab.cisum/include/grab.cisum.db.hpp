@@ -125,7 +125,7 @@ NTBL("orders") order_t {
 
    // —— 主键：用自增 id
    uint64_t primary_key() const { return id; }
-
+   uint64_t byaccount() const { return account.value; }
    // —— 二级索引：grab_id 唯一
    checksum256 by_grabid() const {
        return sha256(grab_id.data(), grab_id.size());
@@ -133,11 +133,24 @@ NTBL("orders") order_t {
 
    typedef eosio::multi_index<
      "orders"_n, order_t,
-     indexed_by<"bygrabid"_n, const_mem_fun<order_t, checksum256, &order_t::by_grabid>>
+     indexed_by<"bygrabid"_n, const_mem_fun<order_t, checksum256, &order_t::by_grabid>>,
+     indexed_by<"byaccount"_n, const_mem_fun<order_t, uint64_t,   &order_t::byaccount>>
    > idx_t;
 
    EOSLIB_SERIALIZE(order_t, (id)(grab_id)(account)(grabs)(tickets)(created_at))
 };
+
+// scope = rush_sale_id
+NTBL("grabstats") grab_stat_t {
+    eosio::name account;     // 主键
+    uint32_t    grabs = 0;   // 已参与次数
+    time_point  updated_at;
+
+    uint64_t primary_key() const { return account.value; }
+    using idx_t = eosio::multi_index<"grabstats"_n, grab_stat_t>;
+      EOSLIB_SERIALIZE(grab_stat_t, (account)(grabs)(updated_at))
+};
+
 
 // scope: self
 NTBL("allowtokens") allowed_token_t {

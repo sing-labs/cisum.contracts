@@ -1,0 +1,89 @@
+<h1 class="contract">init</h1>
+---
+spec_version: "0.2.0"
+title: Initialize Contract Admin
+summary: 'Set the admin account for contract management.'
+---
+This action sets the admin account for contract management. Only contract self can call this action. The admin will be required for all future management actions.
+Parameters:
+* admin: The account to be set as admin.
+
+<h1 class="contract">addrushsale</h1>
+---
+spec_version: "0.2.0"
+title: Create Rush Sale
+summary: 'Create a new rush sale event.'
+---
+Admin creates a new rush sale event with specified show, ticket, time, price, max grabs per user, win ratio. Only admin can call this action.
+Parameters:
+* show_id: The show identifier.
+* ticket_id: The ticket identifier.
+* started_at: The start time of the rush sale.
+* ended_at: The end time of the rush sale.
+* price: The price per ticket.
+* max_grabs_per_user: The maximum grabs allowed per user.
+* win_ratio: The winning ratio (1~10000).
+
+<h1 class="contract">delrushsale</h1>
+---
+spec_version: "0.2.0"
+title: Delete Rush Sale
+summary: 'Delete a rush sale event.'
+---
+Admin deletes a rush sale event by id. If forced is true, deletion occurs even if tickets have been sold. Only admin can call this action.
+Parameters:
+* rush_sale_id: The rush sale identifier.
+* forced: If true, force delete even if active.
+
+<h1 class="contract">cfgrushsale</h1>
+---
+spec_version: "0.2.0"
+title: Update Rush Sale Config
+summary: 'Update rush sale configuration.'
+---
+Admin can update rush sale configuration (win ratio, end time). Each parameter is optional and only updated if provided. Only admin can call this action.
+Parameters:
+* rush_sale_id: The rush sale identifier.
+* win_ratio: Optional new winning ratio.
+* ended_at: Optional new end time.
+
+<h1 class="contract">delusers</h1>
+---
+spec_version: "0.2.0"
+title: Delete Rush Sale Users
+summary: 'Batch delete users for a rush sale.'
+---
+Admin can batch delete users for a rush sale, up to max_count per call. Only admin can call this action.
+Parameters:
+* rush_sale_id: The rush sale identifier.
+* max_count: Maximum number of users to delete in one call.
+
+<h1 class="contract">on_transfer</h1>
+---
+spec_version: "0.2.0"
+title: Handle Token Transfer
+summary: 'Handle incoming token transfer for grabbing tickets or adding tickets.'
+---
+Triggered automatically when tokens are transferred from point contract or ticket contract. Handles ticket grabbing logic for users (memo: "grab:<rush_sale_id>") and ticket addition (memo: "add:<rush_sale_id>").
+
+<h1 class="contract">cfgpoint</h1>
+---
+spec_version: "0.2.0"
+title: Configure Point Contract
+summary: 'Update the point contract address used for ticket payments.'
+---
+Admin can update the point contract address (e.g., nestar.token) used for ticket payments. Only admin can call this action. Useful for integration or migration to a new token contract.
+Parameters:
+* new_point_contract: The new point contract account.
+
+<h1 class="contract">notifyticket</h1>
+---
+spec_version: "0.2.0"
+title: Notify Ticket Purchase Result
+summary: 'Notify user of ticket purchase result after transfer.'
+---
+This action is triggered internally after a user attempts to grab a ticket via transfer. It notifies the user whether the user won the ticket.
+Parameters:
+* user: The user account.
+* rush_sale_id: The rush sale event id.
+* won: True if user won the grab, false otherwise.

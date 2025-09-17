@@ -8,7 +8,7 @@
 #include <string>
 #include <flon/token.protocol.hpp>
 #include "show.cisum.db.hpp"
-
+#include "flon.auth/flon.auth.hpp"
 namespace flon {
 
 using namespace eosio;
@@ -111,15 +111,20 @@ static inline uint32_t get_random_base(const name& user, uint64_t salt) {
     return sha256_to_u32(h) % RATIO_BASE; // 0..9999
 }
 
-static inline void require_admin_or_oracle(const global_t& g, eosio::name self) {
-    if ( (g.admin.value && has_auth(g.admin)) || has_auth(self)  ) return;
-    for (const auto& o : g.oracles) {
-        if (has_auth(o)) return;
-    }
-    check(false, "[[16]] requires admin, self, ops, or oracle auth");
+void grab_cisum::require_role(const name& submitter,
+                        const std::vector<std::string>& roles) const {
+    require_auth(submitter);
+
+    flonauth::checkrole_action(
+        FLONAUTH_CONTRACT,
+        { get_self(), "active"_n }        // 本合约自己授权
+    ).send(
+        get_self(),                       // submitter = 本合约
+        get_self(),                       // contract = 本合约作用域
+        submitter,                        // 要校验的用户
+        roles
+    );
 }
-
-
 
 void grab_cisum::init(const name& admin) {
     require_auth(get_self());
@@ -128,49 +133,22 @@ void grab_cisum::init(const name& admin) {
     _global.set(_gstate, get_self());
 }
 
-void grab_cisum::addoracle(const name& account) {
-    // 允许 admin 或合约自身
-    check(
-        has_auth(_gstate.admin) || has_auth(get_self()),
-        "requires admin or self auth"
-    );
-
-    check(is_account(account), "invalid account");
-    _gstate.oracles.insert(account);
-    _global.set(_gstate, get_self());
-}
-
-void grab_cisum::deloracle(const name& account) {
-    check(
-        has_auth(_gstate.admin) || has_auth(get_self()),
-        "requires admin or self auth"
-    );
-
-    _gstate.oracles.erase(account);
-    _global.set(_gstate, get_self());
-}
-
-void grab_cisum::addrushsale( uint64_t       show_id,
-                              uint64_t       ticket_id,
-                              time_point     started_at,
-                              time_point     ended_at,
-                              asset          price,
-                              uint32_t       max_grabs_per_user,
-                              uint32_t       win_ratio )
-{
+void grab_cisum::addrushsale(const name&  submitter,
+                                const  uint64_t&       show_id,
+                                const  uint64_t&       ticket_id,
+                                const  time_point&     started_at,
+                                const  time_point&     ended_at,
+                                const  asset&          price,
+                                const  uint32_t&       max_grabs_per_user,
+                                const  uint32_t&       win_ratio )
+    {
     // ===== 权限：允许 admin / 本合约 / OPS_CONTRACT / 任一 oracle =====
-    bool authed =
-        has_auth(_gstate.admin) ||
-        has_auth(get_self())    ||
-        has_auth(OPS_CONTRACT);
-
+    bool authed = has_auth(get_self()) || has_auth(OPS_CONTRACT);
     if (!authed) {
-        for (const auto& o : _gstate.oracles) {
-            if (has_auth(o)) { authed = true; break; }
-        }
+        require_role(submitter, {"admin","oracle"});
+        authed = true;
     }
-    check(authed, "[[16]] requires admin, self, ops, or oracle auth");
-
+    check(authed, "requires self/ops/admin OR submitter with role=admin/oracle");
 
     // ===== 基础校验 =====
     CHECKC(ticket_id != 0,                  err::INVALID_FORMAT, "invalid ticket_id");
@@ -272,6 +250,36 @@ void grab_cisum::deltoken(const symbol& sym, const name& bank) {
     bysym.erase(it);
 }
 
+void grab_cisum::clearsale(const name& submitter,const uint64_t& rush_sale_id) {
+    if (!has_auth(get_self())) {
+        require_role(submitter, {"admin","oracle"});
+    }
+
+    auto now = current_time_point();
+
+    // ---- 检查 rush_sale 是否结束 ----
+    rush_sale::idx_t rs_idx(get_self(), get_self().value);
+    auto rs_itr = rs_idx.find(rush_sale_id);
+    CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found");
+    CHECKC(now > rs_itr->ended_at, err::STATUS_MISMATCH, "rush sale not ended yet");
+
+    // ---- 清理 orders ----
+    {
+        order_t::idx_t orders(get_self(), rush_sale_id);
+        for (auto itr = orders.begin(); itr != orders.end(); ) {
+            itr = orders.erase(itr);
+        }
+    }
+
+    // ---- 清理 grabstats ----
+    {
+        grab_stat_t::idx_t stats(get_self(), rush_sale_id);
+        for (auto itr = stats.begin(); itr != stats.end(); ) {
+            itr = stats.erase(itr);
+        }
+    }
+}
+
 void grab_cisum::on_transfer_point(const name& from,
                                    const name& to,
                                    const asset& quantity,
@@ -286,9 +294,9 @@ void grab_cisum::on_transfer_point(const name& from,
 
     const uint64_t    rush_sale_id = std::stoull(params[1]);
     const std::string grab_id      = params[2];
-    auto              now          = current_time_point();
+    const auto        now          = current_time_point();
 
-    // 查找 rush sale
+    // 1) 查找 rush sale
     rush_sale::idx_t rs_idx(get_self(), get_self().value);
     auto rs_itr = rs_idx.find(rush_sale_id);
     CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found");
@@ -298,39 +306,63 @@ void grab_cisum::on_transfer_point(const name& from,
     ASSERT(rs_itr->total_tickets == rs_itr->available_tickets + rs_itr->sold_tickets);
 
     CHECKC(quantity.symbol == rs_itr->price.symbol, err::SYMBOL_MISMATCH, "symbol mismatch");
-    CHECKC(quantity == rs_itr->price, err::QUANTITY_MISMATCH, "quantity must equal price");
-    CHECKC(rs_itr->win_ratio <= RATIO_BASE, err::EXCEED_LIMIT, "win_ratio must be in 0..10000");
+    CHECKC(quantity == rs_itr->price,               err::QUANTITY_MISMATCH, "quantity must equal price");
+    CHECKC(rs_itr->win_ratio <= RATIO_BASE,         err::EXCEED_LIMIT, "win_ratio must be in 0..10000");
 
-    // 抽签
-    bool win = false;
+    // 2) 幂等：grab_id 唯一（scope = rush_sale_id）
+    order_t::idx_t orders(get_self(), rush_sale_id);
+    {
+        auto bygrab = orders.get_index<"bygrabid"_n>();
+        const auto h = sha256(grab_id.data(), grab_id.size());
+        CHECKC(bygrab.find(h) == bygrab.end(), err::TYPE_INVALID, "duplicate grab_id");
+    }
+
+    // 3) 抽签前：O(1) 人次上限校验（grabstats）
+    grab_stat_t::idx_t stats(get_self(), rush_sale_id);
+    auto st = stats.find(from.value);
+    uint32_t used = (st == stats.end()) ? 0 : st->grabs;
+    if (rs_itr->max_grabs_per_user > 0) { // 0 = 不限
+        CHECKC(used < rs_itr->max_grabs_per_user, err::EXCEED_LIMIT, "exceed max grabs per user");
+    }
+
+    // 4) 抽签
+    bool     win = false;
+    uint32_t rnd = 0;
     if (rs_itr->win_ratio > 0) {
-        uint32_t rnd = get_random_base(from, rush_sale_id); // 0..9999
+        rnd = get_random_base(from, rush_sale_id); // 0..9999
         win = (rnd < rs_itr->win_ratio);
     }
 
-    if (win) {
-        // 中奖才写入 orders 表
-        order_t::idx_t orders(get_self(), rush_sale_id);
+    // 5) 记录本次参与（orders 每次都落一条，tickets=win?1:0）
+    orders.emplace(get_self(), [&](auto& o){
+        o.id         = orders.available_primary_key();
+        o.grab_id    = grab_id;
+        o.account    = from;
+        o.grabs      = 1;   // 一次参与
+        o.tickets    = win ? nasset(1, nsymbol(rs_itr->ticket_id))
+                           : nasset(0, nsymbol(rs_itr->ticket_id));
+        o.created_at = now;
+    });
 
-        // 用 grab_id 二级索引判重
-        auto h      = sha256(grab_id.data(), grab_id.size());
-        auto bygrab = orders.template get_index<"bygrabid"_n>();
-        CHECKC(bygrab.find(h) == bygrab.end(), err::TYPE_INVALID, "duplicate grab_id");
-
-        orders.emplace(get_self(), [&](auto& o){
-            o.id         = orders.available_primary_key();
-            o.grab_id    = grab_id;
-            o.account    = from;
-            o.grabs      = 1; // 固定写 1
-            o.tickets    = nasset(1, nsymbol(rs_itr->ticket_id));
-            o.created_at = now;
+    // 6) O(1) 自增 grabstats
+    if (st == stats.end()) {
+        stats.emplace(get_self(), [&](auto& s){
+            s.account    = from;
+            s.grabs      = 1;
+            s.updated_at = now;
         });
+    } else {
+        stats.modify(st, same_payer, [&](auto& s){
+            s.grabs += 1;
+            s.updated_at = now;
+        });
+    }
 
-        // 发 NFT
+    // 7) 根据结果更新场次并发票
+    if (win) {
         std::vector<nasset> assets = { nasset(1, nsymbol(rs_itr->ticket_id)) };
         TRANSFER_NFT_OUT(_gstate.ticket_contract, from, assets, "grab ticket");
 
-        // 更新场次
         rs_idx.modify(rs_itr, same_payer, [&](auto& r){
             r.sold_tickets.amount += 1;
             ASSERT(r.sold_tickets.is_amount_within_range());
@@ -340,19 +372,17 @@ void grab_cisum::on_transfer_point(const name& from,
             r.updated_at = now;
         });
     } else {
-        // 未中奖：只累计总参与次数
         rs_idx.modify(rs_itr, same_payer, [&](auto& r){
             r.total_grabs++;
             r.updated_at = now;
         });
     }
 
-    // 无论中不中都发通知
+    // 8) 通知（无论中不中）
     grab_cisum::notifyticket_action act{ get_self(), { {get_self(), "active"_n} } };
     nasset result_ticket = win ? nasset(1, nsymbol(rs_itr->ticket_id))
-                            : nasset(0, nsymbol(rs_itr->ticket_id));
-
-    act.send(grab_id, from, 1, result_ticket, now,rush_sale_id);
+                               : nasset(0, nsymbol(rs_itr->ticket_id));
+    act.send(grab_id, from, 1, result_ticket, now, rush_sale_id);
 }
 
 void grab_cisum::on_transfer_ticket( const name& from, const name& to, const vector<nasset>& assets, const string& memo ) {
@@ -395,8 +425,12 @@ void grab_cisum::notifyticket(const std::string& grab_id,
     require_recipient(user);
 }
 
-void grab_cisum::delrushsale( uint64_t rush_sale_id, bool forced ) {
-    require_admin_or_oracle(_gstate, get_self());
+void grab_cisum::delrushsale(const name& submitter,const uint64_t& rush_sale_id,const bool& forced ) {
+
+    if (!has_auth(get_self())) {
+        require_role(submitter, {"admin","oracle"});
+    }
+
     rush_sale::idx_t rs_idx = rush_sale::idx_t(get_self(), get_self().value);
     auto rs_itr = rs_idx.find(rush_sale_id);
     CHECKC( rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found! id: " + std::to_string(rush_sale_id) )
@@ -413,36 +447,16 @@ void grab_cisum::delrushsale( uint64_t rush_sale_id, bool forced ) {
     rs_idx.erase(rs_itr);
 }
 
-void grab_cisum::delusers(const uint64_t rush_sale_id, const uint32_t max_count) {
-    require_admin_or_oracle(_gstate, get_self());
-    CHECKC(max_count > 0, err::NOT_POSITIVE, "max_count must be positive");
 
-    // 活动必须先被删除（即查不到）才允许清 orders 表
-    rush_sale::idx_t rs_idx(get_self(), get_self().value);
-    auto rs_itr = rs_idx.find(rush_sale_id);
-    CHECKC(rs_itr == rs_idx.end(), err::NONE_DELETED, "rush sale must be deleted first");
-
-    order_t::idx_t orders(get_self(), rush_sale_id);
-    if (orders.begin() == orders.end()) {
-        CHECKC(false, err::NONE_DELETED, "no orders to delete");
-    }
-
-    uint32_t count = 0;
-    for (auto it = orders.begin(); count < max_count && it != orders.end(); ) {
-        it = orders.erase(it);
-        ++count;
-    }
-
-    CHECKC(count > 0, err::NONE_DELETED, "no orders deleted");
-}
-
-void grab_cisum::setrushsale(
-                uint64_t rush_sale_id,
+void grab_cisum::setrushsale(const name& submitter,
+                const uint64_t& rush_sale_id,
                 std::optional<uint32_t> max_grabs_per_user,
                 std::optional<uint32_t> win_ratio,
                 std::optional<time_point> ended_at) {
 
-    require_admin_or_oracle(_gstate, get_self());
+    if (!has_auth(get_self())) {
+        require_role(submitter, {"admin","oracle"});
+    }
 
     auto now = current_time_point();
 
@@ -462,8 +476,8 @@ void grab_cisum::setrushsale(
     if (ended_at.has_value()) {
         CHECKC(rs_itr->started_at < ended_at.value(), err::INVALID_TIME,
                "ended_at must be greater than started_at");
-        CHECKC(now < ended_at.value(), err::INVALID_TIME,
-               "ended_at must be greater than current time");
+        // CHECKC(now < ended_at.value(), err::INVALID_TIME,
+        //        "ended_at must be greater than current time");
     }
 
     rs_idx.modify(rs_itr, same_payer, [&](auto& r){
@@ -474,15 +488,19 @@ void grab_cisum::setrushsale(
     });
 }
 
-void grab_cisum::cfgpoint(const eosio::name& new_point_contract) {
-    require_admin_or_oracle(_gstate, get_self());
+void grab_cisum::cfgpoint(const name& submitter,const name& new_point_contract) {
+    if (!has_auth(get_self())) {
+        require_role(submitter, {"admin"});
+    }
 
     CHECKC(is_account(new_point_contract), err::ACCOUNT_INVALID, "point_contract must be a valid account");
     _gstate.point_contract = new_point_contract;
 }
 
-void grab_cisum::cfgticket(const eosio::name& new_ticket_contract) {
-    require_admin_or_oracle(_gstate, get_self());
+void grab_cisum::cfgticket(const name& submitter,const name& new_ticket_contract) {
+    if (!has_auth(get_self())) {
+        require_role(submitter, {"admin"});
+    }
 
     CHECKC(is_account(new_ticket_contract), err::ACCOUNT_INVALID, "ticket_contract must be a valid account");
     _gstate.ticket_contract = new_ticket_contract;

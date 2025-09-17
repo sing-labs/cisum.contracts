@@ -62,31 +62,21 @@ public:
   // ===== 全局设置 =====
   ACTION init(const name& admin);
 
-  // show_admin 管理
-  ACTION addshowadm(const name& account);
-  ACTION delshowadm(const name& account);
-
-  // ✅ platform_admin 管理（新增）
-  ACTION addplatadm(const name& account);
-  ACTION delplatadm(const name& account);
-
-  // per-show 核销员
-  ACTION addchecker(const uint64_t& show_id, const name& account);
-  ACTION delchecker(const uint64_t& show_id, const name& account);
-
   // === cvticket.nft: 创建票种 ===
-  ACTION nftcreate(
+  ACTION nftcreate(const name& submitter,
                     const int64_t& max_supply,
                     const nsymbol& symbol,
                     const string&  token_uri);
 
   // === cvticket.nft: 发放（铸造到合约自身，再转出/或直接发放） ===
-  ACTION nftissue(  const name&   issuer,
-                const nasset& quantity,
-                const string& memo);
+  ACTION nftissue( const name& submitter,
+                    const name&   issuer,
+                    const nasset& quantity,
+                    const string& memo);
 
   // ===== 演出 =====
-  ACTION newshow(const uint64_t&   show_id,
+  ACTION newshow(const name& submitter,
+                    const uint64_t&         show_id,
                     const name&             category,
                     const bool&             ticket_transferable,
                     const bool&             ticket_refundable,
@@ -95,7 +85,8 @@ public:
                     const string&           show_name,
                     const string&           show_address);
 
-  ACTION setshow(const uint64_t&   show_id,
+  ACTION setshow(const name& submitter,
+                    const uint64_t&         show_id,
                     const name&             category,
                     const bool&             ticket_transferable,
                     const bool&             ticket_refundable,
@@ -105,7 +96,8 @@ public:
                     const string&           show_address);
 
   // ===== 票档 =====
-  ACTION newticket(const uint64_t& show_id,
+  ACTION newticket(const name& submitter,
+                    const uint64_t&         how_id,
                     const nsymbol&          ticket_nsym,
                     const nsymbol&          prerequisite_nsym,
                     const string&           ticket_type,
@@ -114,7 +106,8 @@ public:
                     const time_point&       sale_started_at,
                     const time_point&       sale_ended_at);
 
-  ACTION setticket(const uint64_t& show_id,
+  ACTION setticket(const name& submitter,
+                    const uint64_t&         show_id,
                     const uint64_t&         ticket_id,
                     const string&           ticket_type,
                     const asset&            price,
@@ -123,11 +116,12 @@ public:
                     const time_point&       sale_ended_at);
 
   // ===== 发放（从票档直接发 NFT）=====
-  ACTION issue(const name&          user,
-                    const uint64_t&         show_id,
-                    const uint64_t&         ticket_id,
-                    const uint32_t&         ticket_count,
-                    const string&           memo);
+  ACTION issue(const name&     submitter,
+                 const name&                user,
+                 const uint64_t&            show_id,
+                 const uint64_t&            ticket_id,
+                 const uint32_t&            ticket_count,
+                 const string&              memo);
 
   // ===== 批量赠送 =====
   ACTION giftbatch(const name&         oper,
@@ -146,7 +140,8 @@ public:
                       const uint64_t&        created_at);
 
 
-  ACTION buyticket(const name&          payer,
+  ACTION buyticket(const name&  submitter,
+                     const name&          payer,
                      const asset&         pay_amount,
                      const uint64_t&      show_id,
                      const uint64_t&      ticket_id,
@@ -155,19 +150,15 @@ public:
 
 
 
-  ACTION issuetograb(const name& to, const nasset& quantity, const string& memo);
+  ACTION issuetograb(const name&  submitter,const name& to, const nasset& quantity, const string& memo);
 
   using nftcreate_action      = eosio::action_wrapper<"nftcreate"_n,&show::nftcreate>;
   using tkincrease_action     = eosio::action_wrapper<"tkincrease"_n,&show::tkincrease>;
   using issue_action          = eosio::action_wrapper<"issue"_n,&show::issue>;
 
 private:
-  void require_platform_admin() const;
-  void require_show_admin() const;
-  void require_admin_or_showadm() const;
-  void require_admin_or_platadm() const;
-  void require_any_admin() const; // admin OR platform_admin OR show_admin
-
+  void require_role(const name& submitter,
+                        const std::vector<std::string>& roles) const;
 
 private:
   global_singleton _global;

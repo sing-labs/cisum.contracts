@@ -20,7 +20,7 @@ struct  glab_global_t {
    EOSLIB_SERIALIZE(glab_global_t, (last_rush_sale_id))
 };
 
-typedef eosio::singleton< "global"_n, glab_global_t > global1_singleton;
+typedef eosio::singleton< "grabglobal"_n, glab_global_t > global1_singleton;
 
 
 

@@ -10,7 +10,7 @@ mpush cvticket.nft  addwhitelist '["'"${show_con}"'"]'   -p cvticket.nft
 
 mpush $show_con init '["flonian", "cvticket.nft"]' -p $show_con
 
-mpush $show_con addshowadm '["flonian"]' -p flonian
+mpush $show_con addshowadm '["flonian","myadmin"]' -p flonian
 
 mpush $show_con addshowadm '["myadmin"]' -p flonian
 

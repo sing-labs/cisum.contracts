@@ -113,13 +113,13 @@ void pop_cisum::mine(name payer, asset pay_amount, string memo)
         _gstate.reward_contract,              // 银行合约
         _self,                                // 先铸到本合约
         reward,
-        std::string("purchasemint: ") + payer.to_string()
+        std::string("Purchase Reward: ") + payer.to_string()
     );
     TRANSFER(
         _gstate.reward_contract,              // 从银行合约转账
         payer,                               // 发给付款人
         reward,
-        std::string("type:purchasemint|") + "amount: " + reward.to_string()+"|account:"+ payer.to_string()
+        std::string("type:Purchase Reward|") + "amount: " + reward.to_string()+"|account:"+ payer.to_string()+"|order:"+memo
     );
 
     awardnotice_action{
@@ -129,9 +129,9 @@ void pop_cisum::mine(name payer, asset pay_amount, string memo)
         _gstate.reward_contract,
         payer,
         reward,
-        std::string("type:purchasemint|") + "amount: " + reward.to_string()+"|account:"+ payer.to_string(),
+        std::string("type:Purchase Reward|") + "amount: " + reward.to_string()+"|account:"+ payer.to_string()+"|order:"+memo,
         "purchasemint",
-        payer.to_string(),
+        memo,
         current_time_point().time_since_epoch().count() / 1'000'000
     );
 

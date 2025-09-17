@@ -47,14 +47,14 @@ public:
    * @param max_grabs_per_user   Max grabs per user.
    * @param win_ratio            Win ratio (1-10000).
    */
-  ACTION addrushsale(   uint64_t       show_id,
-                      uint64_t       ticket_id,
-                      time_point     started_at,
-                      time_point     ended_at,
-                      asset          price,
-                      uint32_t       max_grabs_per_user,
-                      uint32_t       win_ratio
-   );
+  ACTION addrushsale(const name&  submitter,
+                                const  uint64_t&       show_id,
+                                const  uint64_t&       ticket_id,
+                                const  time_point&     started_at,
+                                const  time_point&     ended_at,
+                                const  asset&          price,
+                                const  uint32_t&       max_grabs_per_user,
+                                const  uint32_t&       win_ratio );
 
   /**
    * Delete a rush sale event.
@@ -63,7 +63,7 @@ public:
    * @param rush_sale_id         The rush sale id to delete.
    * @param forced               If true, force delete even if tickets sold.
    */
-  ACTION delrushsale( uint64_t rush_sale_id, bool forced );
+  ACTION delrushsale(const name& submitter,const uint64_t& rush_sale_id,const bool& forced );
   /**
    * Update rush sale parameters. Only admin can call.
    * Each parameter is optional and only updated if provided.
@@ -72,7 +72,8 @@ public:
    * @param win_ratio            Optional new win ratio.
    * @param ended_at             Optional new end time.
    */
-  ACTION setrushsale(uint64_t rush_sale_id,
+  ACTION setrushsale(const name& submitter,
+                      const uint64_t& rush_sale_id,
                       std::optional<uint32_t> max_grabs_per_user,
                       std::optional<uint32_t> win_ratio,
                       std::optional<time_point> ended_at) ;
@@ -81,16 +82,8 @@ public:
 
   ACTION  deltoken(const symbol& sym, const name& bank);
 
-  ACTION  addoracle(const name& account);
-  ACTION  deloracle(const name& account);
+  ACTION clearsale(const name& submitter,const uint64_t& rush_sale_id) ;
 
-  /**
-   * Batch delete users for a rush sale. Only admin can call.
-   *
-   * @param rush_sale_id         The rush sale id.
-   * @param max_count            Max number of users to delete in one call.
-   */
-  ACTION delusers( uint64_t rush_sale_id, uint32_t max_count );
 
   // 处理 FT（积分）转账：来自积分合约
   [[eosio::on_notify("nest21.token::transfer")]]
@@ -114,8 +107,7 @@ public:
    * @param rush_sale_id        The rush sale event id.
    * @param won                 True if user won the grab, false otherwise.
    */
-  [[eosio::action]]
-  void notifyticket(const std::string& grab_id,
+  ACTION notifyticket(const std::string& grab_id,
                               const eosio::name& user,
                               uint32_t grabs,
                               const nasset& tickets,
@@ -129,8 +121,7 @@ public:
    *
    * @param new_point_contract   The new point contract account name.
    */
-  [[eosio::action]]
-  void cfgpoint(const eosio::name& new_point_contract);
+  ACTION cfgpoint(const name& submitter,const name& new_point_contract);
 
   /**
    * Configure the ticket contract infomation.
@@ -139,14 +130,17 @@ public:
    *
    * @param new_ticket_contract   The new ticket contract account name.
    */
-  [[eosio::action]]
-  void cfgticket(const eosio::name& new_ticket_contract);
+  ACTION cfgticket(const name& submitter,const name& new_ticket_contract) ;
 
   // -------- Inline wrappers --------
   using addrushsale_action        = eosio::action_wrapper<"addrushsale"_n,        &grab_cisum::addrushsale>;
   using delrushsale_action        = eosio::action_wrapper<"delrushsale"_n,        &grab_cisum::delrushsale>;
   using setrushsale_action        = eosio::action_wrapper<"setrushsale"_n,        &grab_cisum::setrushsale>;
   using notifyticket_action        = eosio::action_wrapper<"notifyticket"_n,        &grab_cisum::notifyticket>;
+
+private:
+  void require_role(const name& submitter,
+                        const std::vector<std::string>& roles) const;
 
 private:
   // 全局
