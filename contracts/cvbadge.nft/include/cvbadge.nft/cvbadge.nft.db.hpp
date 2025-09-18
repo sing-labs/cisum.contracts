@@ -24,13 +24,13 @@ using namespace eosio;
 
 static constexpr uint32_t U1E9  = 10'0000'0000UL;
 
-NTBL("global") global_t {
+NTBL("badgeglobal") global_t {
     set<name> creators; //null means open to public
     set<name> notaries;
     set<name> whitelist;
     EOSLIB_SERIALIZE( global_t, (creators)(notaries)(whitelist))
 };
-typedef eosio::singleton< "global"_n, global_t > global_singleton;
+typedef eosio::singleton< "badgeglobal"_n, global_t > global_singleton;
 
 //Scope: self
 TBL nstats_t {

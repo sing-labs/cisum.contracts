@@ -34,7 +34,7 @@ typedef eosio::multi_index< "accounts"_n, accounts > tbl_accounts;
 // ---------------- 可配置的统计代币清单 ----------------
 // 由合约维护的一张表，记录需要在 summary 中展示的 (bank, symbol) 组合
 TBL tokencfg {
-    name bank;   // 代币合约账户，例如：cisum.token / nest21.token
+    name bank;   // 代币合约账户，例如：cisum.token / nestar.token
     symbol sym;  // 代币符号（含精度），例如：8,CISUM / 4,NESTAR
 
     // 复合主键： (bank.value << 64) | sym.code().raw()

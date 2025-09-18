@@ -36,14 +36,14 @@ class [[eosio::contract("show.cisum")]] show : public contract {
 public:
   using contract::contract;
 
-  // === cvticket.nft: 创建票种 ===
+
   [[eosio::action]]
   void nftcreate(const name& submitter,
                     const int64_t& max_supply,
                     const nsymbol& symbol,
                     const string&  token_uri);
 
-  // === cvticket.nft: 发放（铸造到合约自身，再转出/或直接发放） ===
+
   [[eosio::action]]
   void nftissue(const name& submitter,
                     const name&   issuer,

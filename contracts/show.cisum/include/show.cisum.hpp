@@ -60,15 +60,13 @@ public:
   ~show() { _global.set(_gstate, get_self()); }
 
   // ===== 全局设置 =====
-  ACTION init(const name& admin);
+  ACTION init(const name& admin,const name& nft_bank);
 
-  // === cvticket.nft: 创建票种 ===
   ACTION nftcreate(const name& submitter,
                     const int64_t& max_supply,
                     const nsymbol& symbol,
                     const string&  token_uri);
 
-  // === cvticket.nft: 发放（铸造到合约自身，再转出/或直接发放） ===
   ACTION nftissue( const name& submitter,
                     const name&   issuer,
                     const nasset& quantity,

@@ -1,18 +1,17 @@
 #include "nestar.token.hpp"
 
 #include "cvbadge.nft.db.hpp"
-
+#include "flon/consts.hpp"
 
 namespace flon {
 
 using namespace eosio;
 using std::string;
 
-void nestar::init(name issuer, name admin, name artists_contract, name badgestore_contract) {
+void nestar::init(name issuer, name admin, name badgestore_contract) {
     require_auth(get_self());
     _gstate.issuer             = issuer;
     _gstate.admin              = admin;
-    _gstate.artists_contract   = artists_contract;
     _gstate.badgestore_contract = badgestore_contract;
 }
 
@@ -222,24 +221,17 @@ void nestar::setwhite(const name& account, const bool& enabled)
     }
 }
 
-void nestar::setcontract(const name &artcontract)
-{
-    require_auth(get_self());
-    CHECKC(is_account(artcontract),       err::ACCOUNT_INVALID, "artcontract not exist");
-    _gstate.artists_contract = artcontract;
-}
-
 void nestar::setbrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) {
     CHECKC(has_admin_auth(),                     err::DID_NOT_AUTH,     "admin/contract only");
     CHECKC(threshold.amount > 0,                 err::NOT_POSITIVE,     "threshold must be positive");
     CHECKC(threshold.symbol == NESTAR_SYM,    err::SYMBOL_MISMATCH,  "threshold must be NESTAR");
     CHECKC(symbol.raw() != 0,                    err::INVALID_FORMAT,   "badge symbol required");
 
-    // ===== 校验 symbol 是否在 cvbadge.nft 中存在 =====
-    flon::nstats_t::idx_t nstats_tbl("cvbadge.nft"_n, "cvbadge.nft"_n.value);
+
+    flon::nstats_t::idx_t nstats_tbl(CVBADGE_CONTRACT, CVBADGE_CONTRACT.value);
     auto it_symbol = nstats_tbl.find(symbol.value);
 
-    CHECKC(it_symbol != nstats_tbl.end(), err::RECORD_NO_FOUND, "badge symbol not exist in cvbadge.nft");
+    CHECKC(it_symbol != nstats_tbl.end(), err::RECORD_NO_FOUND, "badge symbol not exist in badge nft");
 
     badge_rule_t::idx_t rtbl(get_self(), get_self().value);
     auto by_symbol = rtbl.get_index<"bysymbol"_n>();

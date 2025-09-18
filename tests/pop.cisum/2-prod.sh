@@ -1,0 +1,17 @@
+pop_con=pop.cisum
+mreg flon $pop_con flonian
+mtran flonian $pop_con "100 FLON"
+mset $pop_con pop.cisum
+mcli set account permission $pop_con active --add-code
+
+
+#向pop_con 转入CISUM
+mpush cisum.token transfer '[
+  "flonian",
+  "'"${pop_con}"'",
+  "1000.00000000 CISUM",
+  "seed for pop rewards"
+]' -p flonian
+
+mpush $pop_con addexecutor '["show.cisum"]' -p $pop_con
+

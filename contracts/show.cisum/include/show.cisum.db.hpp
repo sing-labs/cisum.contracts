@@ -19,11 +19,9 @@ using std::set;
 
 NTBL("global") global_t {
   name        admin;          // 超管
-  set<name>   show_admin;     // 演出管理员白名单
-  set<name>   platform_admin; // 平台管理员白名单
-  name        nft_bank = "cvticket.nft"_n;       // 票 NFT 合约账户
+  name        nft_bank;       // 票 NFT 合约账户
 
-  EOSLIB_SERIALIZE(global_t, (admin)(show_admin)(platform_admin)(nft_bank))
+  EOSLIB_SERIALIZE(global_t, (admin)(nft_bank))
 };
 using global_singleton = eosio::singleton<"global"_n, global_t>;
 

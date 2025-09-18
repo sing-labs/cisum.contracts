@@ -4,10 +4,7 @@
 #include <eosio/asset.hpp>
 #include <eosio/time.hpp>
 #include <string>
-
-
 #include "nestar.token.db.hpp"
-#include "artist.cisum.db.hpp"
 
 
 
@@ -30,7 +27,7 @@ public:
   ~nestar() { _global.set(_gstate, get_self()); }
 
   [[eosio::action]]
-  void init(name issuer, name admin, name artists_contract, name badgestore_contract);
+  void init(name issuer, name admin, name badgestore_contract);
 
   [[eosio::action]] void addwhitelist(const name& account);
   [[eosio::action]] void delwhitelist(const name& account);
@@ -60,9 +57,6 @@ public:
 
   [[eosio::action]]
   void setissuer(const name& issuer);
-
-  [[eosio::action]]
-  void setcontract(const name& artcontract);
 
   [[eosio::action]]
   void setadmin(const name& admin);

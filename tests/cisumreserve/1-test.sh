@@ -8,6 +8,8 @@ mset $cisumreserve_con cisumreserve
 mcli set account permission $cisumreserve_con active --add-code
 
 
+updateauth
+
 # ==== 1) 初始化（只需一次）====
 # fee_bps 例：50 = 0.50%
 mpush $cisumreserve_con init '["'"$admin"'", 30]' -p $cisumreserve_con

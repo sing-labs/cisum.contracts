@@ -123,6 +123,10 @@ NTBL("orders") order_t {
    nasset         tickets;     // 固定 1 * ticket_symbol
    time_point     created_at;  // 中奖时间
 
+   bool is_win() const { return tickets.amount > 0; }
+   uint128_t by_userwin() const {
+      return ( (uint128_t)account.value << 1 ) | (is_win() ? 1 : 0);
+   }
    // —— 主键：用自增 id
    uint64_t primary_key() const { return id; }
    uint64_t byaccount() const { return account.value; }
@@ -134,7 +138,8 @@ NTBL("orders") order_t {
    typedef eosio::multi_index<
      "orders"_n, order_t,
      indexed_by<"bygrabid"_n, const_mem_fun<order_t, checksum256, &order_t::by_grabid>>,
-     indexed_by<"byaccount"_n, const_mem_fun<order_t, uint64_t,   &order_t::byaccount>>
+     indexed_by<"byaccount"_n, const_mem_fun<order_t, uint64_t,   &order_t::byaccount>>,
+     indexed_by<"byuserwin"_n, const_mem_fun<order_t, uint128_t, &order_t::by_userwin>>
    > idx_t;
 
    EOSLIB_SERIALIZE(order_t, (id)(grab_id)(account)(grabs)(tickets)(created_at))
@@ -156,7 +161,7 @@ NTBL("grabstats") grab_stat_t {
 NTBL("allowtokens") allowed_token_t {
     uint64_t    id;          // 自增主键
     symbol      sym;         // 币种(含精度)，例如 4,NESTAR / 8,CISUM
-    name        bank;        // 发行/转账合约账号，例如 nest21.token / cisum.token
+    name        bank;        // 发行/转账合约账号，例如 nestar.token / cisum.token
     time_point  created_at;
     time_point  updated_at;
 

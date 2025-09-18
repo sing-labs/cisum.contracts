@@ -5,31 +5,34 @@ using namespace eosio;
 using namespace flon;
 
 void cisumreserve::init(const name& admin, const uint16_t& fee_bps) {
-  require_auth(get_self());
-  check(is_account(admin), "admin not exist");
-  check(fee_bps <= 10000, "fee_bps out of range");
+    require_auth(get_self());
+    check(is_account(admin), "admin not exist");
+    check(fee_bps <= 10000, "fee_bps out of range");
 
-  _gstate.admin         = admin;
-  _gstate.fee_bps       = fee_bps;
-  _gstate.last_order_id = 0;
+    _gstate.admin         = admin;
+    _gstate.fee_bps       = fee_bps;
+    _gstate.last_order_id = 0;
+    _global.set(_gstate, get_self());
 }
 
 void cisumreserve::setfee(const name& submitter, const uint16_t& fee_bps) {
-  require_auth(submitter);
-  check(_gstate.admin.value != 0, "admin not set");
-  check(submitter == _gstate.admin, "only admin can set fee");
-  check(fee_bps <= 10000, "fee_bps out of range");
-  _gstate.fee_bps = fee_bps;
+    require_auth(submitter);
+    check(_gstate.admin.value != 0, "admin not set");
+    check(submitter == _gstate.admin, "only admin can set fee");
+    check(fee_bps <= 10000, "fee_bps out of range");
+    _gstate.fee_bps = fee_bps;
+    _global.set(_gstate, get_self());
 }
 
 void cisumreserve::setadmin(const name& submitter, const name& new_admin) {
 
-  bool ok = has_auth(get_self()) || (has_auth(submitter) && submitter == _gstate.admin);
-  check(ok, "requires self or current admin auth");
+    bool ok = has_auth(get_self()) || (has_auth(submitter) && submitter == _gstate.admin);
+    check(ok, "requires self or current admin auth");
 
-  check(is_account(new_admin), "new_admin not exist");
-  if (new_admin == _gstate.admin) return;
-  _gstate.admin = new_admin;
+    check(is_account(new_admin), "new_admin not exist");
+    if (new_admin == _gstate.admin) return;
+    _gstate.admin = new_admin;
+    _global.set(_gstate, get_self());
 }
 
 void cisumreserve::on_usdt_transfer(const name& from,
@@ -68,9 +71,11 @@ void cisumreserve::on_usdt_transfer(const name& from,
     // 记录订单
     orders_idx orders(get_self(), get_self().value);
     _gstate.last_order_id += 1;
+    uint64_t oid = _gstate.last_order_id;
+    _global.set(_gstate, get_self());
     const auto now = current_time_point();
     orders.emplace(get_self(), [&](auto& o){
-        o.id         = _gstate.last_order_id;
+        o.id         = oid;
         o.user       = from;
         o.usdt_in    = quantity;
         o.cisum_out  = cisum_out;

@@ -68,15 +68,15 @@ void show::tkincrease(const uint64_t&  show_id,
 }
 
 
-void show::init(const name& admin) {
+void show::init(const name& admin,const name& nft_bank) {
   require_auth(get_self());
   check(is_account(admin), "admin not exist");
   _gstate.admin = admin;
+  _gstate.nft_bank =nft_bank;
 
 }
 
 
-// ========== cvticket.nft: 票种创建 / 发放 ==========
 void show::nftcreate(const name& submitter,
                     const int64_t& max_supply,
                     const nsymbol& symbol,

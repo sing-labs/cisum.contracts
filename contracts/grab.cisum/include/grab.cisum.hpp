@@ -33,7 +33,7 @@ public:
    *
    * @param admin                The account to be set as admin.
    */
-  ACTION init(const eosio::name& admin);
+  ACTION init(const name& admin) ;
 
   /**
    * Create a new rush sale event.
@@ -86,14 +86,14 @@ public:
 
 
   // 处理 FT（积分）转账：来自积分合约
-  [[eosio::on_notify("nest21.token::transfer")]]
+  [[eosio::on_notify("nestar.token::transfer")]]
   void on_transfer_point(const name& from,
                         const name& to,
                         const asset& quantity,
                         const std::string& memo);
 
   // 处理 NFT 转账：来自票据合约
-  [[eosio::on_notify("cvticket.nft::transfer")]]
+  [[eosio::on_notify("ticket.cvnft::transfer")]]
   void on_transfer_ticket(const name& from,
                           const name& to,
                           const std::vector<nasset>& assets,

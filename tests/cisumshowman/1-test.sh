@@ -16,7 +16,7 @@ ops21.cisum
 mpush $ops_con publishshow '[
   "flonian",
   {
-    "show_id": 20250078,
+    "show_id": 20250082,
     "category": "concert",
     "ticket_transferable": true,
     "ticket_refundable": true,
@@ -27,8 +27,8 @@ mpush $ops_con publishshow '[
   },
   [
     {
-      "ticket_id": 21010001000010266,
-      "token_uri": "ipfs://free_ticket82_metadata",
+      "ticket_id": 21010001000010276,
+      "token_uri": "ipfs://free_ticket91_metadata",
       "ticket_type": "free",
       "price": "200.0000 NESTAR",
       "price_usdt": "0 USDT",
@@ -40,8 +40,8 @@ mpush $ops_con publishshow '[
       "max_grabs_per_user":10000
     },
     {
-      "ticket_id": 21010001000010267,
-      "token_uri": "ipfs://vip_ticket82_metadata",
+      "ticket_id": 21010001000010277,
+      "token_uri": "ipfs://vip_ticket91_metadata",
       "ticket_type": "VIP",
       "price": "199.00 USDT",
       "price_usdt": "199 USDT",

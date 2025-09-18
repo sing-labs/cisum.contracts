@@ -33,6 +33,8 @@ mpush $rolemanage_con grantrole '["show24.cisum","flonian","ops21.cisum","showad
 mpush $rolemanage_con grantrole '["show24.cisum","flonian","myadmin","R_REDEMPTION_EXECUTE"]' -p flonian
 mpush $rolemanage_con grantrole '["show24.cisum","flonian","cvplqwcdfvzj","R_REDEMPTION_EXECUTE"]' -p flonian
 
+mpush $rolemanage_con grantrole '["flon.auth111","flonian","flonian","R_CREATE_ROLE"]' -p flonian
+
 mpush $rolemanage_con revokerole '["show24.cisum","flonian","user1","oracle"]' -p flonian
 
 mpush $rolemanage_con checkrole '["myadmin","show24.cisum","user1","admin"]' -p myadmin
@@ -41,3 +43,10 @@ mpush $rolemanage_con checkrole '["myadmin","show24.cisum","user1","admin"]' -p 
 
 
 mpush $rolemanage_con revokerole '["show24.cisum","flonian","ops21.cisum","show_admin"]' -p flonian
+
+
+
+mpush $rolemanage_con addroleperm '["flonian","admin","tests","tests"]'   -p flonian
+
+
+mpush $rolemanage_con delroleperm '["flonian","admin","test"]'   -p flonian

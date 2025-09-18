@@ -27,7 +27,7 @@ public:
 
     ACTION consumeact(const name& caller, const name& act_name, const asset& amount);
 
-    [[eosio::on_notify("nest21.token::transfer")]]
+    [[eosio::on_notify("nestar.token::transfer")]]
     void ontransfer(const name& from, const name& to,const asset& quantity, const string& memo);
 
 

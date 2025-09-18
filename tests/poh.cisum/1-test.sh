@@ -24,11 +24,11 @@ mpush cisum.token transfer '[
 ]' -p flonian
 
 
-mpush $poh_con init '["cisumplatfrm","registrar11","2500000000.00000000 CISUM"]' -p $poh_con
+mpush $poh_con init '["cisumreser11","registrar11","2500000000.00000000 CISUM"]' -p $poh_con
 
 mpush $poh_con setmaxissued '["5100000000.00000000 CISUM"]' -p $poh_con
 
-mpush $poh_con setplatform '["cisumplatfrm"]' -p $poh_con
+mpush $poh_con setplatform '["cisumreser11"]' -p $poh_con
 
 mpush $poh_con setregistrar '["flonian"]' -p $poh_con
 

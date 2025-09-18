@@ -49,7 +49,7 @@ mpush grab23.cisum settoken '["4,NESTAR","nest21.token"]' -p grab23.cisum
 mpush grab23.cisum delrushsale '["myadmin",	10,true]' -p myadmin
 
 # 8) 抢购支付样例（不变）
-mpush nest21.token transfer '["gahbnbehaskk","grab23.cisum","200.0000 NESTAR","grab:10:a1799ae8e1ea62a20a5f56710342a401"]' -p gahbnbehaskk
+mpush nestar.token transfer '["gahbnbehaskk","grab.cisum","200.0000 NESTAR","grab:2:a1799ae8e1ea62a20a5f56710342a401"]' -p gahbnbehaskk
 mpush nest21.token transfer '["ipowner.111","grab23.cisum","200.0000 NESTAR","grab:16:a1799ae8e1ea62a20a5f56810342a401"]' -p ipowner.111
 mpush nest21.token transfer '["myadmin","grab23.cisum","200.0000 NESTAR","grab:16:a1799ae8e1ea62a20a5f56910342a401"]' -p myadmin
 mpush nest21.token transfer '["nes11.issuer","grab23.cisum","200.0000 NESTAR","grab:16:a1799ae8e1ea62a20a5f57010342a401"]' -p nes11.issuer
@@ -66,3 +66,6 @@ mpush grab23.cisum setrushsale '["myadmin",10,10,1000,"2025-09-01T20:00:00"]' -p
 
 # 11) 结束后清理活动（已带 submitter，方案A）
 mpush grab23.cisum clearsale '["myadmin",10]' -p myadmin
+
+
+mpush grab.cisum setrushsale '["flonian",3,1000,4000,"2025-10-01T20:00:00"]' -p flonian

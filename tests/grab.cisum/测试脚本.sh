@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-grab_con=grab24.cisum
+grab_con=grab.cisum
 
 echo "==== 环境初始化 ===="
 mreg flon $grab_con flonian
@@ -14,7 +14,7 @@ echo "==== 1) 初始化合约 ===="
 mpush $grab_con init '["flonian"]' -p $grab_con
 
 echo "==== 2) 配置依赖合约 ===="
-mpush $grab_con cfgpoint  '["nest21.token"]'  -p flonian
+mpush $grab_con cfgpoint  '["nestar.token"]'  -p flonian
 mpush $grab_con cfgticket '["cvticket.nft"]' -p flonian
 
 

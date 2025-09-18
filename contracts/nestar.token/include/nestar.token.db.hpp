@@ -58,9 +58,8 @@ enum class err: uint8_t {
 NTBL("global") global_t {
    name      issuer;                    // NESTAR 发行者
    name      admin;                     // 管理员账户
-   name      artists_contract;          // 艺人注册合约
    name      badgestore_contract ;      // 勋章 发放 合约
-   EOSLIB_SERIALIZE(global_t, (issuer)(admin)(artists_contract)(badgestore_contract))
+   EOSLIB_SERIALIZE(global_t, (issuer)(admin)(badgestore_contract))
 };
 
 typedef eosio::singleton< "global"_n, global_t > global_singleton;

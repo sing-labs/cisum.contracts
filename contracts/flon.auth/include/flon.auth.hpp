@@ -28,6 +28,19 @@ public:
     ACTION setadmin(const name& new_admin);
     ACTION addallowlist(const name& acct);
     ACTION delallowlist(const name& acct);
+
+    ACTION addroleperm(const name& submitter,
+                            const std::string& role,
+                            const std::string& perm,
+                            const std::string& desc) ;
+
+    ACTION delroleperm(const name& submitter,
+                            const std::string& role,
+                            const std::string& perm);
+
+
+
+
     // ========= Actions =========
 
     /**

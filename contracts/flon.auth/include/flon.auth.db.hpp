@@ -113,4 +113,29 @@ using userroles_idx = eosio::multi_index<
     indexed_by<"bycontr"_n,     const_mem_fun<user_role_t, uint64_t,    &user_role_t::by_contr>>
 >;
 
+
+// -------- 表：角色权限绑定 --------
+struct [[eosio::table("roleperms"), eosio::contract("flon.auth")]] role_perm_t {
+    uint64_t    id;         // 自增主键
+    std::string role;       // 角色名（string）
+    std::string perm;       // 权限名（string）
+    std::string desc;       // 权限描述
+    time_point  created_at; // 创建时间
+    uint64_t    primary_key()  const { return id; }
+    checksum256 by_role()      const { return hash_str(role); }
+    checksum256 by_perm()      const { return hash_str(perm); }
+    checksum256 by_roleperm()  const { return hash_two_u64_str(0, 0, role + "|" + perm); }
+    // 用 role+perm 拼接避免重复
+
+    EOSLIB_SERIALIZE(role_perm_t, (id)(role)(perm)(desc)(created_at))
+};
+
+using roleperms_idx = eosio::multi_index<
+    "roleperms"_n, role_perm_t,
+    indexed_by<"byrole"_n,     const_mem_fun<role_perm_t, checksum256, &role_perm_t::by_role>>,
+    indexed_by<"byperm"_n,     const_mem_fun<role_perm_t, checksum256, &role_perm_t::by_perm>>,
+    indexed_by<"byroleperm"_n, const_mem_fun<role_perm_t, checksum256, &role_perm_t::by_roleperm>>
+>;
+
+
 } // namespace flon

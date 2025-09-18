@@ -317,6 +317,11 @@ void grab_cisum::on_transfer_point(const name& from,
         CHECKC(bygrab.find(h) == bygrab.end(), err::TYPE_INVALID, "duplicate grab_id");
     }
 
+    uint128_t key = ((uint128_t)from.value << 1) | 1;
+
+    auto byuw = orders.get_index<"byuserwin"_n>();
+    CHECKC(byuw.find(key) == byuw.end(), err::EXCEED_LIMIT, "user already won a ticket in this rush sale");
+
     // 3) 抽签前：O(1) 人次上限校验（grabstats）
     grab_stat_t::idx_t stats(get_self(), rush_sale_id);
     auto st = stats.find(from.value);
