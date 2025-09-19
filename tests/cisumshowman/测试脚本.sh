@@ -407,3 +407,274 @@ mpush $ops_con publishshow '[
     }
   ]
 ]' -p flonian
+
+
+
+
+
+1️⃣ 正常流程（收费票 + 免费票）
+
+ops_con=cisumshowman
+
+mpush $ops_con publishshow '[
+  "flonian",
+  {
+    "show_id": 20250100,
+    "category": "concert",
+    "ticket_transferable": true,
+    "ticket_refundable": true,
+    "show_started_at": "2025-10-02T19:30:00",
+    "show_ended_at":   "2025-10-02T22:00:00",
+    "show_name": "Test Concert Normal",
+    "show_address": "Shanghai"
+  },
+  [
+    {
+      "ticket_id": 21010001000011001,
+      "token_uri": "ipfs://paid_ticket1_metadata",
+      "ticket_type": "vip",
+      "price": "100.00000000 CISUM",
+      "price_usdt": "100.000000 USDT",
+      "total_count": 100,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2025-09-01T00:00:00",
+      "sale_ended_at":   "2025-09-30T20:00:00",
+      "win_ratio": 0,
+      "max_grabs_per_user": 0
+    },
+    {
+      "ticket_id": 21010001000011002,
+      "token_uri": "ipfs://free_ticket1_metadata",
+      "ticket_type": "free",
+      "price": "10.0000 NESTAR",
+      "price_usdt": "0 USDT",
+      "total_count": 10,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2025-09-01T00:00:00",
+      "sale_ended_at":   "2025-09-30T20:00:00",
+      "win_ratio": 10000,
+      "max_grabs_per_user": 1
+    }
+  ]
+]' -p flonian
+
+
+⸻
+
+2️⃣ 非授权用户调用
+
+mpush $ops_con publishshow '[
+  "notadmin",
+  {
+    "show_id": 20250101,
+    "category": "concert",
+    "ticket_transferable": true,
+    "ticket_refundable": true,
+    "show_started_at": "2025-10-03T19:30:00",
+    "show_ended_at":   "2025-10-03T22:00:00",
+    "show_name": "Test Unauthorized",
+    "show_address": "Beijing"
+  },
+  []
+]' -p notadmin
+# 期望：报错 missing authority of notadmin
+
+
+⸻
+
+3️⃣ USDT 符号错误
+
+mpush $ops_con publishshow '[
+  "flonian",
+  {
+    "show_id": 20250102,
+    "category": "concert",
+    "ticket_transferable": true,
+    "ticket_refundable": true,
+    "show_started_at": "2025-10-04T19:30:00",
+    "show_ended_at":   "2025-10-04T22:00:00",
+    "show_name": "Test Wrong USDT",
+    "show_address": "Guangzhou"
+  },
+  [
+    {
+      "ticket_id": 21010001000011003,
+      "token_uri": "ipfs://wrong_usdt_ticket",
+      "ticket_type": "vip",
+      "price": "199.0000 USDT",
+      "price_usdt": "199.0000 ABC",
+      "total_count": 100,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2025-09-01T00:00:00",
+      "sale_ended_at":   "2025-09-30T20:00:00",
+      "win_ratio": 0,
+      "max_grabs_per_user": 0
+    }
+  ]
+]' -p flonian
+# 期望：报错 price_usdt code must be USDT
+
+
+⸻
+
+4️⃣ CISUM 精度错误
+
+mpush $ops_con publishshow '[
+  "flonian",
+  {
+    "show_id": 20250103,
+    "category": "concert",
+    "ticket_transferable": true,
+    "ticket_refundable": true,
+    "show_started_at": "2025-10-05T19:30:00",
+    "show_ended_at":   "2025-10-05T22:00:00",
+    "show_name": "Test Wrong CISUM Precision",
+    "show_address": "Shenzhen"
+  },
+  [
+    {
+      "ticket_id": 21010001000011004,
+      "token_uri": "ipfs://cisum_precision_ticket",
+      "ticket_type": "vip",
+      "price": "100.0000 CISUM",
+      "price_usdt": "100.00000000 USDT",
+      "total_count": 50,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2025-09-01T00:00:00",
+      "sale_ended_at":   "2025-09-30T20:00:00",
+      "win_ratio": 0,
+      "max_grabs_per_user": 0
+    }
+  ]
+]' -p flonian
+# 期望：报错 CISUM price precision must be 8
+
+
+⸻
+
+5️⃣ 免费票价格非零
+
+mpush $ops_con publishshow '[
+  "flonian",
+  {
+    "show_id": 20250104,
+    "category": "concert",
+    "ticket_transferable": true,
+    "ticket_refundable": true,
+    "show_started_at": "2025-10-06T19:30:00",
+    "show_ended_at":   "2025-10-06T22:00:00",
+    "show_name": "Test Free Ticket Wrong Price",
+    "show_address": "Chengdu"
+  },
+  [
+    {
+      "ticket_id": 21010001000011005,
+      "token_uri": "ipfs://free_ticket_wrong_price",
+      "ticket_type": "free",
+      "price": "1.00000000 CISUM",
+      "price_usdt": "0 USDT",
+      "total_count": 10,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2025-09-01T00:00:00",
+      "sale_ended_at":   "2025-09-30T20:00:00",
+      "win_ratio": 10000,
+      "max_grabs_per_user": 1
+    }
+  ]
+]' -p flonian
+# 期望：报错 price symbol not allowed
+
+
+⸻
+
+6️⃣ 多票种（NESTAR + CISUM + Free）
+
+mpush $ops_con publishshow '[
+  "flonian",
+  {
+    "show_id": 20250105,
+    "category": "concert",
+    "ticket_transferable": true,
+    "ticket_refundable": true,
+    "show_started_at": "2025-10-07T19:30:00",
+    "show_ended_at":   "2025-10-07T22:00:00",
+    "show_name": "Test Multi Tickets",
+    "show_address": "Hangzhou"
+  },
+  [
+    {
+      "ticket_id": 21010001000011006,
+      "token_uri": "ipfs://nestar_ticket",
+      "ticket_type": "nestar",
+      "price": "100.0000 NESTAR",
+      "price_usdt": "100.0000 USDT",
+      "total_count": 100,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2025-09-01T00:00:00",
+      "sale_ended_at":   "2025-09-30T20:00:00",
+      "win_ratio": 0,
+      "max_grabs_per_user": 0
+    },
+    {
+      "ticket_id": 21010001000011007,
+      "token_uri": "ipfs://cisum_ticket",
+      "ticket_type": "cisum",
+      "price": "50.00000000 CISUM",
+      "price_usdt": "50.0000 USDT",
+      "total_count": 200,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2025-09-01T00:00:00",
+      "sale_ended_at":   "2025-09-30T20:00:00",
+      "win_ratio": 0,
+      "max_grabs_per_user": 0
+    },
+    {
+      "ticket_id": 21010001000011008,
+      "token_uri": "ipfs://free_ticket_multi",
+      "ticket_type": "free",
+      "price": "0.00000000 CISUM",
+      "price_usdt": "0 USDT",
+      "total_count": 20,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2025-09-01T00:00:00",
+      "sale_ended_at":   "2025-09-30T20:00:00",
+      "win_ratio": 5000,
+      "max_grabs_per_user": 2
+    }
+  ]
+]' -p flonian
+
+
+⸻
+
+7️⃣ NFT 铸造量检查
+
+mpush $ops_con publishshow '[
+  "flonian",
+  {
+    "show_id": 20250106,
+    "category": "concert",
+    "ticket_transferable": true,
+    "ticket_refundable": true,
+    "show_started_at": "2025-10-08T19:30:00",
+    "show_ended_at":   "2025-10-08T22:00:00",
+    "show_name": "Test NFT Supply",
+    "show_address": "Nanjing"
+  },
+  [
+    {
+      "ticket_id": 21010001000011009,
+      "token_uri": "ipfs://nft_supply_ticket",
+      "ticket_type": "vip",
+      "price": "99.0000 USDT",
+      "price_usdt": "99.0000 USDT",
+      "total_count": 5,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2025-09-01T00:00:00",
+      "sale_ended_at":   "2025-09-30T20:00:00",
+      "win_ratio": 0,
+      "max_grabs_per_user": 0
+    }
+  ]
+]' -p flonian
+# 期望：CREATE_NFT 实际创建 50 张 NFT（5 * 10）

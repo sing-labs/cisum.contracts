@@ -28,8 +28,7 @@ mpush $grab_con cfgticket '["flonian","ticket.cvnft"]' -p $grab_con
 # 允许的支付币种（该 action 仍是合约自签）
 mpush $grab_con settoken '["4,NESTAR","nestar.token"]' -p $grab_con
 
-
-
-
-
-mpush nestar.token transfer '["gahbnbehaskk","grab.cisum","200.0000 NESTAR","grab:4:a1799ae8e1ea62a20a5f56710342a115"]' -p gahbnbehaskk
+#mpush $grab_con settoken '["6,USDT","flon.mtoken"]' -p $grab_con
+#mpush $grab_con settoken '["8,CISUM","cisum.token"]' -p $grab_con
+#mpush $grab_con deltoken '["6,USDT","flon.mtoken"]' -p $grab_con
+#mpush $grab_con deltoken '["8,CISUM","cisum.token"]' -p $grab_con

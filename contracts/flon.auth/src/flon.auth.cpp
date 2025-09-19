@@ -158,49 +158,67 @@ void flonauth::checkrole(const name& submitter,
 
 
 void flonauth::addroleperm(const name& submitter,
-                           const std::string& role,
-                           const std::string& perm,
-                           const std::string& desc) {
-    // 必须签名
+                           const string& role,
+                           const std::set<string>& perms,
+                           const string& desc) {
     require_auth(submitter);
 
-    // 校验：submitter 是否具备 R_CREATE_ROLE
-    CHECKC(has_role(get_self(), submitter, "R_CREATE_ROLE", get_self() ),
+    CHECKC(has_role(get_self(), submitter, "R_CREATE_ROLE", get_self()),
            err::PERMISSION_DENIED, "submitter not authorized: missing R_CREATE_ROLE");
 
     CHECKC(!role.empty(), err::INVALID_FORMAT, "role cannot be empty");
-    CHECKC(!perm.empty(), err::INVALID_FORMAT, "permission cannot be empty");
+    CHECKC(!perms.empty(), err::INVALID_FORMAT, "perms cannot be empty");
 
+    // 校验 role 是否存在
+    roles_idx roles_tbl(get_self(), get_self().value);
+    auto r_idx = roles_tbl.get_index<"byrole"_n>();
+    auto rit   = r_idx.find(hash_str(role));
+    CHECKC(rit != r_idx.end(), err::ROLE_NOT_FOUND, "role not found: " + role);
+
+    // 写入 perms
     roleperms_idx perms_tbl(get_self(), get_self().value);
+    auto byroleperm = perms_tbl.get_index<"byroleperm"_n>();
 
-    auto idx = perms_tbl.get_index<"byroleperm"_n>();
-    auto rp_key = hash_two_u64_str(0, 0, role + "|" + perm);
-    auto it = idx.find(rp_key);
-    CHECKC(it == idx.end(), err::GRANT_EXISTS, "permission already granted to role");
+    for (const auto& p : perms) {
+        CHECKC(!p.empty(), err::INVALID_FORMAT, "perm cannot be empty");
 
-    perms_tbl.emplace(submitter, [&](auto& r) {
-        r.id         = perms_tbl.available_primary_key();
-        r.role       = role;
-        r.perm       = perm;
-        r.desc       = desc;
-        r.created_at = current_time_point();
-    });
+        auto rp_key = hash_two_u64_str(0, 0, role + "|" + p);
+        auto it     = byroleperm.find(rp_key);
+        CHECKC(it == byroleperm.end(),
+               err::GRANT_EXISTS,
+               "permission already granted to role: " + p);
+
+        perms_tbl.emplace(submitter, [&](auto& r) {
+            r.id         = perms_tbl.available_primary_key();
+            r.role       = role;
+            r.perm       = p;
+            r.desc       = desc;
+            r.created_at = current_time_point();
+        });
+    }
 }
 
 void flonauth::delroleperm(const name& submitter,
                            const std::string& role,
-                           const std::string& perm) {
+                           const std::set<std::string>& perms) {
     require_auth(submitter);
 
-    // 校验：submitter 是否具备 R_CREATE_ROLE
-    CHECKC(has_role(get_self(), submitter, "R_CREATE_ROLE", get_self()  ),
+
+    CHECKC(has_role(get_self(), submitter, "R_CREATE_ROLE", get_self()),
            err::PERMISSION_DENIED, "submitter not authorized: missing R_CREATE_ROLE");
 
-    roleperms_idx perms_tbl(get_self(), get_self().value);
-    auto idx = perms_tbl.get_index<"byroleperm"_n>();
-    auto rp_key = hash_two_u64_str(0, 0, role + "|" + perm);
-    auto it = idx.find(rp_key);
-    CHECKC(it != idx.end(), err::GRANT_NOT_FOUND, "permission not found for role");
+    CHECKC(!role.empty(), err::INVALID_FORMAT, "role cannot be empty");
+    CHECKC(!perms.empty(), err::INVALID_FORMAT, "perms set cannot be empty");
 
-    idx.erase(it);
+    roleperms_idx perms_tbl(get_self(), get_self().value);
+    auto byroleperm = perms_tbl.get_index<"byroleperm"_n>();
+
+    for (const auto& p : perms) {
+        // 拼 key = role|perm
+        auto rp_key = hash_two_u64_str(0, 0, role + "|" + p);
+        auto it = byroleperm.find(rp_key);
+        if (it != byroleperm.end()) {
+            byroleperm.erase(it);   // 找到才删
+        }
+    }
 }

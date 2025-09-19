@@ -61,6 +61,11 @@ void cvbadgestore::on_notifyaward(const name& user,
   require_ready();
   CHECKC(is_account(user),         err::ACCOUNT_INVALID, "user not exist");
   CHECKC(!packs.empty(),           err::INVALID_FORMAT,  "packs is empty");
+  CHECKC(memo.size() <= 256,       err::INVALID_FORMAT,  "memo too long");
+  CHECKC(_gstate.badge_contract.value != 0, err::RECORD_NO_FOUND, "badge_contract not set");
+  CHECKC(_gstate.badge_from.value != 0,     err::RECORD_NO_FOUND, "badge_from not set");
+
+  CHECKC(packs.size() <= 100, err::EXCEED_LIMIT, "too many packs");
 
   for (const auto& na : packs) {
     CHECKC(na.amount > 0,         err::NOT_POSITIVE,    "nasset amount must be positive");

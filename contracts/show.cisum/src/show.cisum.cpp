@@ -69,10 +69,10 @@ void show::tkincrease(const uint64_t&  show_id,
 
 
 void show::init(const name& admin,const name& nft_bank) {
-  require_auth(get_self());
-  check(is_account(admin), "admin not exist");
-  _gstate.admin = admin;
-  _gstate.nft_bank =nft_bank;
+    require_auth(get_self());
+    check(is_account(admin), "admin not exist");
+    _gstate.admin = admin;
+    _gstate.nft_bank =nft_bank;
 
 }
 
@@ -82,18 +82,20 @@ void show::nftcreate(const name& submitter,
                     const nsymbol& symbol,
                     const string&  token_uri)
 {
-  require_role(submitter, {"admin","showadmin"});
+    if (!has_auth(get_self())) {
+      require_role(submitter, {"admin","showadmin"});
+    }
 
-  check(_gstate.nft_bank.value != 0, "nft_bank not set");
-  check(is_account(_gstate.nft_bank), "nft_bank not exist");
-  check(max_supply > 0, "max_supply must be positive");
-  check(token_uri.size() <= 256, "token_uri too long");
+    check(_gstate.nft_bank.value != 0, "nft_bank not set");
+    check(is_account(_gstate.nft_bank), "nft_bank not exist");
+    check(max_supply > 0, "max_supply must be positive");
+    check(token_uri.size() <= 256, "token_uri too long");
 
-  // issuer/ipowner 都设为本合约账号
-  flon::cvticket::create_action{
-    _gstate.nft_bank,
-    { permission_level{ get_self(), "active"_n } }
-  }.send(get_self(), max_supply, symbol, token_uri, get_self());
+    // issuer/ipowner 都设为本合约账号
+    flon::cvticket::create_action{
+      _gstate.nft_bank,
+      { permission_level{ get_self(), "active"_n } }
+    }.send(get_self(), max_supply, symbol, token_uri, get_self());
 }
 
 void show::nftissue(const name& submitter,
@@ -102,45 +104,47 @@ void show::nftissue(const name& submitter,
                     const string& memo)
 {
 
-  require_role(submitter, {"admin","showadmin"});
+    if (!has_auth(get_self())) {
+      require_role(submitter, {"admin","showadmin"});
+    }
 
-  check(_gstate.nft_bank.value != 0, "nft_bank not set");
-  check(is_account(_gstate.nft_bank), "nft_bank not exist");
-  check(quantity.amount > 0, "quantity must be positive");
-  check(memo.size() <= 256, "memo too long");
+    check(_gstate.nft_bank.value != 0, "nft_bank not set");
+    check(is_account(_gstate.nft_bank), "nft_bank not exist");
+    check(quantity.amount > 0, "quantity must be positive");
+    check(memo.size() <= 256, "memo too long");
 
-  auto parts = split(memo, ":");
-  check(parts.size() >= 2 && parts[0] == "issue", "memo must be 'issue:<show_id>'");
-  uint64_t show_id = std::stoull(std::string(parts[1]));
-  check(show_id > 0, "invalid show_id");
+    auto parts = split(memo, ":");
+    check(parts.size() >= 2 && parts[0] == "issue", "memo must be 'issue:<show_id>'");
+    uint64_t show_id = std::stoull(std::string(parts[1]));
+    check(show_id > 0, "invalid show_id");
 
-  // 铸造 NFT 到指定账户
-  flon::cvticket::issue_action{
-    _gstate.nft_bank,
-    { permission_level{ get_self(), "active"_n } }
-  }.send(_self, quantity, memo);
+    // 铸造 NFT 到指定账户
+    flon::cvticket::issue_action{
+      _gstate.nft_bank,
+      { permission_level{ get_self(), "active"_n } }
+    }.send(_self, quantity, memo);
 
-  // 更新库存
-  ticket_t::ticketidx tickets(get_self(), show_id);
-  auto itr = tickets.find(quantity.symbol.raw());
-  check(itr != tickets.end(), "ticket not found in nftissue");
-  uint64_t prev_amount = static_cast<uint64_t>(itr->total_count);
-  tickets.modify(itr, same_payer, [&](auto& row){
-      row.total_count += quantity.amount;
-      row.stock_count += quantity.amount;
-      row.updated_at = current_time_point();
-  });
+    // 更新库存
+    ticket_t::ticketidx tickets(get_self(), show_id);
+    auto itr = tickets.find(quantity.symbol.raw());
+    check(itr != tickets.end(), "ticket not found in nftissue");
+    uint64_t prev_amount = static_cast<uint64_t>(itr->total_count);
+    tickets.modify(itr, same_payer, [&](auto& row){
+        row.total_count += quantity.amount;
+        row.stock_count += quantity.amount;
+        row.updated_at = current_time_point();
+    });
 
-  tkincrease_action{
-    get_self(),
-    { permission_level{ get_self(), "active"_n } }
-  }.send(    show_id,                     // 演出ID
-    quantity.symbol.raw(),       // 票的symbol
-    quantity.amount,             // 增加数量
-    prev_amount,
-    issuer,                      // 实际操作者
-    memo,                         // 备注
-    current_time_point().time_since_epoch().count() / 1'000'000);
+    tkincrease_action{
+      get_self(),
+      { permission_level{ get_self(), "active"_n } }
+    }.send(    show_id,                     // 演出ID
+      quantity.symbol.raw(),       // 票的symbol
+      quantity.amount,             // 增加数量
+      prev_amount,
+      issuer,                      // 实际操作者
+      memo,                         // 备注
+      current_time_point().time_since_epoch().count() / 1'000'000);
 
 }
 
@@ -155,7 +159,9 @@ void show::newshow(const name& submitter,
                    const string&       show_name,
                    const string&       show_address)
 {
-  require_role(submitter, {"admin","showadmin"});
+    if (!has_auth(get_self())) {
+      require_role(submitter, {"admin","showadmin"});
+    }
 
   check(show_started_at != time_point{}, "show_started_at is required");
   if (show_ended_at != time_point{}) {
@@ -193,7 +199,9 @@ void show::setshow(const name& submitter,
                    const string&       show_name,
                    const string&       show_address)
 {
-    require_role(submitter, {"admin","showadmin"});
+    if (!has_auth(get_self())) {
+      require_role(submitter, {"admin","showadmin"});
+    }
 
     show_t::showidx shows(get_self(), get_self().value);
     auto it = shows.find(show_id);
@@ -239,7 +247,9 @@ void show::newticket(const name& submitter,
                      const time_point& sale_started_at,
                      const time_point& sale_ended_at)
 {
-    require_role(submitter, {"admin","showadmin"});
+    if (!has_auth(get_self())) {
+      require_role(submitter, {"admin","showadmin"});
+    }
 
     check(is_account(_gstate.nft_bank), "nft_bank not exist");
     check(price.amount >= 0, "price must be >= 0");
@@ -287,33 +297,36 @@ void show::setticket(const name& submitter,
                      const time_point& sale_started_at,
                      const time_point& sale_ended_at)
 {
-  require_role(submitter, {"admin","showadmin"});
+    if (!has_auth(get_self())) {
 
-  ticket_t::ticketidx tks(get_self(), show_id);
-  auto it = tks.find(ticket_id);
-  check(it != tks.end(), "ticket not found");
+      require_role(submitter, {"admin","showadmin"});
+    }
 
-  // 基本校验
-  check(price.amount >= 0, "price must be >= 0");
-  check(price_usdt.amount >= 0, "price_usdt must be >= 0");
-  check(price_usdt.symbol.code() == USDT_SYM.code(),"price_usdt symbol mismatch, must be USDT");
-  check(price_usdt.symbol.precision() <= 6,"price_usdt precision must be <= 6");
-  check(ticket_type.size() <= 64, "ticket_type too long");
+    ticket_t::ticketidx tks(get_self(), show_id);
+    auto it = tks.find(ticket_id);
+    check(it != tks.end(), "ticket not found");
 
-  // 售卖窗口校验
-  check(sale_started_at != time_point{}, "sale_started_at is required");
-  check(sale_ended_at   != time_point{}, "sale_ended_at is required");
-  check(sale_ended_at >= sale_started_at, "sale_ended_at must be >= sale_started_at");
+    // 基本校验
+    check(price.amount >= 0, "price must be >= 0");
+    check(price_usdt.amount >= 0, "price_usdt must be >= 0");
+    check(price_usdt.symbol.code() == USDT_SYM.code(),"price_usdt symbol mismatch, must be USDT");
+    check(price_usdt.symbol.precision() <= 6,"price_usdt precision must be <= 6");
+    check(ticket_type.size() <= 64, "ticket_type too long");
 
-  const auto t = nowtp();
-  tks.modify(it, same_payer, [&](auto& r){
-    r.ticket_type     = ticket_type;
-    r.price           = price;
-    r.price_usdt       = price_usdt;
-    r.sale_started_at = sale_started_at;
-    r.sale_ended_at   = sale_ended_at;
-    r.updated_at      = t;
-  });
+    // 售卖窗口校验
+    check(sale_started_at != time_point{}, "sale_started_at is required");
+    check(sale_ended_at   != time_point{}, "sale_ended_at is required");
+    check(sale_ended_at >= sale_started_at, "sale_ended_at must be >= sale_started_at");
+
+    const auto t = nowtp();
+    tks.modify(it, same_payer, [&](auto& r){
+      r.ticket_type     = ticket_type;
+      r.price           = price;
+      r.price_usdt       = price_usdt;
+      r.sale_started_at = sale_started_at;
+      r.sale_ended_at   = sale_ended_at;
+      r.updated_at      = t;
+    });
 }
 
 // ========== 发放 ==========
@@ -324,49 +337,52 @@ void show::issue(const name&     submitter,
                  const uint32_t& ticket_count,
                  const string&   memo)
 {
-  require_role(submitter, {"admin","showadmin"});
-  show_t::showidx shows(get_self(), get_self().value);
-  auto sit = shows.find(show_id);
-  check(sit != shows.end(), "show not found");
+    if (!has_auth(get_self())) {
 
-  check(is_account(user), "user not exist");
-  check(_gstate.nft_bank.value != 0, "nft_bank not set");
-  check(is_account(_gstate.nft_bank), "nft_bank not exist");
-  check(ticket_count > 0, "ticket_count must be positive");
-  check(memo.size() <= 256, "memo too long");
+      require_role(submitter, {"admin","showadmin"});
+    }
+    show_t::showidx shows(get_self(), get_self().value);
+    auto sit = shows.find(show_id);
+    check(sit != shows.end(), "show not found");
 
-  ticket_t::ticketidx tks(get_self(), show_id);
-  auto it = tks.find(ticket_id);
-  check(it != tks.end(), "ticket not found");
-  check(it->stock_count >= ticket_count, "insufficient stock");
+    check(is_account(user), "user not exist");
+    check(_gstate.nft_bank.value != 0, "nft_bank not set");
+    check(is_account(_gstate.nft_bank), "nft_bank not exist");
+    check(ticket_count > 0, "ticket_count must be positive");
+    check(memo.size() <= 256, "memo too long");
 
-  // === 售卖时间窗口校验（以票档为准） ===
-  const auto now = nowtp();
-  check(it->sale_started_at <= now, "ticket not started yet");
-  check(now <= it->sale_ended_at,   "ticket already ended");
+    ticket_t::ticketidx tks(get_self(), show_id);
+    auto it = tks.find(ticket_id);
+    check(it != tks.end(), "ticket not found");
+    check(it->stock_count >= ticket_count, "insufficient stock");
+
+    // === 售卖时间窗口校验（以票档为准） ===
+    const auto now = nowtp();
+    check(it->sale_started_at <= now, "ticket not started yet");
+    check(now <= it->sale_ended_at,   "ticket already ended");
 
 
-  nsymbol tk_sym(ticket_id);
+    nsymbol tk_sym(ticket_id);
 
-  // 转 NFT（从本合约账号 _self 发出）
-  {
-    vector<nasset> packs;
-    packs.emplace_back(static_cast<int64_t>(ticket_count), tk_sym);
+    // 转 NFT（从本合约账号 _self 发出）
+    {
+      vector<nasset> packs;
+      packs.emplace_back(static_cast<int64_t>(ticket_count), tk_sym);
 
-    flon::cvticket::transfer_action{
-      _gstate.nft_bank,
-      { permission_level{ get_self(), "active"_n } }
-    }.send(get_self(), user, packs, memo);
-  }
+      flon::cvticket::transfer_action{
+        _gstate.nft_bank,
+        { permission_level{ get_self(), "active"_n } }
+      }.send(get_self(), user, packs, memo);
+    }
 
-  const auto t = nowtp();
-  tks.modify(it, same_payer, [&](auto& r){
-    r.sold_count   += ticket_count;
-    check(r.sold_count <= r.total_count, "sold overflow");
-    r.stock_count   = r.total_count - r.sold_count;
-    r.issued_count += ticket_count;
-    r.updated_at    = t;
-  });
+    const auto t = nowtp();
+    tks.modify(it, same_payer, [&](auto& r){
+      r.sold_count   += ticket_count;
+      check(r.sold_count <= r.total_count, "sold overflow");
+      r.stock_count   = r.total_count - r.sold_count;
+      r.issued_count += ticket_count;
+      r.updated_at    = t;
+    });
 }
 
 void show::giftbatch(const name&          oper,
@@ -377,7 +393,9 @@ void show::giftbatch(const name&          oper,
                      const string&        memo)
 {
 
-    require_role(oper, {"admin","showadmin"});
+    if (!has_auth(get_self())) {
+      require_role(oper, {"admin","showadmin"});
+    }
 
     CHECKC(!recipients.empty(), err::INVALID_FORMAT, "recipients is empty");
 
@@ -420,41 +438,43 @@ void show::giftbatch(const name&          oper,
     }
 }
 
-void show::issuetograb(const name&  submitter,const name& to, const nasset& quantity, const string& memo) {
+void show::issuetograb(const name&  submitter,const name& to, const nasset& quantity, const string& memo)
+{
+    if (!has_auth(get_self())) {
+      require_role(submitter, {"admin","showadmin"});
+    }
 
-  require_role(submitter, {"admin","showadmin"});
+    check(_gstate.nft_bank.value != 0, "nft_bank not set");
+    check(is_account(_gstate.nft_bank), "nft_bank not exist");
+    check(is_account(to), "to not exist");
+    check(quantity.amount > 0, "quantity must be positive");
+    check(memo.size() <= 256, "memo too long");
 
-  check(_gstate.nft_bank.value != 0, "nft_bank not set");
-  check(is_account(_gstate.nft_bank), "nft_bank not exist");
-  check(is_account(to), "to not exist");
-  check(quantity.amount > 0, "quantity must be positive");
-  check(memo.size() <= 256, "memo too long");
+    // memo --   add:<rush_sale_id>:<show_id>
+    check(memo.rfind("add:", 0) == 0, "memo must start with 'add:'");
+    auto parts = split(memo, ":");
+    check(parts.size() == 3, "memo format invalid");
+    uint64_t rush_sale_id = std::stoull(std::string(parts[1]));
+    uint64_t show_id      = std::stoull(std::string(parts[2]));
+    check(rush_sale_id > 0, "invalid rush_sale_id");
+    check(show_id > 0, "invalid show_id");
 
-  // memo --   add:<rush_sale_id>:<show_id>
-  check(memo.rfind("add:", 0) == 0, "memo must start with 'add:'");
-  auto parts = split(memo, ":");
-  check(parts.size() == 3, "memo format invalid");
-  uint64_t rush_sale_id = std::stoull(std::string(parts[1]));
-  uint64_t show_id      = std::stoull(std::string(parts[2]));
-  check(rush_sale_id > 0, "invalid rush_sale_id");
-  check(show_id > 0, "invalid show_id");
+    // 更新票档库存
+    ticket_t::ticketidx tickets(get_self(), show_id);
+    auto itr = tickets.find(quantity.symbol.raw());
+    check(itr != tickets.end(), "ticket not found for this symbol");
 
-  // 更新票档库存
-  ticket_t::ticketidx tickets(get_self(), show_id);
-  auto itr = tickets.find(quantity.symbol.raw());
-  check(itr != tickets.end(), "ticket not found for this symbol");
+    tickets.modify(itr, same_payer, [&](auto& row){
+      check(row.stock_count >= static_cast<uint64_t>(quantity.amount), "insufficient stock");
+      row.stock_count -= static_cast<uint64_t>(quantity.amount);
+      row.updated_at = current_time_point();
+    });
 
-  tickets.modify(itr, same_payer, [&](auto& row){
-    check(row.stock_count >= static_cast<uint64_t>(quantity.amount), "insufficient stock");
-    row.stock_count -= static_cast<uint64_t>(quantity.amount);
-    row.updated_at = current_time_point();
-  });
-
-  // 执行转账（从 show 合约 -> grab 合约）
-  flon::cvticket::transfer_action{
-    _gstate.nft_bank,
-    { permission_level{ get_self(), "active"_n } }
-  }.send(get_self(), to, std::vector<nasset>{ quantity }, "add:"+std::to_string(rush_sale_id) );
+    // 执行转账（从 show 合约 -> grab 合约）
+    flon::cvticket::transfer_action{
+      _gstate.nft_bank,
+      { permission_level{ get_self(), "active"_n } }
+    }.send(get_self(), to, std::vector<nasset>{ quantity }, "add:"+std::to_string(rush_sale_id) );
 }
 
 void show::buyticket(const name&  submitter,
@@ -465,7 +485,9 @@ void show::buyticket(const name&  submitter,
                      const uint32_t&      ticket_count,
                      const string&        memo)
 {
-    require_role(submitter, {"admin","showadmin","platform_admin"});
+    if (!has_auth(get_self())) {
+      require_role(submitter, {"admin","showadmin","platform_admin"});
+    }
 
     check(is_account(payer), "invalid payer");
     check(pay_amount.is_valid(), "invalid pay_amount");
@@ -523,7 +545,7 @@ void show::buyticket(const name&  submitter,
 
     // ===== 发票 =====
     issue_action issue{ get_self(), { get_self(), "active"_n } };
-    issue.send(submitter,payer, show_id, ticket_id, ticket_count, memo);
+    issue.send(_self,payer, show_id, ticket_id, ticket_count, memo);
 }
 
 

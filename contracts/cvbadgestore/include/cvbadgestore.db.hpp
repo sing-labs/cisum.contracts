@@ -25,7 +25,8 @@ enum class err: uint8_t {
   NOT_POSITIVE        = 4,
   DID_NOT_AUTH        = 16,
   REDPACK_EXIST       = 15,
-  STATUS_MISMATCH     = 27
+  STATUS_MISMATCH     = 27,
+  EXCEED_LIMIT        =28
 };
 
 
@@ -42,7 +43,7 @@ NTBL("global") global_t {
 using global_singleton = singleton<"global"_n, global_t>;
 
 TBL whitelist_t {
-  name       contract;     
+  name       contract;
   time_point added_at;
 
   uint64_t primary_key() const { return contract.value; }

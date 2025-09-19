@@ -69,3 +69,10 @@ mpush grab23.cisum clearsale '["myadmin",10]' -p myadmin
 
 
 mpush grab.cisum setrushsale '["flonian",3,1000,4000,"2025-10-01T20:00:00"]' -p flonian
+
+
+mpush nestar.token transfer '["gahbnbehaskk","grab.cisum","20.0000 NESTAR","grab:8:a1799ae8e1ea62a20a5f56710342a115"]' -p gahbnbehaskk
+
+mpush cisum.token transfer '["gahbnbehaskk","grab.cisum","2.00000000 CISUM","grab:9:a1799ae8e1ea62a20a5f56710342a123"]' -p gahbnbehaskk
+
+mpush flon.mtoken transfer '["gahbnbehaskk","grab.cisum","2.000000 USDT","grab:10:a1799ae8e1ea62a20a5f56710342a123"]' -p gahbnbehaskk

@@ -30,13 +30,13 @@ public:
     ACTION delallowlist(const name& acct);
 
     ACTION addroleperm(const name& submitter,
-                            const std::string& role,
-                            const std::string& perm,
-                            const std::string& desc) ;
+                           const string& role,
+                           const std::set<string>& perms,
+                           const string& desc) ;
 
     ACTION delroleperm(const name& submitter,
-                            const std::string& role,
-                            const std::string& perm);
+                           const string& role,
+                           const std::set<string>& perms);
 
 
 

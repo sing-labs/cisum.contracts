@@ -27,3 +27,8 @@ mpush $rolemanage_con grantrole '["show.cisum","flonian","myadmin","R_REDEMPTION
 mpush $rolemanage_con grantrole '["show.cisum","flonian","cvplqwcdfvzj","R_REDEMPTION_EXECUTE"]' -p flonian
 mpush $rolemanage_con grantrole '["flon.auth","flonian","flonian","R_CREATE_ROLE"]' -p flonian
 mpush $rolemanage_con grantrole '["grab.cisum","flonian","flonian","admin"]' -p flonian
+
+
+
+#设置白名单（可以操作role、userrole、roleperm）
+mpush $rolemanage_con  addallowlist '["flonian"]'   -p flonian

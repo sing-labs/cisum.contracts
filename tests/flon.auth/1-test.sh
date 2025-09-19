@@ -21,7 +21,7 @@ mpush $rolemanage_con  setrole '["platformadmin","平台管理员"]'   -p flonia
 mpush $rolemanage_con  setrole '["R_REDEMPTION_EXECUTE","核销用户"]'   -p flonian
 
 
-
+mpush $rolemanage_con  setrole '["admin","超级管理员"]'   -p flonian
 mpush $rolemanage_con  delrole '["showadmin1"]'   -p flonian
 
 
@@ -50,3 +50,54 @@ mpush $rolemanage_con addroleperm '["flonian","admin","tests","tests"]'   -p flo
 
 
 mpush $rolemanage_con delroleperm '["flonian","admin","test"]'   -p flonian
+
+
+rolemanage_con=flon.auth
+mpush $rolemanage_con grantrole '["flon.auth","flonian","pxuqby4g5ogz","admin"]' -p flonian
+
+
+
+mpush $rolemanage_con addroleperm '[
+  "flonian",
+  "管理员",
+  ["create","view","delete"],
+  "批量添加权限测试"
+]' -p flonian
+
+
+mpush $rolemanage_con delroleperm '[
+  "flonian",
+  "管理员",
+  ["tests","view","delete"],
+  "批量删除权限测试"
+]' -p flonian
+
+
+
+
+mpush $rolemanage_con  setrole '["admin","超级管理员"]'   -p flonian
+mpush $rolemanage_con  delrole '["admin"]'   -p flonian
+
+
+mpush $rolemanage_con  setrole '["oracle","数据喂价员"]'   -p flonian
+mpush $rolemanage_con  delrole '["oracle"]'   -p flonian
+
+mpush $rolemanage_con  setrole '["editor","编辑员"]'   -p flonian
+mpush $rolemanage_con  delrole '["editor"]'   -p flonian
+
+
+mpush $rolemanage_con  setrole '["showadmin","演唱会管理员"]'   -p flonian
+mpush $rolemanage_con  delrole '["showadmin"]'   -p flonian
+
+mpush $rolemanage_con  setrole '["platformadmin","平台管理员"]'   -p flonian
+mpush $rolemanage_con  delrole '["platformadmin"]'   -p flonian
+
+mpush $rolemanage_con  setrole '["R_REDEMPTION_EXECUTE","核销用户"]'   -p flonian
+mpush $rolemanage_con  delrole '["R_REDEMPTION_EXECUTE"]'   -p flonian
+
+mpush $rolemanage_con  setrole '["R_CREATE_ROLE","角色权限修改"]'   -p flonian
+mpush $rolemanage_con  delrole '["R_CREATE_ROLE"]'   -p flonian
+
+
+mpush $rolemanage_con  addallowlist '["flonian"]'   -p flonian
+

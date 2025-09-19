@@ -167,16 +167,14 @@ void grab_cisum::addrushsale(const name&  submitter,
     }
 
     // ===== 校验 price 的币种是否被允许（allowtokens 表）=====
-    {
-        allowed_token_t::idx_t tok(get_self(), get_self().value);
-        auto bysym = tok.get_index<"bysymbol"_n>();
-        uint128_t key = ( (uint128_t)price.symbol.code().raw() << 64 )
-                      | (uint128_t)price.symbol.precision();
-        auto itok = bysym.find(key);
-        CHECKC(itok != bysym.end(), err::INVALID_FORMAT, "price symbol not allowed");
-
-        CHECKC(itok->bank == _gstate.point_contract, err::INVALID_FORMAT, "price bank not allowed");
-    }
+    allowed_token_t::idx_t tok(get_self(), get_self().value);
+    auto bysym = tok.get_index<"bysymbol"_n>();
+    uint128_t key = ( (uint128_t)price.symbol.code().raw() << 64 )
+                    | (uint128_t)price.symbol.precision();
+    auto itok = bysym.find(key);
+    CHECKC(itok != bysym.end(), err::INVALID_FORMAT,
+           "price symbol not allowed (sym=" + price.symbol.code().to_string() +
+           ", precision=" + std::to_string(price.symbol.precision()) + ")");
 
     auto now = current_time_point();
     _gstate.last_rush_sale_id++;
@@ -255,6 +253,7 @@ void grab_cisum::clearsale(const name& submitter,const uint64_t& rush_sale_id) {
         require_role(submitter, {"admin","oracle"});
     }
 
+
     auto now = current_time_point();
 
     // ---- 检查 rush_sale 是否结束 ----
@@ -280,11 +279,20 @@ void grab_cisum::clearsale(const name& submitter,const uint64_t& rush_sale_id) {
     }
 }
 
-void grab_cisum::on_transfer_point(const name& from,
+void grab_cisum::on_transfer(const name& from,
                                    const name& to,
                                    const asset& quantity,
                                    const string& memo) {
     if (from == get_self() || to != get_self()) return;
+
+    // 校验 token 是否允许
+    allowed_token_t::idx_t tokens(get_self(), get_self().value);
+    auto bysym = tokens.get_index<"bysymbol"_n>();
+    uint128_t key = ((uint128_t)quantity.symbol.code().raw() << 64)
+                                        | (uint128_t)quantity.symbol.precision();
+    auto itok = bysym.find(key);
+    CHECKC(itok != bysym.end(), err::INVALID_FORMAT, "token not allowed");
+    CHECKC(itok->bank == get_first_receiver(), err::DID_NOT_AUTH, "transfer not from correct token bank");
 
     // memo: "grab:<rush_sale_id>:<grab_id>"
     auto params = split(memo, ":");
@@ -304,23 +312,20 @@ void grab_cisum::on_transfer_point(const name& from,
     CHECKC(now <= rs_itr->ended_at,   err::STATUS_MISMATCH, "rush sale ended");
     CHECKC(rs_itr->available_tickets.amount > 0, err::EXCEED_LIMIT, "no tickets left");
     ASSERT(rs_itr->total_tickets == rs_itr->available_tickets + rs_itr->sold_tickets);
-
+    // 价格检查
     CHECKC(quantity.symbol == rs_itr->price.symbol, err::SYMBOL_MISMATCH, "symbol mismatch");
     CHECKC(quantity == rs_itr->price,               err::QUANTITY_MISMATCH, "quantity must equal price");
     CHECKC(rs_itr->win_ratio <= RATIO_BASE,         err::EXCEED_LIMIT, "win_ratio must be in 0..10000");
 
     // 2) 幂等：grab_id 唯一（scope = rush_sale_id）
     order_t::idx_t orders(get_self(), rush_sale_id);
-    {
-        auto bygrab = orders.get_index<"bygrabid"_n>();
-        const auto h = sha256(grab_id.data(), grab_id.size());
-        CHECKC(bygrab.find(h) == bygrab.end(), err::TYPE_INVALID, "duplicate grab_id");
-    }
+    auto bygrab = orders.get_index<"bygrabid"_n>();
+    const auto h = sha256(grab_id.data(), grab_id.size());
+    CHECKC(bygrab.find(h) == bygrab.end(), err::TYPE_INVALID, "duplicate grab_id");
 
-    uint128_t key = ((uint128_t)from.value << 1) | 1;
-
+    uint128_t key_userwin = ((uint128_t)from.value << 1) | 1;
     auto byuw = orders.get_index<"byuserwin"_n>();
-    CHECKC(byuw.find(key) == byuw.end(), err::EXCEED_LIMIT, "user already won a ticket in this rush sale");
+    CHECKC(byuw.find(key_userwin) == byuw.end(), err::EXCEED_LIMIT, "user already won a ticket in this rush sale");
 
     // 3) 抽签前：O(1) 人次上限校验（grabstats）
     grab_stat_t::idx_t stats(get_self(), rush_sale_id);

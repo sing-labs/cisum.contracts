@@ -11,6 +11,8 @@ mcli set account permission $stor_con active --add-code
 
 badge_ntoken=badge.cvnft
 mpush $badge_ntoken  addwhitelist '["'"${stor_con}"'"]'   -p $badge_ntoken
+
+mpush $stor_con addwhitelist '["nestar.token"]' -p $stor_con
 mpush $stor_con setadmin '["flonian"]' -p $stor_con
 
 mpush $stor_con setbadge '["'"${badge_ntoken}"'","'"${badge_ntoken}"'"]' -p $stor_con

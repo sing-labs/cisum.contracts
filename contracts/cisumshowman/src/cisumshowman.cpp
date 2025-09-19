@@ -34,6 +34,10 @@ void cisumshow::publishshow(name creator,
             show.show_name,
             show.show_address);
 
+  auto grab_global  = global1_singleton(GRAB_CONTRACT, GRAB_CONTRACT.value);
+  auto gstate       = grab_global.get_or_default();
+  uint64_t next_rush_id = gstate.last_rush_sale_id;
+
   for (const auto& ticket : tickets) {
     const nsymbol t_sym{ ticket.ticket_id };
     const nsymbol pre_sym{ ticket.prerequisite_ticket_id };
@@ -80,15 +84,13 @@ void cisumshow::publishshow(name creator,
 
     // 免费票判定：金额是否为 0
     const bool is_free = (to_lower(ticket.ticket_type) == "free");
+
     if (is_free) {
       // 先在 grab 建 rush_sale（注意：目标合约应是 GRAB_CONTRACT）
       check(ticket.price.amount >= 0 ,"free ticket must have both price and price_usdt = 0");
+      next_rush_id += 1;  // 手动累加
+      auto rush_sale_id = next_rush_id;
 
-      auto grab_global  = global1_singleton(GRAB_CONTRACT, GRAB_CONTRACT.value);
-      auto gstate       = grab_global.get_or_default();
-
-      // 直接读取最新的 rush_sale_id
-      auto rush_sale_id = gstate.last_rush_sale_id + 1;
       ADDRUSHSALE(GRAB_CONTRACT,
                   _self,
                   show.show_id,
@@ -101,11 +103,11 @@ void cisumshow::publishshow(name creator,
 
       // 由 show 把 NFT 转给 grab，memo 带 add:<rush_sale_id>
       auto memo = "add:" + std::to_string(rush_sale_id)+":"+ std::to_string(show.show_id);
-
+      nasset issue_qty{ ticket.total_count, nsymbol(ticket.ticket_id) };
       ISSUE_TO_GRAB(SHOW_CONTRACT,
                     _self,
                     GRAB_CONTRACT,
-                    ( nasset{ ticket.total_count, nsymbol(ticket.ticket_id) } ),
+                    issue_qty,
                     memo);
     }
   }

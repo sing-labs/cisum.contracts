@@ -86,8 +86,8 @@ public:
 
 
   // 处理 FT（积分）转账：来自积分合约
-  [[eosio::on_notify("nestar.token::transfer")]]
-  void on_transfer_point(const name& from,
+  [[eosio::on_notify("*::transfer")]]
+  void on_transfer(const name& from,
                         const name& to,
                         const asset& quantity,
                         const std::string& memo);

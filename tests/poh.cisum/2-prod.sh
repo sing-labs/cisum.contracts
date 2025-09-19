@@ -16,7 +16,7 @@ mpush cisum.token open '[
 ]' -p $poh_con
 
 
-mpush $poh_con init '["cisumreserve","registrar11","2500000000.00000000 CISUM"]' -p $poh_con
+mpush $poh_con init '["cisumreserve","flonian","2500000000.00000000 CISUM"]' -p $poh_con
 
 
 
