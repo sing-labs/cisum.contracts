@@ -147,16 +147,19 @@ public:
                      const string&        memo);
 
 
-
   ACTION issuetograb(const name&  submitter,const name& to, const nasset& quantity, const string& memo);
+
+
 
   using nftcreate_action      = eosio::action_wrapper<"nftcreate"_n,&show::nftcreate>;
   using tkincrease_action     = eosio::action_wrapper<"tkincrease"_n,&show::tkincrease>;
   using issue_action          = eosio::action_wrapper<"issue"_n,&show::issue>;
 
+
 private:
   void require_role(const name& submitter,
                         const std::vector<std::string>& roles) const;
+
 
 private:
   global_singleton _global;

@@ -56,10 +56,18 @@ public:
   ACTION addexecutor(const name& acct);
   ACTION delexecutor(const name& acct);
 
+  ACTION setbrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) ;
+
+  ACTION delbrule(uint64_t id);
+
+  ACTION notifyaward(const name& user,
+                                  const vector<nasset>& packs,
+                                  const string& memo);
 
   // -------- Inline wrappers --------
-  using mine_action                       = eosio::action_wrapper<"mine"_n,        &pop_cisum::mine>;
-  using awardnotice_action                = eosio::action_wrapper<"awardnotice"_n,        &pop_cisum::awardnotice>;
+  using mine_action                       = eosio::action_wrapper<"mine"_n,&pop_cisum::mine>;
+  using awardnotice_action                = eosio::action_wrapper<"awardnotice"_n,&pop_cisum::awardnotice>;
+  using notifyaward_action                = eosio::action_wrapper<"notifyaward"_n,&pop_cisum::notifyaward>;
 private:
   global_singleton _global;
   global_t         _gstate;
@@ -103,6 +111,11 @@ private:
 
     return asset{ price_amount, right_sym };
   }
+
+  void _try_award_badges(const name& user,
+                            int64_t consumed_before,
+                            int64_t consumed_after);
+
 
 };
 } // namespace flon

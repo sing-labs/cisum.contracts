@@ -11,4 +11,3 @@ mpush ticket.cvnft  addwhitelist '["'"${show_con}"'"]'   -p ticket.cvnft
 mpush $show_con init '["flonian", "ticket.cvnft"]' -p $show_con
 
 
-

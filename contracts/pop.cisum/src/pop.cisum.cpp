@@ -5,6 +5,7 @@
 #include "pop.cisum.hpp"
 #include <string>
 #include <flon/flon.token.hpp>
+#include <flon/consts.hpp>
 
 namespace flon {
 
@@ -21,6 +22,72 @@ void pop_cisum::awardnotice(const name&  from,
 {
      require_auth(get_self());
 }
+
+
+void pop_cisum::notifyaward(const name& user, const vector<nasset>& packs, const string& memo) {
+    require_auth(get_self());
+    require_recipient(CVBADGESTORE_CONTRACT);
+}
+
+static inline std::string build_award_memo(const eosio::name& user,
+                                           const std::vector<nasset>& packs) {
+    std::string prefix = "pop.cisum|auto-award|" + user.to_string();
+    std::string memo   = prefix;
+
+    // 紧凑追加：|101x3|102x1 ...
+    for (const auto& p : packs) {
+        memo += "|" + std::to_string(p.symbol.id()) + "x" + std::to_string(p.amount);
+
+        // 留点余量，超长就用总量兜底
+        if (memo.size() >= 250) {
+            int64_t total = 0;
+            for (const auto& q : packs) total += q.amount;
+            memo = prefix + "|amt=" + std::to_string(total);
+            break;
+        }
+    }
+
+    check(memo.size() <= 256, "memo too long");
+    return memo;
+}
+
+void pop_cisum::_try_award_badges(const name &user, int64_t consumed_before, int64_t consumed_after)
+{
+    if (consumed_after <= consumed_before) return;
+
+    badge_rule_t::idx_t rules(get_self(), get_self().value);
+    if (rules.begin() == rules.end()) return;
+
+    std::vector<nasset> packs;
+
+    for (auto it = rules.begin(); it != rules.end(); ++it) {
+        if (!it->enabled) continue;
+        if (it->threshold.symbol != USDT_SYM) continue;
+
+        const int64_t step = it->threshold.amount;
+        if (step <= 0) continue;
+
+        const int64_t k_before = consumed_before / step;
+        const int64_t k_after  = consumed_after  / step;
+        const int64_t delta    = k_after - k_before;
+
+        if (delta > 0) {
+        packs.emplace_back(delta, it->symbol);
+        }
+    }
+
+    if (packs.empty()) return;
+
+    std::string memo = build_award_memo(user, packs);
+
+    notifyaward_action{
+        get_self(),
+        { permission_level{ get_self(), "active"_n } }
+    }.send(user, packs, memo);
+}
+
+
+
 
 void pop_cisum::mine(name payer, asset pay_amount, string memo)
 {
@@ -135,6 +202,31 @@ void pop_cisum::mine(name payer, asset pay_amount, string memo)
         current_time_point().time_since_epoch().count() / 1'000'000
     );
 
+
+    // ===== 累计消费 =====
+    receivable_singleton recv_tbl(get_self(), get_self().value);
+    receivable_t recv;
+
+    if (recv_tbl.exists()) {
+        recv = recv_tbl.get();
+    } else {
+        recv.amount    = asset(0, USDT_SYM);
+        recv.updated_at = current_time_point();
+    }
+
+    CHECKC(recv.amount.symbol == pay_amount.symbol, err::SYMBOL_MISMATCH, "receivable symbol mismatch");
+    int64_t before = recv.amount.amount;
+    recv.amount   += pay_amount;
+    recv.updated_at = current_time_point();
+
+    int64_t after = recv.amount.amount;
+
+    recv_tbl.set(recv, get_self());
+
+    // ===== 判断是否跨过勋章门槛 =====
+    _try_award_badges(payer, before, after);
+
+
 }
 
 //memo： order:12345
@@ -199,5 +291,57 @@ void pop_cisum::delexecutor(const name& acct) {
   _gstate.executors.erase(it);
   _global.set(_gstate, get_self());
 }
+
+
+void pop_cisum::setbrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) {
+    require_auth(get_self());
+    CHECKC(threshold.amount > 0,                 err::NOT_POSITIVE,     "threshold must be positive");
+    CHECKC(symbol.raw() != 0,                    err::INVALID_FORMAT,   "badge symbol required");
+
+
+    badge_rule_t::idx_t rtbl(get_self(), get_self().value);
+    auto by_symbol = rtbl.get_index<"bysymbol"_n>();
+
+    if (id == 0) {
+
+        CHECKC(by_symbol.find(symbol.raw()) == by_symbol.end(),
+               err::REDPACK_EXIST, "rule for this badge symbol already exists");
+
+        rtbl.emplace(get_self(), [&](auto& r){
+            r.id         = rtbl.available_primary_key();
+            r.threshold  = threshold;
+            r.symbol     = symbol;
+            r.enabled    = enabled;
+            r.created_at = current_time_point();
+        });
+    } else {
+        auto it = rtbl.find(id);
+        CHECKC(it != rtbl.end(), err::RECORD_NO_FOUND, "badge rule not found");
+
+        if (it->symbol.raw() != symbol.raw()) {
+            CHECKC(by_symbol.find(symbol.raw()) == by_symbol.end(),
+                   err::REDPACK_EXIST, "rule for this badge symbol already exists");
+        }
+
+        rtbl.modify(it, same_payer, [&](auto& r){
+            r.threshold = threshold;
+            r.symbol    = symbol;
+            r.enabled   = enabled;
+        });
+    }
+}
+
+void pop_cisum::delbrule(uint64_t id)
+{
+    require_auth(get_self());
+    badge_rule_t::idx_t rtbl(get_self(), get_self().value);
+    auto it = rtbl.find(id);
+    CHECKC(it != rtbl.end(),          err::RECORD_NO_FOUND, "badge rule not found");
+    rtbl.erase(it);
+}
+
+
+
+
 
 } /// namespace flon

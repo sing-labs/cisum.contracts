@@ -55,7 +55,6 @@ void show::require_role(const name& submitter,
     );
 }
 
-
 void show::tkincrease(const uint64_t&  show_id,
                       const uint64_t&        ticket_id,
                       const uint64_t&        ticket_count,
@@ -546,6 +545,7 @@ void show::buyticket(const name&  submitter,
     // ===== 发票 =====
     issue_action issue{ get_self(), { get_self(), "active"_n } };
     issue.send(_self,payer, show_id, ticket_id, ticket_count, memo);
+
 }
 
 

@@ -89,5 +89,25 @@ TBL receivable_t {
 using receivable_singleton = eosio::singleton<"receivable"_n, receivable_t>;
 
 
+TBL badge_rule_t {
+   uint64_t       id;
+   asset          threshold;        // 达到多少 consumed.amount 送此勋章
+   nsymbol        symbol;        // 勋章编码
+   bool           enabled = true;
+   time_point     created_at;
+
+   uint64_t  primary_key()    const { return id; }
+   uint64_t  by_threshold()      const { return threshold.amount; }
+   uint64_t  by_symbol()      const { return symbol.raw(); }
+
+   typedef eosio::multi_index<
+     "badgerules"_n, badge_rule_t,
+     indexed_by<"bythreshold"_n, const_mem_fun<badge_rule_t,uint64_t,&badge_rule_t::by_threshold>>,
+     indexed_by<"bysymbol"_n, const_mem_fun<badge_rule_t,uint64_t,&badge_rule_t::by_symbol>>
+   > idx_t;
+    EOSLIB_SERIALIZE(badge_rule_t, (id)(threshold)(symbol)(enabled)(created_at))
+};
+
+
 
 } // namespace flon

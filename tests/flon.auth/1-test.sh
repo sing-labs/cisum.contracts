@@ -101,3 +101,10 @@ mpush $rolemanage_con  delrole '["R_CREATE_ROLE"]'   -p flonian
 
 mpush $rolemanage_con  addallowlist '["flonian"]'   -p flonian
 
+mpush $rolemanage_con grantrole '["grab.cisum","flonian","myadmin","admin"]' -p flonian
+
+
+
+
+
+mpush $rolemanage_con  delrole '["厨师"]'   -p flonian

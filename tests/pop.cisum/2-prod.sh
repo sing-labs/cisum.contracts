@@ -15,3 +15,9 @@ mpush cisum.token transfer '[
 
 mpush $pop_con addexecutor '["show.cisum"]' -p $pop_con
 
+
+badgestore_contract=badgecvstore
+mpush $badgestore_contract addwhitelist '["pop.cisum"]' -p $badgestore_contract
+
+# 新增规则（id=0 表示新增）
+mpush $pop_con  setbrule '[0, "50.000000 USDT", {"value":"4299369637478511"}, true]' -p $pop_con

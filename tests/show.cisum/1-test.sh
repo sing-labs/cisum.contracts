@@ -93,4 +93,4 @@ mpush $show_con giftbatch '["flonian",
 mpush $pop_con addexecutor '["show24.cisum"]' -p $pop_con
 mpush show24.cisum addplatadm '["myadmin"]'  -p flonian
 
-mpush show.cisum buyticket '["flonian","cvph53ao15sq", "20.000000 USDT", 1758268451780, 2101025542466, 1, "1968952961493520384"]' -p flonian
+mpush show.cisum buyticket '["flonian","cvph53ao15sq", "20.000000 USDT", 1758268451780, 2101025696004, 1, "1968952961493520384"]' -p flonian
