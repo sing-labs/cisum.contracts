@@ -31,4 +31,9 @@ mpush $rolemanage_con grantrole '["grab.cisum","flonian","flonian","admin"]' -p 
 
 
 #设置白名单（可以操作role、userrole、roleperm）
-mpush $rolemanage_con  addallowlist '["flonian"]'   -p flonian
+#mpush $rolemanage_con  addallowlist '["fulgwxvwfw1m"]'   -p flonian
+
+
+
+#grab 有admin 、oracle权限 ，如果需要修改功能要加这个权限
+# mpush $rolemanage_con grantrole '["grab.cisum","flonian","pxuqby4g5ogz","admin"]' -p flonian

@@ -76,3 +76,7 @@ mpush nestar.token transfer '["gahbnbehaskk","grab.cisum","20.0000 NESTAR","grab
 mpush cisum.token transfer '["gahbnbehaskk","grab.cisum","2.00000000 CISUM","grab:9:a1799ae8e1ea62a20a5f56710342a123"]' -p gahbnbehaskk
 
 mpush flon.mtoken transfer '["gahbnbehaskk","grab.cisum","2.000000 USDT","grab:10:a1799ae8e1ea62a20a5f56710342a123"]' -p gahbnbehaskk
+
+
+
+mpush grab.cisum setrushsale '["myadmin",11,20,null,null]' -p myadmin

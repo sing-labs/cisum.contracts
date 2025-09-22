@@ -28,3 +28,4 @@ mpush $nestar_token  setbrule '[0, "15000.0000 NESTAR", {"value":"42993696374785
 mpush $nestar_token  setbrule '[0, "150000.0000 NESTAR", {"value":"4299369637478512"}, true]' -p $nestar_token
 mpush $nestar_token  setbrule '[0, "1500000.0000 NESTAR", {"value":"4299369637478513"}, true]' -p $nestar_token
 mpush $nestar_token  setbrule '[0, "15000000.0000 NESTAR", {"value":"4299369637478514"}, true]' -p $nestar_token
+

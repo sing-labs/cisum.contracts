@@ -60,9 +60,16 @@ void flonauth::delrole(const std::string& role) {
     CHECKC(rit != byrole.end(), err::ROLE_NOT_FOUND, "role not found");
 
     userroles_idx ur(get_self(), get_self().value);
-    auto ix = ur.get_index<"byrole"_n>();
-    CHECKC(ix.find(hash_str(role)) == ix.end(), err::INVALID_FORMAT,
+    auto ur_byrole = ur.get_index<"byrole"_n>();
+    CHECKC(ur_byrole.find(hash_str(role)) == ur_byrole.end(), err::INVALID_FORMAT,
            "cannot delete role: still granted to some users");
+
+    roleperms_idx perms_tbl(get_self(), get_self().value);
+    auto rp_byrole = perms_tbl.get_index<"byrole"_n>();
+    auto it = rp_byrole.find(hash_str(role));
+    while (it != rp_byrole.end() && hash_str(it->role) == hash_str(role)) {
+        it = rp_byrole.erase(it);
+    }
 
     byrole.erase(rit);
 }

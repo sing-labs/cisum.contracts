@@ -114,3 +114,9 @@ mpush $nestar_token transfer '["'"${issuer_owner}"'", "'"${issuer_owner}"'", "1.
 # === 切换 admin 测试 ===
 mpush $nestar_token setadmin '["alt.admin"]' -p $nestar_token   # 应失败-账号不存在
 mpush $nestar_token issue '["'"${issuer_owner}"'", "1.0000 NESTAR", "old-admin-issue"]' -p $user_admin # 应失败
+
+
+
+
+
+mpush $nestar_token transfer '["'"${issuer_owner}"'", "'"${user_owner}"'", "0.0000 NESTAR", "zero"]' -p $issuer_owner
