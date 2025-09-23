@@ -198,7 +198,7 @@ void grab_cisum::addrushsale(const name&  submitter,
     });
 }
 
-void grab_cisum::settoken(const symbol& sym, const name& bank) {
+void grab_cisum::addtoken(const symbol& sym, const name& bank) {
     require_auth(get_self());
 
     check(sym.is_valid(),                "invalid symbol");

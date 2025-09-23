@@ -10,6 +10,7 @@ void flonauth::init(const name& admin) {
     _gstate.admin = admin;
 }
 
+
 void flonauth::setadmin(const name& new_admin) {
     require_auth(_gstate.admin);
     CHECKC(is_account(new_admin), err::ACCOUNT_INVALID, "new admin not exist");
@@ -29,7 +30,7 @@ void flonauth::delallowlist(const name& acct) {
     _gstate.allowlist.erase(it);
 }
 
-void flonauth::setrole(const std::string& role, const std::string& desc) {
+void flonauth::addrole(const std::string& role, const std::string& desc) {
     require_admin_or_allowlist(_gstate, get_self());
     CHECKC(!role.empty(), err::INVALID_FORMAT, "role is empty");
 
@@ -57,12 +58,15 @@ void flonauth::delrole(const std::string& role) {
     roles_idx roles(get_self(), get_self().value);
     auto byrole = roles.get_index<"byrole"_n>();
     auto rit    = byrole.find(hash_str(role));
-    CHECKC(rit != byrole.end(), err::ROLE_NOT_FOUND, "role not found");
+    if (rit == byrole.end()) {
+        return;
+    }
 
     userroles_idx ur(get_self(), get_self().value);
     auto ur_byrole = ur.get_index<"byrole"_n>();
-    CHECKC(ur_byrole.find(hash_str(role)) == ur_byrole.end(), err::INVALID_FORMAT,
-           "cannot delete role: still granted to some users");
+    if (ur_byrole.find(hash_str(role)) != ur_byrole.end()) {
+        return;
+    }
 
     roleperms_idx perms_tbl(get_self(), get_self().value);
     auto rp_byrole = perms_tbl.get_index<"byrole"_n>();
@@ -131,7 +135,6 @@ void flonauth::revokerole(const name& contract,
             ++it;
         }
     }
-    check(false, "grant not found under this contract");
 }
 
 void flonauth::checkrole(const name& submitter,
@@ -196,7 +199,7 @@ void flonauth::addroleperm(const name& submitter,
                "permission already granted to role: " + p);
 
         perms_tbl.emplace(submitter, [&](auto& r) {
-            r.id         = perms_tbl.available_primary_key();
+            r.id         = ++ _gstate.last_roleperm_id;
             r.role       = role;
             r.perm       = p;
             r.desc       = desc;

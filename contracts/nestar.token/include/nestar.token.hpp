@@ -56,6 +56,9 @@ public:
   void open(const name& owner, const symbol& sym, const name& ram_payer);
 
   [[eosio::action]]
+  void close( const name& owner, const symbol& symbol );
+
+  [[eosio::action]]
   void setissuer(const name& issuer);
 
   [[eosio::action]]
@@ -69,7 +72,7 @@ public:
 
   // 新增/修改规则（若 id == 0 则新增，否则修改对应 id）
   [[eosio::action]]
-  void setbrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled);
+  void addbrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled);
 
   [[eosio::action]]
   void delbrule(uint64_t id);

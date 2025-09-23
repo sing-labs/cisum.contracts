@@ -1,4 +1,7 @@
 #!/bin/bash
+shopt -s expand_aliases
+source ~/.bashrc
+
 
 grab_con=grab.cisum
 
@@ -26,9 +29,10 @@ mpush $grab_con cfgpoint  '["flonian","nestar.token"]' -p $grab_con
 mpush $grab_con cfgticket '["flonian","ticket.cvnft"]' -p $grab_con
 
 # 允许的支付币种（该 action 仍是合约自签）
-mpush $grab_con settoken '["4,NESTAR","nestar.token"]' -p $grab_con
+mpush $grab_con addtoken '["4,SONG","nestar.token"]' -p $grab_con
 
 #mpush $grab_con settoken '["6,USDT","flon.mtoken"]' -p $grab_con
 #mpush $grab_con settoken '["8,CISUM","cisum.token"]' -p $grab_con
 #mpush $grab_con deltoken '["6,USDT","flon.mtoken"]' -p $grab_con
 #mpush $grab_con deltoken '["8,CISUM","cisum.token"]' -p $grab_con
+#mpush $grab_con deltoken '["4,NESTAR","nestar.token"]' -p $grab_con

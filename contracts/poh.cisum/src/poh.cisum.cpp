@@ -22,20 +22,19 @@ void poh_cisum::init(name platform, name registrar, asset max_issued) {
 
     CHECKC(is_account(platform),  err::ACCOUNT_INVALID, "platform not exist");
     CHECKC(is_account(registrar), err::ACCOUNT_INVALID, "registrar not exist");
-    CHECKC(max_issued.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "max_issued must be CISUM");
+    CHECKC(max_issued.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "max_issued must be SING");
     CHECKC(max_issued.amount > 0,          err::NOT_POSITIVE,    "max_issued must be positive");
     CHECKC(max_issued.amount >= _gstate.cisum_issued.amount,
            err::EXCEED_LIMIT, "max_issued must be greater than current issued");
     _gstate.platform_acct           = platform;
     _gstate.registrar               = registrar;
     _gstate.max_issued              = max_issued;
-
     _global.set(_gstate, get_self());
 }
 
 void poh_cisum::setmaxissued(asset max_issued) {
     require_auth(get_self());
-    CHECKC(max_issued.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "max_issued must be CISUM");
+    CHECKC(max_issued.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "max_issued must be SING");
     CHECKC(max_issued.amount > 0,          err::NOT_POSITIVE,    "max_issued must be positive");
     CHECKC(max_issued.amount >= _gstate.cisum_issued.amount,
            err::EXCEED_LIMIT, "max_issued must be greater than current issued");

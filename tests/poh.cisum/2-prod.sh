@@ -1,3 +1,7 @@
+#!/bin/bash
+shopt -s expand_aliases
+source ~/.bashrc
+
 poh_con=poh.cisum
 mreg flon $poh_con flonian
 mtran flonian $poh_con "100 FLON"
@@ -11,12 +15,12 @@ mpush $nestar_token  addwhitelist '["poh.cisum"]'   -p $nestar_token
 # 给合约开 CISUM 余额行（RAM 自付）
 mpush cisum.token open '[
   "'"${poh_con}"'",
-  "8,CISUM",
+  "8,SING",
   "'"${poh_con}"'"
 ]' -p $poh_con
 
 
-mpush $poh_con init '["cisumreserve","flonian","2500000000.00000000 CISUM"]' -p $poh_con
+mpush $poh_con init '["cisumreserve","flonian","2500000000.00000000 SING"]' -p $poh_con
 
 
 

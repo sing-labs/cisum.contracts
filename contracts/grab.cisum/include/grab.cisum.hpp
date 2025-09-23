@@ -78,7 +78,7 @@ public:
                       std::optional<uint32_t> win_ratio,
                       std::optional<time_point> ended_at) ;
 
-  ACTION  settoken(const symbol& sym, const name& bank);
+  ACTION  addtoken(const symbol& sym, const name& bank);
 
   ACTION  deltoken(const symbol& sym, const name& bank);
 

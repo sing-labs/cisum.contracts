@@ -58,11 +58,12 @@ enum class err: uint8_t {
 struct [[eosio::table, eosio::contract("flon.auth")]] global_t {
   name           admin;
   std::set<name> allowlist;
-  uint64_t       last_role_id =6;
-  uint64_t       last_userrole_id=7;
-  EOSLIB_SERIALIZE(global_t, (admin)(allowlist)(last_role_id)(last_userrole_id))
+  uint64_t       last_role_id=0;
+  uint64_t       last_userrole_id=0;
+  uint64_t       last_roleperm_id=0;
+  EOSLIB_SERIALIZE(global_t, (admin)(allowlist)(last_role_id)(last_userrole_id)(last_roleperm_id))
 };
-using global_singleton = eosio::singleton<"authglobal"_n, global_t>;
+using global_singleton = eosio::singleton<"globals"_n, global_t>;
 
 // scope:self
 struct [[eosio::table("roles"), eosio::contract("flon.auth")]] role_t {

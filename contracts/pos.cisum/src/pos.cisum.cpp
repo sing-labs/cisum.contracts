@@ -88,7 +88,7 @@ using namespace wasm::safemath;
          check(mini_deposit_amount.amount >= 0, "mini_deposit_amount must be >= 0");
 
          // 只允许初始化一次（如需可重设，改成 setglobal 动作）
-         check(!_global.exists(), "already initialized");
+        //check(!_global.exists(), "already initialized");
 
          _gstate.admin             = get_self();          // 默认管理员 = 合约
          _gstate.principal_token   = principal_token;     // 主存款币（如 8,CISUM@cisum.token）

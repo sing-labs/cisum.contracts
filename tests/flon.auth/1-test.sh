@@ -75,7 +75,9 @@ mpush $rolemanage_con delroleperm '[
 
 
 
-mpush $rolemanage_con  setrole '["admin","超级管理员"]'   -p flonian
+mpush $rolemanage_con  addrole '["admin","超级管理员1111"]'   -p flonian
+
+mpush $rolemanage_con  addrole '["超级管理员1111","超级管理员1111"]'   -p flonian
 mpush $rolemanage_con  delrole '["admin"]'   -p flonian
 
 
@@ -107,4 +109,4 @@ mpush $rolemanage_con grantrole '["grab.cisum","flonian","myadmin","admin"]' -p 
 
 
 
-mpush $rolemanage_con  delrole '["厨师"]'   -p flonian
+mpush $rolemanage_con  clearstate '[]'   -p flonian

@@ -1,3 +1,7 @@
+#!/bin/bash
+shopt -s expand_aliases
+source ~/.bashrc
+
 
 badge_ntoken=badge.cvnft
 mreg flon $badge_ntoken flonian

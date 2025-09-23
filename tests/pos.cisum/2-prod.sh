@@ -1,3 +1,7 @@
+#!/bin/bash
+shopt -s expand_aliases
+source ~/.bashrc
+
 pos_con=pos.cisum
 mreg flon $pos_con flonian
 mtran flonian $pos_con "100 FLON"
@@ -9,7 +13,7 @@ mcli set account permission $pos_con active --add-code
 mreg flon share.cisum flonian
 
 
-mpush $pos_con  init '[{"sym":"8,CISUM","contract":"cisum.token"},"100.00000000 CISUM"    ]' -p $pos_con
+mpush $pos_con  init '[{"sym":"8,SING","contract":"cisum.token"},"100.00000000 SING"    ]' -p $pos_con
 
 #将合约加入到nestar白名单
 mpush  nestar.token  addwhitelist '["'"${pos_con}"'"]' -p nestar.token
@@ -27,7 +31,7 @@ mpush $pos_con setplan '[
     "advance_redeem_fine_rate":3000,
     "effective_from": "2025-08-01T00:00:00",
     "effective_to": "2026-11-25T00:00:00",
-    "interest_token":{"sym":"4,NESTAR","contract":"nest21.token"},
+    "interest_token":{"sym":"4,SONG","contract":"nestar.token"},
     "music_reward_rate":1000
   }
 ]' -p $pos_con

@@ -1,3 +1,7 @@
+#!/bin/bash
+shopt -s expand_aliases
+source ~/.bashrc
+
 show_con=show.cisum
 mreg flon $show_con flonian
 mtran flonian $show_con "100 FLON"

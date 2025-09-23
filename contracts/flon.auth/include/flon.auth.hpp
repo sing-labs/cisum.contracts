@@ -25,6 +25,7 @@ public:
 
 
     ACTION init(const name& admin);
+
     ACTION setadmin(const name& new_admin);
     ACTION addallowlist(const name& acct);
     ACTION delallowlist(const name& acct);
@@ -44,10 +45,10 @@ public:
     // ========= Actions =========
 
     /**
-     * setrole - 新建/更新一个角色（纯配置）
+     * addrole - 新建/更新一个角色（纯配置）
      * 权限：默认仅合约自身（可按需调整）
      */
-    ACTION setrole(const string& role, const string& desc);
+    ACTION addrole(const string& role, const string& desc);
 
     /**
      * delrole - 删除一个角色（需确保无人持有该角色）
@@ -77,7 +78,7 @@ public:
                     const std::vector<std::string>& roles);
 
     // ========= Aliases =========
-    using setrole_action    = eosio::action_wrapper<"setrole"_n,    &flonauth::setrole>;
+    using addrole_action    = eosio::action_wrapper<"addrole"_n,    &flonauth::addrole>;
     using delrole_action    = eosio::action_wrapper<"delrole"_n,    &flonauth::delrole>;
     using grantrole_action  = eosio::action_wrapper<"grantrole"_n,  &flonauth::grantrole>;
     using revokerole_action = eosio::action_wrapper<"revokerole"_n, &flonauth::revokerole>;

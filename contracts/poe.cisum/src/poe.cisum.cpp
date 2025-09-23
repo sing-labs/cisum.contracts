@@ -17,6 +17,7 @@ void poe_cisum::_pay_points(const name& to, const asset& quant, const string& me
   TRANSFER(NESTAR_BANK, to, quant, memo)
 }
 
+
 void poe_cisum::addrewardact(const name& act_name,const asset& points,const string& memo){
   require_auth(get_self());
   CHECKC(act_name.length() > 0,       err::INVALID_FORMAT,   "act_name cannot be empty");
@@ -207,7 +208,7 @@ void poe_cisum::ontransfer(const name& from, const name& to,const asset& quantit
   if (from == get_self() || to != get_self()) return;
 
   // 基础校验
-  CHECKC(get_first_receiver() == NESTAR_BANK, err::INVALID_FORMAT, "invalid token contract");
+  CHECKC(get_first_receiver() == NESTAR_CONTRACT, err::INVALID_FORMAT, "invalid token contract");
   CHECKC(quantity.symbol == NESTAR_SYM,       err::SYMBOL_MISMATCH, "symbol mismatch");
   CHECKC(quantity.is_valid(),                 err::INVALID_FORMAT,  "invalid asset");
   CHECKC(quantity.amount > 0,                 err::NOT_POSITIVE,    "must transfer positive");

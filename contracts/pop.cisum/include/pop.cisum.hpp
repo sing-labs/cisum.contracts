@@ -48,7 +48,6 @@ public:
 
   ACTION mine(  name  payer,asset pay_amount,string  memo);
 
-
   ACTION  settle(const asset& amount, const string& memo) ;
 
   ACTION setmaxreward(const asset& max_rewards);

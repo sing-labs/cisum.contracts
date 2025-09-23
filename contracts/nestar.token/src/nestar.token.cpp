@@ -67,15 +67,14 @@ void nestar::create(const name& issuer, const asset& maximum_supply)
     require_auth(get_self());
     require_issuer(issuer);
 
-    CHECKC(maximum_supply.symbol == NESTAR_SYM,  err::SYMBOL_MISMATCH, "symbol must be NESTAR");
     CHECKC(maximum_supply.symbol.is_valid(),        err::INVALID_FORMAT,  "invalid symbol");
     CHECKC(maximum_supply.is_valid(),               err::INVALID_FORMAT,  "invalid supply");
     CHECKC(maximum_supply.amount > 0,               err::NOT_POSITIVE,    "max-supply must be positive");
     CHECKC(is_account(issuer),                      err::ACCOUNT_INVALID, "issuer account not exist");
-
-    stats_t::idx_t statstable(get_self(), get_self().value);
-    auto itr = statstable.find(NESTAR_SYM.code().raw());
-    CHECKC(itr == statstable.end(),                 err::REDPACK_EXIST,   "NESTAR already exists");
+    auto sym = maximum_supply.symbol;
+    stats_t::idx_t statstable(get_self(), sym.code().raw() );
+    auto itr = statstable.find(sym.code().raw());
+    CHECKC(itr == statstable.end(),                 err::REDPACK_EXIST,   "token already exists");
 
     statstable.emplace(get_self(), [&](auto& s){
       s.supply.symbol = maximum_supply.symbol;
@@ -88,19 +87,20 @@ void nestar::create(const name& issuer, const asset& maximum_supply)
 
 void nestar::issue(const name& to, const asset& quantity, const std::string& memo)
 {
+    auto sym = quantity.symbol;
     CHECKC( has_auth(to) || has_auth(POH_CONTRACT)|| has_auth(POS_CONTRACT),
                                                 err::DID_NOT_AUTH, "missing auth (issuer or poh required or pos required)" );
     CHECKC( to == _gstate.issuer || to == POH_CONTRACT || to == POS_CONTRACT,
                                                 err::ACCOUNT_INVALID, "to must be issuer/POH/POS" );
 
     CHECKC(memo.size() <= 256,                   err::INVALID_FORMAT,  "memo too long");
-    CHECKC(quantity.symbol == NESTAR_SYM,     err::SYMBOL_MISMATCH, "symbol must be NESTAR");
+
     CHECKC(quantity.is_valid(),                  err::INVALID_FORMAT,  "invalid quantity");
     CHECKC(quantity.amount > 0,                  err::NOT_POSITIVE,    "must issue positive quantity");
 
-    stats_t::idx_t statstable(get_self(), get_self().value);
-    auto itr = statstable.find(NESTAR_SYM.code().raw());
-    CHECKC(itr != statstable.end(),              err::RECORD_NO_FOUND, "NESTAR not created");
+    stats_t::idx_t statstable(get_self(), sym.code().raw());
+    auto itr = statstable.find(sym.code().raw());
+    CHECKC(itr != statstable.end(),              err::RECORD_NO_FOUND, "token not created");
     const auto& st = *itr;
 
     CHECKC(quantity.amount <= (st.max_supply.amount - st.supply.amount),
@@ -117,14 +117,15 @@ void nestar::retire(const asset& quantity, const string& memo)
 {
     CHECKC(quantity.symbol.is_valid(),           err::INVALID_FORMAT,  "invalid symbol");
     CHECKC(memo.size() <= 256,                   err::INVALID_FORMAT,  "memo too long");
-    CHECKC(quantity.symbol == NESTAR_SYM,     err::SYMBOL_MISMATCH, "symbol must be NESTAR");
     CHECKC(quantity.is_valid(),                  err::INVALID_FORMAT,  "invalid quantity");
     CHECKC(quantity.amount > 0,                  err::NOT_POSITIVE,    "must retire positive quantity");
 
-    stats_t::idx_t statstable(get_self(), get_self().value);
-    auto itr = statstable.find(NESTAR_SYM.code().raw());
-    CHECKC(itr != statstable.end(),              err::RECORD_NO_FOUND, "NESTAR not created");
+    auto sym = quantity.symbol;
+    stats_t::idx_t statstable(get_self(), sym.code().raw());
+    auto itr = statstable.find(sym.code().raw());
+    CHECKC(itr != statstable.end(),              err::RECORD_NO_FOUND, "token not created");
     const auto& st = *itr;
+    CHECKC(itr->supply.symbol == quantity.symbol, err::SYMBOL_MISMATCH, "symbol mismatch");
 
     require_auth(_gstate.issuer);
 
@@ -145,47 +146,52 @@ void nestar::transfer(const name& from,
                       const asset& quantity,
                       const std::string& memo)
 {
-  CHECKC(from != to,                         err::INVALID_FORMAT,   "cannot transfer to self");
-  require_auth(from);
-  CHECKC(is_account(to),                     err::ACCOUNT_INVALID,  "to account not exist");
-  CHECKC(memo.size() <= 256,                 err::INVALID_FORMAT,   "memo too long");
+    CHECKC(from != to,                         err::INVALID_FORMAT,   "cannot transfer to self");
+    require_auth(from);
+    CHECKC(is_account(to),                     err::ACCOUNT_INVALID,  "to account not exist");
 
-  CHECKC(quantity.symbol == NESTAR_SYM,   err::SYMBOL_MISMATCH,  "symbol must be NESTAR");
-  CHECKC(quantity.is_valid(),                err::INVALID_FORMAT,   "invalid quantity");
-  CHECKC(quantity.amount > 0,                err::NOT_POSITIVE,     "must transfer positive quantity");
 
-  bool allowed = false;
-  bool count_consumed = false;
+    auto sym = quantity.symbol.code();
+    stats_t::idx_t statstable(get_self(), sym.raw());
+    auto itr = statstable.find(sym.raw());
 
-  if (from == _gstate.issuer || in_whitelist(from) ) {
-    allowed = true;
-  } else if (is_consumewl(to)) {
-    allowed = true;
-    count_consumed = true;
-  }
-  CHECKC(allowed, err::DID_NOT_AUTH, "transfer not allowed: issuer->any or user->whitelist");
+    CHECKC(quantity.is_valid(),                err::INVALID_FORMAT,   "invalid quantity");
+    CHECKC(quantity.amount > 0,                err::NOT_POSITIVE,     "must transfer positive quantity");
+    CHECKC(quantity.symbol == itr->supply.symbol, err::INVALID_FORMAT, "symbol precision mismatch");
+    CHECKC(memo.size() <= 256,                 err::INVALID_FORMAT,   "memo too long");
 
-  int64_t consumed_before = 0;
-  if (count_consumed) {
-    account_t::idx_t facnts(get_self(), from.value);
-    const auto& frow = facnts.get(quantity.symbol.code().raw(), "no balance row for sender");
-    consumed_before = frow.consumed.amount;
-  }
+    bool allowed = false;
+    bool count_consumed = false;
 
-  auto payer = has_auth(to) ? to : from;
-  sub_balance(from, quantity,count_consumed);
-  add_balance(to, quantity, payer);
+    if (from == _gstate.issuer || in_whitelist(from) ) {
+        allowed = true;
+    } else if (is_consumewl(to)) {
+        allowed = true;
+        count_consumed = true;
+    }
+    CHECKC(allowed, err::DID_NOT_AUTH, "transfer not allowed: issuer->any or user->whitelist");
 
-  if (count_consumed) {
-    account_t::idx_t acnts(get_self(), from.value);
-    const auto& row = acnts.get(quantity.symbol.code().raw(), "no balance row after transfer");
-    const int64_t consumed_after = row.consumed.amount;
+    int64_t consumed_before = 0;
+    if (count_consumed) {
+        account_t::idx_t facnts(get_self(), from.value);
+        const auto& frow = facnts.get(quantity.symbol.code().raw(), "no balance row for sender");
+        consumed_before = frow.consumed.amount;
+    }
 
-    try_award_badges(from, consumed_before, consumed_after);
-  }
+    auto payer = has_auth(to) ? to : from;
+    sub_balance(from, quantity,count_consumed);
+    add_balance(to, quantity, payer);
 
-  require_recipient(from);
-  require_recipient(to);
+    if (count_consumed) {
+        account_t::idx_t acnts(get_self(), from.value);
+        const auto& row = acnts.get(quantity.symbol.code().raw(), "no balance row after transfer");
+        const int64_t consumed_after = row.consumed.amount;
+
+        try_award_badges(from, consumed_before, consumed_after);
+    }
+
+    require_recipient(from);
+    require_recipient(to);
 }
 
 
@@ -221,12 +227,15 @@ void nestar::setwhite(const name& account, const bool& enabled)
     }
 }
 
-void nestar::setbrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) {
+void nestar::addbrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) {
     CHECKC(has_admin_auth(),                     err::DID_NOT_AUTH,     "admin/contract only");
     CHECKC(threshold.amount > 0,                 err::NOT_POSITIVE,     "threshold must be positive");
-    CHECKC(threshold.symbol == NESTAR_SYM,    err::SYMBOL_MISMATCH,  "threshold must be NESTAR");
     CHECKC(symbol.raw() != 0,                    err::INVALID_FORMAT,   "badge symbol required");
 
+    auto symcode = threshold.symbol.code();
+    stats_t::idx_t statstable(get_self(), symcode.raw());
+    auto itr = statstable.find(symcode.raw());
+    CHECKC(itr != statstable.end(), err::RECORD_NO_FOUND, "threshold token not exist");
 
     flon::nstats_t::idx_t nstats_tbl(CVBADGE_CONTRACT, CVBADGE_CONTRACT.value);
     auto it_symbol = nstats_tbl.find(symbol.value);
@@ -282,7 +291,6 @@ void nestar::setbadgestore(name badgestore_contract) {
 
 void nestar::sub_balance(const name& owner, const asset& value, bool count_consumed)
 {
-    CHECKC(value.symbol == NESTAR_SYM, err::SYMBOL_MISMATCH, "symbol must be NESTAR");
     CHECKC(value.is_valid(),              err::INVALID_FORMAT,   "invalid quantity");
     CHECKC(value.amount > 0,              err::NOT_POSITIVE,     "amount must be positive");
 
@@ -301,7 +309,6 @@ void nestar::sub_balance(const name& owner, const asset& value, bool count_consu
 
 void nestar::add_balance(const name& owner, const asset& value, const name& ram_payer)
 {
-    CHECKC(value.symbol == NESTAR_SYM, err::SYMBOL_MISMATCH, "symbol must be NESTAR");
     CHECKC(value.is_valid(),              err::INVALID_FORMAT,  "invalid quantity");
     CHECKC(value.amount > 0,              err::NOT_POSITIVE,    "amount must be positive");
 
@@ -324,12 +331,13 @@ void nestar::add_balance(const name& owner, const asset& value, const name& ram_
 
 void nestar::open(const name& owner, const symbol& sym, const name& ram_payer)
 {
+
     require_auth(ram_payer);
     CHECKC(is_account(owner),                err::ACCOUNT_INVALID, "owner not exist");
-    CHECKC(sym == NESTAR_SYM,             err::SYMBOL_MISMATCH, "symbol must be NESTAR");
 
-    stats_t::idx_t statstable(get_self(), get_self().value);
-    const auto& st = statstable.get(sym.code().raw(), "NESTAR not created");
+    auto sym_code_raw = sym.code().raw();
+    stats_t::idx_t statstable(get_self(), sym_code_raw);
+    const auto& st = statstable.get(sym_code_raw, "symbol not created");
     CHECKC(st.supply.symbol == sym,          err::SYMBOL_MISMATCH, "symbol precision mismatch");
 
     account_t::idx_t acnts(get_self(), owner.value);
@@ -342,6 +350,16 @@ void nestar::open(const name& owner, const symbol& sym, const name& ram_payer)
             a.updated_at = a.created_at;
         });
     }
+}
+
+void nestar::close( const name& owner, const symbol& symbol )
+{
+   require_auth( owner );
+   account_t::idx_t acnts(get_self(), owner.value);
+   auto it = acnts.find( symbol.code().raw() );
+   check( it != acnts.end(), "Balance row already deleted or never existed. Action won't have any effect." );
+   check( it->balance.amount == 0, "Cannot close because the balance is not zero." );
+   acnts.erase( it );
 }
 
 void nestar::notifyaward(const name& user, const vector<nasset>& packs, const string& memo) {

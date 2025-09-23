@@ -83,7 +83,8 @@ mpush $nestar_token setrate '["100"]' -p $nestar_token
 mpush $nestar_token transfer '["gahbnbehaskk", "grab23.cisum", "300.0000 NESTAR", "airdrop"]' -p gahbnbehaskk
 
 issuer_owner=nes11.issuer
-mpush $nestar_token transfer '["'"${issuer_owner}"'", "cvph53ao15sq", "2000.0000 NESTAR", "airdrop"]' -p $issuer_owner
+nestar_token=nestar.token
+mpush $nestar_token transfer '["flonian", "nes11.issuer", "2000.0000 NESTAR", "airdrop"]' -p flonian
 
 
 

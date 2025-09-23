@@ -66,7 +66,7 @@ void cisumreserve::on_usdt_transfer(const name& from,
     // 向用户发放 CISUM
     flon::token::transfer_action{
         CISUM_BANK, { permission_level{ get_self(), "active"_n } }
-    }.send(get_self(), from, cisum_out, "cisumreserve: buy CISUM");
+    }.send(get_self(), from, cisum_out, "cisumreserve: buy SING");
 
     // 记录订单
     orders_idx orders(get_self(), get_self().value);
@@ -93,7 +93,7 @@ void cisumreserve::on_cisum_transfer(const name& from,
                                      const std::string& memo) {
     if (from == get_self() || to != get_self()) return;
 
-    check(quantity.symbol == CISUM_SYM, "only CISUM deposits allowed");
+    check(quantity.symbol == CISUM_SYM, "only SING deposits allowed");
     check(quantity.amount > 0, "amount must be positive");
 
 }
