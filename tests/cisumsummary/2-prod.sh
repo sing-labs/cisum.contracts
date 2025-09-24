@@ -9,7 +9,6 @@ mset $cisumsummary_con cisumsummary
 mcli set account permission $cisumsummary_con active --add-code
 
 
-
 # 添加 CISUM
 mpush $cisumsummary_con addtoken '["cisum.token", "8,SING"]' -p $cisumsummary_con
 

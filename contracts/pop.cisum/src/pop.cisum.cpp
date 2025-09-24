@@ -29,6 +29,7 @@ void pop_cisum::notifyaward(const name& user, const vector<nasset>& packs, const
     require_recipient(CVBADGESTORE_CONTRACT);
 }
 
+
 static inline std::string build_award_memo(const eosio::name& user,
                                            const std::vector<nasset>& packs) {
     std::string prefix = "pop.cisum|auto-award|" + user.to_string();
@@ -166,12 +167,12 @@ void pop_cisum::mine(name payer, asset pay_amount, string memo)
     _gstate.available_rewards -= reward;
     _gstate.issued_rewards    += reward;
 
-    // receivable 仅在实际铸发时累加（10% USDT）
-    if (_gstate.receivable.symbol.code().raw() == 0) _gstate.receivable = asset(0, USDT_SYM);
-    CHECKC(_gstate.receivable.symbol == USDT_SYM, err::SYMBOL_MISMATCH, "receivable symbol mismatch");
-    CHECKC(_gstate.receivable.amount <= std::numeric_limits<int64_t>::max() - reward_usdt_min_units,
-           err::AMOUNT_TOO_LARGE, "receivable overflow");
-    _gstate.receivable.amount += reward_usdt_min_units;
+    // reward_usdt_accum 仅在实际铸发时累加（10% USDT）
+    if (_gstate.reward_usdt_accum.symbol.code().raw() == 0) _gstate.reward_usdt_accum = asset(0, USDT_SYM);
+    CHECKC(_gstate.reward_usdt_accum.symbol == USDT_SYM, err::SYMBOL_MISMATCH, "reward_usdt_accum symbol mismatch");
+    CHECKC(_gstate.reward_usdt_accum.amount <= std::numeric_limits<int64_t>::max() - reward_usdt_min_units,
+           err::AMOUNT_TOO_LARGE, "reward_usdt_accum overflow");
+    _gstate.reward_usdt_accum.amount += reward_usdt_min_units;
 
     _global.set(_gstate, get_self());
 
@@ -180,13 +181,13 @@ void pop_cisum::mine(name payer, asset pay_amount, string memo)
         _gstate.reward_contract,              // 银行合约
         _self,                                // 先铸到本合约
         reward,
-        std::string("Purchase Reward: ") + payer.to_string()
+        std::string("Purchase Reward")
     );
     TRANSFER(
         _gstate.reward_contract,              // 从银行合约转账
         payer,                               // 发给付款人
         reward,
-        std::string("type:Purchase Reward|") + "amount: " + reward.to_string()+"|account:"+ payer.to_string()+"|order:"+memo
+        std::string("Purchase Reward(")+payer.to_string()+")"
     );
 
     awardnotice_action{
@@ -196,7 +197,7 @@ void pop_cisum::mine(name payer, asset pay_amount, string memo)
         _gstate.reward_contract,
         payer,
         reward,
-        std::string("type:Purchase Reward|") + "amount: " + reward.to_string()+"|account:"+ payer.to_string()+"|order:"+memo,
+        std::string("Purchase Reward(")+payer.to_string()+")",
         "purchasemint",
         memo,
         current_time_point().time_since_epoch().count() / 1'000'000
@@ -204,7 +205,7 @@ void pop_cisum::mine(name payer, asset pay_amount, string memo)
 
 
     // ===== 累计消费 =====
-    receivable_singleton recv_tbl(get_self(), get_self().value);
+    receivable_singleton recv_tbl(get_self(), payer.value);
     receivable_t recv;
 
     if (recv_tbl.exists()) {
@@ -237,13 +238,13 @@ void pop_cisum::settle(const asset& amount, const string& memo) {
     CHECKC(amount.amount > 0, err::NOT_POSITIVE, "settle amount must be positive");
     CHECKC(memo.size() <= 256, err::INVALID_FORMAT, "memo too long");
 
-    if (_gstate.receivable.symbol.code().raw() == 0) {
-      _gstate.receivable = asset(0, USDT_SYM);
+    if (_gstate.reward_usdt_accum.symbol.code().raw() == 0) {
+      _gstate.reward_usdt_accum = asset(0, USDT_SYM);
     }
-    CHECKC(_gstate.receivable.symbol == USDT_SYM, err::SYMBOL_MISMATCH, "receivable symbol mismatch");
-    CHECKC(_gstate.receivable.amount >= amount.amount, err::INSUFFICIENT_QUANTITY, "settle amount exceeds receivable");
+    CHECKC(_gstate.reward_usdt_accum.symbol == USDT_SYM, err::SYMBOL_MISMATCH, "reward_usdt_accum symbol mismatch");
+    CHECKC(_gstate.reward_usdt_accum.amount >= amount.amount, err::INSUFFICIENT_QUANTITY, "settle amount exceeds reward_usdt_accum");
 
-    _gstate.receivable -= amount;
+    _gstate.reward_usdt_accum -= amount;
     _global.set(_gstate, get_self());
 }
 

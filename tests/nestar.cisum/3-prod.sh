@@ -13,7 +13,7 @@ badgestore_contract=badgecvstore
 mpush $badgestore_contract addwhitelist '["nestar.token"]' -p $badgestore_contract
 
 issuer_owner=flonian
-user_admin=myadmin
+user_admin=
 
 mpush $nestar_token init '["'"${issuer_owner}"'","'"${user_admin}"'","'"${badgestore_contract}"'"]' -p $nestar_token
 

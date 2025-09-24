@@ -8,8 +8,6 @@ mtran flonian $poh_con "100 FLON"
 mset $poh_con poh.cisum
 mcli set account permission $poh_con active --add-code
 
-
-
 mpush $nestar_token  addwhitelist '["poh.cisum"]'   -p $nestar_token
 
 # 给合约开 CISUM 余额行（RAM 自付）
@@ -19,8 +17,8 @@ mpush cisum.token open '[
   "'"${poh_con}"'"
 ]' -p $poh_con
 
-
-mpush $poh_con init '["cisumreserve","flonian","2500000000.00000000 SING"]' -p $poh_con
+max_issued="2500000000.00000000 SING"
+mpush $poh_con init '["cisumreserve","flonian","'"$max_issued"'"]' -p $poh_con
 
 
 

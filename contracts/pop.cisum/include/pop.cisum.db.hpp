@@ -70,14 +70,14 @@ NTBL("global") global_t {
    asset          max_rewards          = MAX_REWARDS_DEFAULT;
    asset          available_rewards    = MAX_REWARDS_DEFAULT;
    asset          issued_rewards       = asset(0, CISUM_SYM);
-   asset          receivable           = asset(0, USDT_SYM);
+   asset          reward_usdt_accum    = asset(0, USDT_SYM);
    std::set<name> executors;
-   EOSLIB_SERIALIZE(global_t, (oracle_contract)(reward_contract)(max_rewards)(available_rewards)(issued_rewards)(receivable)(executors))
+   EOSLIB_SERIALIZE(global_t, (oracle_contract)(reward_contract)(max_rewards)(available_rewards)(issued_rewards)(reward_usdt_accum)(executors))
 };
 
 typedef eosio::singleton< "global"_n, global_t > global_singleton;
 
-
+//scope: user
 TBL receivable_t {
    asset       amount;         // 当前应收金额
    time_point  updated_at;     // 最近更新时间
