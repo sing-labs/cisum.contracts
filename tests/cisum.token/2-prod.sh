@@ -3,7 +3,7 @@ shopt -s expand_aliases
 source ~/.bashrc
 
 
-cisum_token=cisum.token
+cisum_token=sing.token
 mreg flon $cisum_token flonian
 mtran flonian $cisum_token "100 FLON"
 mset $cisum_token cisum.token

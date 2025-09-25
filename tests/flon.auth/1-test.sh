@@ -101,7 +101,7 @@ mpush $rolemanage_con  setrole '["R_CREATE_ROLE","角色权限修改"]'   -p flo
 mpush $rolemanage_con  delrole '["R_CREATE_ROLE"]'   -p flonian
 
 
-mpush $rolemanage_con  addallowlist '["flonian"]'   -p flonian
+mpush $rolemanage_con  addallowlist '["aaaaaaaaaaa2"]'   -p flonian
 
 mpush $rolemanage_con grantrole '["grab.cisum","flonian","myadmin","admin"]' -p flonian
 
@@ -110,3 +110,36 @@ mpush $rolemanage_con grantrole '["grab.cisum","flonian","myadmin","admin"]' -p 
 
 
 mpush $rolemanage_con  clearstate '[]'   -p flonian
+
+
+
+
+
+
+
+
+
+mpush $rolemanage_con grantrole '["flonian","flonian","admin"]' -p flonian
+
+
+rolemanage_con=flon.auth
+mpush $rolemanage_con addroleperm '["flonian","admin",["show"],"show权限"]' -p flonian
+
+
+
+mpush $rolemanage_con grantrole '["flonian","fulgwxvwfw1m","admin"]' -p flonian
+
+
+
+
+mpush $rolemanage_con checkrole '["flonian","cisumshowman","show"]' -p flonian
+
+
+
+
+
+mpush $rolemanage_con addroleperm '["flonian","admin",["banner", "content", "venues", "show", "giveTicket", "ticketCancel", "roleManage", "userManage"],""]'   -p flonian
+
+
+
+mpush $rolemanage_con delroleperm '["flonian","admin",["create", "delete", "view"]]'   -p flonian

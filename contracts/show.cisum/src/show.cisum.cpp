@@ -11,6 +11,7 @@ using std::vector;
 #include <eosio/crypto.hpp>
 #include <pop.cisum.hpp>
 #include "flon.auth/flon.auth.hpp"
+#include "flon.auth/flon.auth.db.hpp"
 #include "flon/consts.hpp"
 namespace flon {
 
@@ -40,8 +41,8 @@ static std::string make_batch_hash(const eosio::name& oper) {
 // ---------- 小工具 ----------
 static inline time_point nowtp() { return current_time_point(); }
 
-void show::require_role(const name& submitter,
-                        const std::vector<std::string>& roles) const {
+void show::require_perm(const name& submitter,
+                        const std::string& perm) const {
     require_auth(submitter);
 
     flonauth::checkrole_action(
@@ -49,9 +50,8 @@ void show::require_role(const name& submitter,
         { get_self(), "active"_n }        // 本合约自己授权
     ).send(
         get_self(),                       // submitter = 本合约
-        get_self(),                       // contract = 本合约作用域
         submitter,                        // 要校验的用户
-        roles
+        perm
     );
 }
 
@@ -81,8 +81,9 @@ void show::nftcreate(const name& submitter,
                     const nsymbol& symbol,
                     const string&  token_uri)
 {
-    if (!has_auth(get_self())) {
-      require_role(submitter, {"admin","showadmin"});
+    if (!has_auth(get_self()) &&
+        !(has_auth(_gstate.admin) && submitter == _gstate.admin)) {
+        require_perm(submitter, "show");
     }
 
     check(_gstate.nft_bank.value != 0, "nft_bank not set");
@@ -103,8 +104,9 @@ void show::nftissue(const name& submitter,
                     const string& memo)
 {
 
-    if (!has_auth(get_self())) {
-      require_role(submitter, {"admin","showadmin"});
+    if (!has_auth(get_self()) &&
+        !(has_auth(_gstate.admin) && submitter == _gstate.admin)) {
+        require_perm(submitter, "show");
     }
 
     check(_gstate.nft_bank.value != 0, "nft_bank not set");
@@ -158,9 +160,10 @@ void show::newshow(const name& submitter,
                    const string&       show_name,
                    const string&       show_address)
 {
-    if (!has_auth(get_self())) {
-      require_role(submitter, {"admin","showadmin"});
-    }
+  if (!has_auth(get_self()) &&
+      !(has_auth(_gstate.admin) && submitter == _gstate.admin)) {
+      require_perm(submitter, "show");
+  }
 
   check(show_started_at != time_point{}, "show_started_at is required");
   if (show_ended_at != time_point{}) {
@@ -198,8 +201,9 @@ void show::setshow(const name& submitter,
                    const string&       show_name,
                    const string&       show_address)
 {
-    if (!has_auth(get_self())) {
-      require_role(submitter, {"admin","showadmin"});
+    if (!has_auth(get_self()) &&
+        !(has_auth(_gstate.admin) && submitter == _gstate.admin)) {
+        require_perm(submitter, "show");
     }
 
     show_t::showidx shows(get_self(), get_self().value);
@@ -246,8 +250,9 @@ void show::newticket(const name& submitter,
                      const time_point& sale_started_at,
                      const time_point& sale_ended_at)
 {
-    if (!has_auth(get_self())) {
-      require_role(submitter, {"admin","showadmin"});
+    if (!has_auth(get_self()) &&
+        !(has_auth(_gstate.admin) && submitter == _gstate.admin)) {
+        require_perm(submitter, "show");
     }
 
     check(is_account(_gstate.nft_bank), "nft_bank not exist");
@@ -296,9 +301,9 @@ void show::setticket(const name& submitter,
                      const time_point& sale_started_at,
                      const time_point& sale_ended_at)
 {
-    if (!has_auth(get_self())) {
-
-      require_role(submitter, {"admin","showadmin"});
+    if (!has_auth(get_self()) &&
+        !(has_auth(_gstate.admin) && submitter == _gstate.admin)) {
+        require_perm(submitter, "show");
     }
 
     ticket_t::ticketidx tks(get_self(), show_id);
@@ -336,10 +341,16 @@ void show::issue(const name&     submitter,
                  const uint32_t& ticket_count,
                  const string&   memo)
 {
-    if (!has_auth(get_self())) {
-
-      require_role(submitter, {"admin","showadmin"});
+    if (has_auth(get_self())) {
+    } else if (has_auth(_gstate.admin) && submitter == _gstate.admin) {
+    } else {
+        flonauth_global global_tbl("flon.auth"_n, "flon.auth"_n.value);
+        check(global_tbl.exists(), "flon.auth global not initialized");
+        auto gstate = global_tbl.get();
+        check(gstate.allowlist.find(submitter) != gstate.allowlist.end(), "submitter not in allowlist");
+        require_auth(submitter);
     }
+
     show_t::showidx shows(get_self(), get_self().value);
     auto sit = shows.find(show_id);
     check(sit != shows.end(), "show not found");
@@ -392,8 +403,9 @@ void show::giftbatch(const name&          oper,
                      const string&        memo)
 {
 
-    if (!has_auth(get_self())) {
-      require_role(oper, {"admin","showadmin"});
+    if (!has_auth(get_self()) &&
+        !(has_auth(_gstate.admin) && oper == _gstate.admin)) {
+        require_perm(oper, "giveTicket");
     }
 
     CHECKC(!recipients.empty(), err::INVALID_FORMAT, "recipients is empty");
@@ -439,8 +451,9 @@ void show::giftbatch(const name&          oper,
 
 void show::issuetograb(const name&  submitter,const name& to, const nasset& quantity, const string& memo)
 {
-    if (!has_auth(get_self())) {
-      require_role(submitter, {"admin","showadmin"});
+    if (!has_auth(get_self()) &&
+        !(has_auth(_gstate.admin) && submitter == _gstate.admin)) {
+        require_perm(submitter, "show");
     }
 
     check(_gstate.nft_bank.value != 0, "nft_bank not set");
@@ -484,8 +497,14 @@ void show::buyticket(const name&  submitter,
                      const uint32_t&      ticket_count,
                      const string&        memo)
 {
-    if (!has_auth(get_self())) {
-      require_role(submitter, {"admin","showadmin","platform_admin"});
+    if (has_auth(get_self())) {
+    } else if (has_auth(_gstate.admin) && submitter == _gstate.admin) {
+    } else {
+        flonauth_global global_tbl("flon.auth"_n, "flon.auth"_n.value);
+        check(global_tbl.exists(), "flon.auth global not initialized");
+        auto gstate = global_tbl.get();
+        check(gstate.allowlist.find(submitter) != gstate.allowlist.end(), "submitter not in allowlist");
+        require_auth(submitter);
     }
 
     check(is_account(payer), "invalid payer");

@@ -8,10 +8,11 @@ mtran flonian $poh_con "100 FLON"
 mset $poh_con poh.cisum
 mcli set account permission $poh_con active --add-code
 
+nestar_token=song.token
 mpush $nestar_token  addwhitelist '["poh.cisum"]'   -p $nestar_token
 
 # 给合约开 CISUM 余额行（RAM 自付）
-mpush cisum.token open '[
+mpush sing.token open '[
   "'"${poh_con}"'",
   "8,SING",
   "'"${poh_con}"'"

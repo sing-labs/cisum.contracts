@@ -2,7 +2,7 @@
 shopt -s expand_aliases
 source ~/.bashrc
 
-nestar_token=nestar.token
+nestar_token=song.token
 mreg flon $nestar_token flonian
 mtran flonian $nestar_token "100 FLON"
 mset $nestar_token nestar.token
@@ -10,7 +10,7 @@ mcli set account permission $nestar_token active --add-code
 
 
 badgestore_contract=badgecvstore
-mpush $badgestore_contract addwhitelist '["nestar.token"]' -p $badgestore_contract
+mpush $badgestore_contract addwhitelist '["song.token"]' -p $badgestore_contract
 
 issuer_owner=flonian
 user_admin=
@@ -38,4 +38,9 @@ mpush $nestar_token  addbrule '[0, "15000000.0000 SONG", {"value":"4299369637478
 
 
 #要转给poe定量的nestar
-#mpush $nestar_token transfer '["'"${issuer_owner}"'","poe.cisum", "1000000000.0000 SONG", "bootstrap"]' -p $issuer_owner
+#mpush $nestar_token transfer '["'"${issuer_owner}"'","cvhch4tqi1w3", "3000.0000 SONG", "bootstrap"]' -p $issuer_owner
+
+
+
+
+#mpush nestar.token transfer '["gahbnbehaskk","grab.cisum","6000.0000 SONG","grab:19:a1799ae8e1ea62a20a5f56710342a235"]' -p gahbnbehaskk

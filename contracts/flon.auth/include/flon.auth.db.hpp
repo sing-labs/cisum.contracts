@@ -49,7 +49,8 @@ enum class err: uint8_t {
    GRANT_EXISTS       = 4,
    GRANT_NOT_FOUND    = 5,
    ACCOUNT_INVALID    = 6,
-   PERMISSION_DENIED  = 7
+   PERMISSION_DENIED  = 7,
+   STATUS_MISMATCH    = 8
 };
 #define CHECKC(exp, code, msg) \
   { if (!(exp)) eosio::check(false, string("[[") + std::to_string((int)code) + string("]] ") + msg); }
@@ -85,7 +86,6 @@ using roles_idx = eosio::multi_index<
 // -------- 表：用户角色绑定（role=string，各索引改为 checksum256 版本） --------
 struct [[eosio::table("userroles"), eosio::contract("flon.auth")]] user_role_t {
     uint64_t    id;         // 自增主键
-    name        contract;   // 业务合约（可为 name{0} 表示全局）
     name        user;       // 被授予用户
     std::string role;       // 角色名（string）
     name        granter;    // 授权人
@@ -94,24 +94,20 @@ struct [[eosio::table("userroles"), eosio::contract("flon.auth")]] user_role_t {
     uint64_t    primary_key()  const { return id; }
     uint64_t    by_user()      const { return user.value; }
 
-    // 复合键：(user, role[string]) -> sha256(user.value || role)
+    // (user, role) 复合唯一键
     checksum256 by_userrole()  const { return hash_u64_str(user.value, role); }
 
-    // 复合键：(user, contract[name]) -> 仍保留 uint128_t（高效范围扫描）
-    uint128_t   by_usercontr() const { return ( (uint128_t)user.value << 64 ) | contract.value; }
+    // 只按 role 查询
     checksum256 by_role()      const { return hash_str(role); }
-    uint64_t    by_contr()     const { return contract.value; }
 
-    EOSLIB_SERIALIZE(user_role_t, (id)(contract)(user)(role)(granter)(created_at))
+    EOSLIB_SERIALIZE(user_role_t, (id)(user)(role)(granter)(created_at))
 };
 
 using userroles_idx = eosio::multi_index<
     "userroles"_n, user_role_t,
-    indexed_by<"byuser"_n,      const_mem_fun<user_role_t, uint64_t,    &user_role_t::by_user>>,
-    indexed_by<"byuserrole"_n,  const_mem_fun<user_role_t, checksum256, &user_role_t::by_userrole>>,
-    indexed_by<"byusercontr"_n, const_mem_fun<user_role_t, uint128_t,   &user_role_t::by_usercontr>>,
-    indexed_by<"byrole"_n,      const_mem_fun<user_role_t, checksum256, &user_role_t::by_role>>,
-    indexed_by<"bycontr"_n,     const_mem_fun<user_role_t, uint64_t,    &user_role_t::by_contr>>
+    indexed_by<"byuser"_n,     const_mem_fun<user_role_t, uint64_t,    &user_role_t::by_user>>,
+    indexed_by<"byuserrole"_n, const_mem_fun<user_role_t, checksum256, &user_role_t::by_userrole>>,
+    indexed_by<"byrole"_n,     const_mem_fun<user_role_t, checksum256, &user_role_t::by_role>>
 >;
 
 

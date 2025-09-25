@@ -79,9 +79,9 @@ mpush flon.mtoken transfer '["gahbnbehaskk","grab.cisum","2.000000 USDT","grab:1
 
 
 
-mpush grab.cisum setrushsale '["myadmin",11,20,3000,null]' -p myadmin
+mpush grab.cisum setrushsale '["flonian",16,10,null,null]' -p flonian
 
 
-mpush nestar.token transfer '["flonian","grab.cisum","6000.0000 SONG","grab:13:a1799ae8e1ea62a20a5f56710342a228"]' -p flonian
+mpush song.token transfer '["flonian","grab.cisum","100.0000 SONG","grab:20:a1799ae8e1ea62a20a5f56710342a540"]' -p flonian
 
  mpush $nestar_token transfer '["'"${issuer_owner}"'","cvn35yllbcip", "3000.0000 SONG", "bootstrap"]' -p $issuer_owner

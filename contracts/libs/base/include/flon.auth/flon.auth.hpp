@@ -13,9 +13,8 @@ public:
     using contract::contract;
 
     ACTION checkrole(const name& submitter,
-                    const name& contract,
-                    const name& user,
-                    const std::vector<std::string>& roles);
+                         const name& user,
+                         const std::string& perm) ;
 
     using checkrole_action  = eosio::action_wrapper<"checkrole"_n,  &flonauth::checkrole>;
 

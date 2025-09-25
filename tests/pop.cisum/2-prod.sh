@@ -9,8 +9,8 @@ mset $pop_con pop.cisum
 mcli set account permission $pop_con active --add-code
 
 
-#向pop_con 转入CISUM
-mpush cisum.token transfer '[
+#向pop_con 转入sing
+mpush sing.token transfer '[
   "flonian",
   "'"${pop_con}"'",
   "1000.00000000 SING",

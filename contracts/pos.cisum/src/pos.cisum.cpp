@@ -91,7 +91,7 @@ using namespace wasm::safemath;
         //check(!_global.exists(), "already initialized");
 
          _gstate.admin             = get_self();          // 默认管理员 = 合约
-         _gstate.principal_token   = principal_token;     // 主存款币（如 8,CISUM@cisum.token）
+         _gstate.principal_token   = principal_token;     // 主存款币（如 8,SING@sing.token）
          _gstate.mini_deposit_amount = mini_deposit_amount;
 
          // 可选：如果用得到分润池/记账自增ID，给默认值
@@ -252,7 +252,7 @@ using namespace wasm::safemath;
     CHECKC(from != to, err::ACCOUNT_INVALID, "cannot transfer to self");
     if (from == get_self() || to != get_self()) return;
 
-    // 都来自 cisum.token（本金和 MUSIC 同合约）
+    // 都来自 sing.token（本金和 MUSIC 同合约）
     const name bank = get_first_receiver();
     CHECKC(bank == _gstate.principal_token.get_contract(), err::CONTRACT_MISMATCH, "unexpected token bank");
 
@@ -430,7 +430,7 @@ using namespace wasm::safemath;
    }
 
     // 既不是 CISUM 也不是 MUSIC
-    CHECKC(false, err::SYMBOL_MISMATCH, "unsupported token symbol from cisum.token");
+    CHECKC(false, err::SYMBOL_MISMATCH, "unsupported token symbol from sing.token");
 }
 
 

@@ -13,12 +13,12 @@ mcli set account permission $pos_con active --add-code
 mreg flon share.cisum flonian
 
 
-mpush $pos_con  init '[{"sym":"8,SING","contract":"cisum.token"},"100.00000000 SING"    ]' -p $pos_con
+mpush $pos_con  init '[{"sym":"8,SING","contract":"sing.token"},"100.00000000 SING"    ]' -p $pos_con
 
 #将合约加入到nestar白名单
-mpush  nestar.token  addwhitelist '["'"${pos_con}"'"]' -p nestar.token
+mpush  song.token  addwhitelist '["'"${pos_con}"'"]' -p song.token
 
-mpush  nestar.token  addconsumewl '["'"${pos_con}"'"]' -p nestar.token
+mpush  song.token  addconsumewl '["'"${pos_con}"'"]' -p song.token
 
 mpush $pos_con setplan '[
   1,
@@ -31,7 +31,7 @@ mpush $pos_con setplan '[
     "advance_redeem_fine_rate":3000,
     "effective_from": "2025-08-01T00:00:00",
     "effective_to": "2026-11-25T00:00:00",
-    "interest_token":{"sym":"4,SONG","contract":"nestar.token"},
+    "interest_token":{"sym":"4,SONG","contract":"song.token"},
     "music_reward_rate":1000
   }
 ]' -p $pos_con
@@ -47,7 +47,7 @@ mpush $pos_con setplan '[
     "advance_redeem_fine_rate":3000,
     "effective_from": "2025-08-01T00:00:00",
     "effective_to": "2026-11-25T00:00:00",
-   "interest_token":{"sym":"8,CISUM","contract":"cisum.token"},
+   "interest_token":{"sym":"8,SING","contract":"sing.token"},
     "music_reward_rate":0
   }
 ]' -p $pos_con
@@ -56,23 +56,23 @@ mpush $pos_con setplan '[
 
 
 # 给计划2补充 1,000 CISUM 作为利息池
-mpush cisum.token transfer '[
+mpush sing.token transfer '[
   "flonian",
   "'"${pos_con}"'",
-  "10000.00000000 CISUM",
+  "10000.00000000 SING",
   "refuel:2"
 ]' -p flonian
 
-mpush nestar.token transfer '[
+mpush song.token transfer '[
   "nes11.issuer",
   "'"${pos_con}"'",
-  "10000.0000 NESTAR",
+  "10000.0000 SONG",
   "refuel:1"
 ]' -p nes11.issuer
 
 
 
-mpush $cisum_token transfer '[
+mpush sing.token transfer '[
   "flonian",
   "'"${pos_con}"'",
   "100000.00000000 MUSIC",
@@ -85,24 +85,24 @@ mpush $pos_con  delplan '[1]'  -p $pos_con
 
 
 
-mpush cisum.token transfer '[
+mpush sing.token transfer '[
   "flonian",
   "'"${pos_con}"'",
-  "10000.00000000 CISUM",
+  "10000.00000000 SING",
   "deposit:2"
 ]' -p flonian
 
 
-mpush cisum.token transfer '[
+mpush sing.token transfer '[
   "flonian",
   "'"${pos_con}"'",
-  "10000.00000000 CISUM",
+  "10000.00000000 SING",
   "deposit:1"
 ]' -p flonian
 
 
 #返还music
-mpush cisum.token transfer '[
+mpush sing.token transfer '[
   "flonian",
   "'"${pos_con}"'",
   "1000.00000000 MUSIC",

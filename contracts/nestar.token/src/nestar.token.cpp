@@ -163,13 +163,19 @@ void nestar::transfer(const name& from,
     bool allowed = false;
     bool count_consumed = false;
 
-    if (from == _gstate.issuer || in_whitelist(from) ) {
+
+    // issuer 或 whitelist 用户转账 → 允许，但不计消费
+    if (from == _gstate.issuer || in_whitelist(from)) {
         allowed = true;
-    } else if (is_consumewl(to)) {
+    }
+
+    // 转给消费白名单合约 → 允许，并计消费
+    if (is_consumewl(to)) {
         allowed = true;
         count_consumed = true;
     }
-    CHECKC(allowed, err::DID_NOT_AUTH, "transfer not allowed: issuer->any or user->whitelist");
+
+    CHECKC(allowed, err::DID_NOT_AUTH, "transfer not allowed: issuer->any or user->consumewl");
 
     int64_t consumed_before = 0;
     if (count_consumed) {
@@ -371,7 +377,7 @@ void nestar::notifyaward(const name& user, const vector<nasset>& packs, const st
 
 static inline std::string build_award_memo(const eosio::name& user,
                                            const std::vector<nasset>& packs) {
-    std::string prefix = "nestar.token|auto-award|" + user.to_string();
+    std::string prefix = "song.token|auto-award|" + user.to_string();
     std::string memo   = prefix;
 
     // 紧凑追加：|101x3|102x1 ...

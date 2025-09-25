@@ -16,137 +16,117 @@ using std::vector;
 
 class [[eosio::contract("grab.cisum")]] grab_cisum : public contract {
 public:
-  using contract::contract;
+    using contract::contract;
 
-  grab_cisum(eosio::name receiver, eosio::name code, datastream<const char*> ds)
-  : contract(receiver, code, ds),
-    _global(get_self(), get_self().value)
-  {
-    _gstate = _global.exists() ? _global.get() : global_t{};
-  }
+    grab_cisum(name receiver, name code, datastream<const char*> ds)
+    : contract(receiver, code, ds),
+      _global(get_self(), get_self().value)
+    {
+        _gstate = _global.exists() ? _global.get() : global_t{};
+    }
 
-  ~grab_cisum() { _global.set(_gstate, get_self()); }
+    ~grab_cisum() { _global.set(_gstate, get_self()); }
 
-  /**
-   * Initialize the contract and set the admin account.
-   * Only contract self can call this action.
-   *
-   * @param admin                The account to be set as admin.
-   */
-  ACTION init(const name& admin) ;
+    /**
+     * Initialize the contract.
+     * 权限：合约自身
+     */
+    ACTION init(const name& admin);
 
-  /**
-   * Create a new rush sale event.
-   * Only admin can call this action.
-   *
-   * @param show_id              The show id.
-   * @param ticket_id            The ticket id.
-   * @param started_at           Sale start time.
-   * @param ended_at             Sale end time.
-   * @param price                Ticket price.
-   * @param max_grabs_per_user   Max grabs per user.
-   * @param win_ratio            Win ratio (1-10000).
-   */
-  ACTION addrushsale(const name&  submitter,
-                                const  uint64_t&       show_id,
-                                const  uint64_t&       ticket_id,
-                                const  time_point&     started_at,
-                                const  time_point&     ended_at,
-                                const  asset&          price,
-                                const  uint32_t&       max_grabs_per_user,
-                                const  uint32_t&       win_ratio );
+    /**
+     * Create a new rush sale event.
+     * 权限：合约自身 / admin / OPS_CONTRACT / submitter(show)
+     */
+    ACTION addrushsale(const name& submitter,
+                       const uint64_t& show_id,
+                       const uint64_t& ticket_id,
+                       const time_point& started_at,
+                       const time_point& ended_at,
+                       const asset& price,
+                       const uint32_t& max_grabs_per_user,
+                       const uint32_t& win_ratio);
 
-  /**
-   * Delete a rush sale event.
-   * Only admin can call this action.
-   *
-   * @param rush_sale_id         The rush sale id to delete.
-   * @param forced               If true, force delete even if tickets sold.
-   */
-  ACTION delrushsale(const name& submitter,const uint64_t& rush_sale_id,const bool& forced );
-  /**
-   * Update rush sale parameters. Only admin can call.
-   * Each parameter is optional and only updated if provided.
-   *
-   * @param rush_sale_id         The rush sale id to update.
-   * @param win_ratio            Optional new win ratio.
-   * @param ended_at             Optional new end time.
-   */
-  ACTION setrushsale(const name& submitter,
-                      const uint64_t& rush_sale_id,
-                      std::optional<uint32_t> max_grabs_per_user,
-                      std::optional<uint32_t> win_ratio,
-                      std::optional<time_point> ended_at) ;
+    /**
+     * Update rush sale parameters.
+     * 权限：合约自身 / admin / OPS_CONTRACT / submitter(show)
+     */
+    ACTION setrushsale(const name& submitter,
+                       const uint64_t& rush_sale_id,
+                       std::optional<uint32_t> max_grabs_per_user,
+                       std::optional<uint32_t> win_ratio,
+                       std::optional<time_point> ended_at);
 
-  ACTION  addtoken(const symbol& sym, const name& bank);
+    /**
+     * Clear orders and stats of a rush sale (after end).
+     * 权限：合约自身 / admin / oracle
+     */
+    ACTION clearsale(const name& submitter, const uint64_t& rush_sale_id);
 
-  ACTION  deltoken(const symbol& sym, const name& bank);
+    /**
+     * Delete a rush sale (optionally forced).
+     * 权限：合约自身 / admin / oracle
+     */
+    ACTION delrushsale(const name& submitter,
+                       const uint64_t& rush_sale_id,
+                       const bool& forced);
 
-  ACTION clearsale(const name& submitter,const uint64_t& rush_sale_id) ;
+    /**
+     * Add or update allowed token.
+     * 权限：合约自身 / admin
+     */
+    ACTION addtoken(const symbol& sym, const name& bank);
 
+    /**
+     * Delete allowed token.
+     * 权限：合约自身 / admin
+     */
+    ACTION deltoken(const symbol& sym, const name& bank);
 
-  // 处理 FT（积分）转账：来自积分合约
-  [[eosio::on_notify("*::transfer")]]
-  void on_transfer(const name& from,
-                        const name& to,
-                        const asset& quantity,
-                        const std::string& memo);
+    /**
+     * Internal notify for grab result.
+     * 权限：合约自身
+     */
+    ACTION notifyticket(const std::string& grab_id,
+                        const name& user,
+                        uint32_t grabs,
+                        const nasset& tickets,
+                        const time_point& created_at,
+                        uint64_t rush_sale_id);
 
-  // 处理 NFT 转账：来自票据合约
-  [[eosio::on_notify("ticket.cvnft::transfer")]]
-  void on_transfer_ticket(const name& from,
-                          const name& to,
-                          const std::vector<nasset>& assets,
-                          const std::string& memo);
+    // -------- 配置 --------
+    ACTION cfgpoint(const name& new_point_contract);
+    ACTION cfgticket(const name& new_ticket_contract);
 
-  /**
-   * Notify user of ticket grab result.
-   * Called internally after on_transfer.
-   *
-   * @param user                The user account.
-   * @param rush_sale_id        The rush sale event id.
-   * @param won                 True if user won the grab, false otherwise.
-   */
-  ACTION notifyticket(const std::string& grab_id,
-                              const eosio::name& user,
-                              uint32_t grabs,
-                              const nasset& tickets,
-                              const time_point& created_at
-                              ,uint64_t rush_sale_id) ;
+    // -------- on_notify --------
+    [[eosio::on_notify("*::transfer")]]
+    void on_transfer(const name& from,
+                     const name& to,
+                     const asset& quantity,
+                     const std::string& memo);
 
-  /**
-   * Configure the point contract infomation.
-   * Only admin can call this action.
-   * Only for test
-   *
-   * @param new_point_contract   The new point contract account name.
-   */
-  ACTION cfgpoint(const name& submitter,const name& new_point_contract);
+    [[eosio::on_notify("ticket.cvnft::transfer")]]
+    void on_transfer_ticket(const name& from,
+                            const name& to,
+                            const vector<nasset>& assets,
+                            const std::string& memo);
 
-  /**
-   * Configure the ticket contract infomation.
-   * Only admin can call this action.
-   * Only for test
-   *
-   * @param new_ticket_contract   The new ticket contract account name.
-   */
-  ACTION cfgticket(const name& submitter,const name& new_ticket_contract) ;
-
-  // -------- Inline wrappers --------
-  using addrushsale_action        = eosio::action_wrapper<"addrushsale"_n,        &grab_cisum::addrushsale>;
-  using delrushsale_action        = eosio::action_wrapper<"delrushsale"_n,        &grab_cisum::delrushsale>;
-  using setrushsale_action        = eosio::action_wrapper<"setrushsale"_n,        &grab_cisum::setrushsale>;
-  using notifyticket_action        = eosio::action_wrapper<"notifyticket"_n,        &grab_cisum::notifyticket>;
+    // -------- inline wrappers --------
+    using init_action         = action_wrapper<"init"_n,         &grab_cisum::init>;
+    using addrushsale_action  = action_wrapper<"addrushsale"_n,  &grab_cisum::addrushsale>;
+    using setrushsale_action  = action_wrapper<"setrushsale"_n,  &grab_cisum::setrushsale>;
+    using clearsale_action    = action_wrapper<"clearsale"_n,    &grab_cisum::clearsale>;
+    using delrushsale_action  = action_wrapper<"delrushsale"_n,  &grab_cisum::delrushsale>;
+    using addtoken_action     = action_wrapper<"addtoken"_n,     &grab_cisum::addtoken>;
+    using deltoken_action     = action_wrapper<"deltoken"_n,     &grab_cisum::deltoken>;
+    using notifyticket_action = action_wrapper<"notifyticket"_n, &grab_cisum::notifyticket>;
+    using cfgpoint_action     = action_wrapper<"cfgpoint"_n,     &grab_cisum::cfgpoint>;
+    using cfgticket_action    = action_wrapper<"cfgticket"_n,    &grab_cisum::cfgticket>;
 
 private:
-  void require_role(const name& submitter,
-                        const std::vector<std::string>& roles) const;
+    void require_perm(const name& submitter, const std::string& perm) const;
 
-private:
-  // 全局
-  global_singleton _global;
-  global_t         _gstate;
-
+    global_singleton _global;
+    global_t         _gstate;
 };
 
 } // namespace flon

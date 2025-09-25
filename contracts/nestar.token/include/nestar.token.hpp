@@ -120,23 +120,14 @@ private:
           (_gstate.admin.value != 0 && has_auth(_gstate.admin));
   }
 
-  // 是否在计入 consumed 的白名单（通常用于 from 侧的“消费”）
   inline bool is_consumewl(const name& acc) const {
-    // 1) 先查本地 transferwlst 表
-    redeem_whitelist_t::idx_t wtbl(get_self(), get_self().value);
-    auto it = wtbl.find(acc.value);
-    if (it != wtbl.end() && it->enabled) return true;
-
-    // 2) 再查外部 artist.cisum 的 artists 表（若已配置）
-    // if (_gstate.artists_contract.value != 0) {
-    //   artist_t::idx_t aidx(_gstate.artists_contract, _gstate.artists_contract.value);
-    //   auto ait = aidx.find(acc.value);
-    //   if (ait != aidx.end() && ait->status == "enabled"_n) {
-    //     return true;
-    //   }
-    // }
-    return false;
+      redeem_whitelist_t::idx_t wtbl(get_self(), get_self().value);
+      auto it = wtbl.find(acc.value);
+      return (it != wtbl.end() && it->enabled);
   }
+
+
+
 
 
   inline bool in_whitelist(name acct) const{

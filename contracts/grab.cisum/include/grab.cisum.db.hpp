@@ -161,7 +161,7 @@ NTBL("grabstats") grab_stat_t {
 NTBL("allowtokens") allowed_token_t {
     uint64_t    id;          // 自增主键
     symbol      sym;         // 币种(含精度)，例如 4,NESTAR / 8,CISUM
-    name        bank;        // 发行/转账合约账号，例如 nestar.token / cisum.token
+    name        bank;        // 发行/转账合约账号，例如 song.token / sing.token
     time_point  created_at;
     time_point  updated_at;
 

@@ -3,13 +3,42 @@
 using namespace eosio;
 using namespace flon;
 
+// 权限检查（允许合约自身 / admin / allowlist / 拥有某角色权限的 submitter）
+void flonauth::require_manage_perm(const name& submitter,
+                                   const std::string& perm) {
+    if (has_auth(get_self())) return;
+    if (has_auth(_gstate.admin) && submitter == _gstate.admin) return;
+    if (_gstate.allowlist.find(submitter) != _gstate.allowlist.end()) {
+        require_auth(submitter);
+        return;
+    }
+
+    require_auth(submitter);
+    flonauth::checkrole_action checkrole(get_self(), { {get_self(), "active"_n} });
+    checkrole.send(get_self(), submitter, perm);
+}
+
+// 是否存在指定用户角色
+bool flonauth::has_user_role(const name& user, const std::string& role) const {
+    userroles_idx ur(get_self(), get_self().value);
+    auto by_userrole = ur.get_index<"byuserrole"_n>();
+    return by_userrole.find(hash_u64_str(user.value, role)) != by_userrole.end();
+}
+
+// 是否存在指定角色
+bool flonauth::role_exists(const std::string& role) const {
+    roles_idx roles(get_self(), get_self().value);
+    auto byrole = roles.get_index<"byrole"_n>();
+    return byrole.find(hash_str(role)) != byrole.end();
+}
+
 void flonauth::init(const name& admin) {
     require_auth(get_self());
-    CHECKC(!_global.exists() || _gstate.admin.value == 0, err::INVALID_FORMAT, "already initialized");
+    CHECKC(!_global.exists() || _gstate.admin.value == 0,
+           err::INVALID_FORMAT, "already initialized");
     CHECKC(is_account(admin), err::ACCOUNT_INVALID, "admin not exist");
     _gstate.admin = admin;
 }
-
 
 void flonauth::setadmin(const name& new_admin) {
     require_auth(_gstate.admin);
@@ -19,7 +48,7 @@ void flonauth::setadmin(const name& new_admin) {
 
 void flonauth::addallowlist(const name& acct) {
     require_auth(_gstate.admin);
-    CHECKC(is_account(acct), err::ACCOUNT_INVALID, "allowlist not exist");
+    CHECKC(is_account(acct), err::ACCOUNT_INVALID, "allowlist account not exist");
     _gstate.allowlist.insert(acct);
 }
 
@@ -30,8 +59,10 @@ void flonauth::delallowlist(const name& acct) {
     _gstate.allowlist.erase(it);
 }
 
-void flonauth::addrole(const std::string& role, const std::string& desc) {
-    require_admin_or_allowlist(_gstate, get_self());
+void flonauth::addrole(const name& submitter,
+                       const std::string& role,
+                       const std::string& desc) {
+    require_manage_perm(submitter, "roleManage");
     CHECKC(!role.empty(), err::INVALID_FORMAT, "role is empty");
 
     roles_idx roles(get_self(), get_self().value);
@@ -40,34 +71,36 @@ void flonauth::addrole(const std::string& role, const std::string& desc) {
 
     if (it == byrole.end()) {
         roles.emplace(get_self(), [&](auto& r){
-            r.id         = ++ _gstate.last_role_id;;
+            r.id         = ++_gstate.last_role_id;
             r.role       = role;
             r.desc       = desc;
             r.created_at = current_time_point();
         });
     } else {
         byrole.modify(it, get_self(), [&](auto& r){
-            r.desc = desc;
+            r.desc       = desc;
+            r.created_at = current_time_point();
         });
     }
 }
 
-void flonauth::delrole(const std::string& role) {
-    require_admin_or_allowlist(_gstate, get_self());
+void flonauth::delrole(const name& submitter,
+                       const std::string& role) {
+    require_manage_perm(submitter, "roleManage");
+    CHECKC(!role.empty(), err::INVALID_FORMAT, "role is empty");
 
     roles_idx roles(get_self(), get_self().value);
     auto byrole = roles.get_index<"byrole"_n>();
     auto rit    = byrole.find(hash_str(role));
-    if (rit == byrole.end()) {
-        return;
-    }
+    if (rit == byrole.end()) return;
 
+    // 如果 role 还被用户持有，拒绝删除
     userroles_idx ur(get_self(), get_self().value);
     auto ur_byrole = ur.get_index<"byrole"_n>();
-    if (ur_byrole.find(hash_str(role)) != ur_byrole.end()) {
-        return;
-    }
+    CHECKC(ur_byrole.find(hash_str(role)) == ur_byrole.end(),
+           err::STATUS_MISMATCH, "role is still assigned to users");
 
+    // 清理 roleperms
     roleperms_idx perms_tbl(get_self(), get_self().value);
     auto rp_byrole = perms_tbl.get_index<"byrole"_n>();
     auto it = rp_byrole.find(hash_str(role));
@@ -78,32 +111,21 @@ void flonauth::delrole(const std::string& role) {
     byrole.erase(rit);
 }
 
-void flonauth::grantrole(const name& contract,
-                           const name& granter,
-                           const name& user,
-                           const std::string& role) {
-    if (contract.value != 0) {
-        check(is_account(contract), "[[1a]] contract not exist");
-    }
-    check(user.value != 0, "[[2]] user is empty");
-    check(!role.empty(), "[[3]] role is empty");
-    check(is_account(user), "[[4]] user not exist");
+void flonauth::grantrole(const name& granter,
+                         const name& user,
+                         const std::string& role) {
+    check(user.value != 0, "user is empty");
+    check(!role.empty(), "role is empty");
+    check(is_account(user), "user not exist");
 
-    check(has_auth(granter), "[[5]] granter signature required");
-    require_admin_or_allowlist(_gstate, get_self());
+    require_manage_perm(granter, "userManage");
+
+    check(role_exists(role), "role not found: " + role);
+    if (has_user_role(user, role)) return; // 幂等
 
     userroles_idx ur(get_self(), get_self().value);
-    auto by_uc = ur.get_index<"byusercontr"_n>();
-    const uint128_t k_uc = ((uint128_t)user.value << 64) | contract.value;
-
-    for (auto it = by_uc.lower_bound(k_uc);
-         it != by_uc.end() && it->by_usercontr() == k_uc; ++it) {
-        if (it->role == role) return; // 幂等
-    }
-
     ur.emplace(get_self(), [&](auto& r){
-        r.id         = ++ _gstate.last_userrole_id;
-        r.contract   = contract;
+        r.id         = ++_gstate.last_userrole_id;
         r.user       = user;
         r.role       = role;
         r.granter    = granter;
@@ -111,95 +133,72 @@ void flonauth::grantrole(const name& contract,
     });
 }
 
-void flonauth::revokerole(const name& contract,
-                            const name& granter,
-                            const name& user,
-                            const std::string& role) {
-    check(contract.value != 0, "[[21]] contract is empty");
-    check(user.value     != 0, "[[22]] user is empty");
-    check(!role.empty(), "[[23]] role is empty");
+void flonauth::revokerole(const name& granter,
+                          const name& user,
+                          const std::string& role) {
+    check(user.value != 0, "user is empty");
+    check(!role.empty(), "role is empty");
 
-    require_auth(granter);
-    require_admin_or_allowlist(_gstate, get_self());
+    require_manage_perm(granter, "userManage");
 
     userroles_idx ur(get_self(), get_self().value);
-    auto by_uc = ur.get_index<"byusercontr"_n>();
-    const uint128_t k_uc = ((uint128_t)user.value << 64) | contract.value;
+    auto by_userrole = ur.get_index<"byuserrole"_n>();
+    auto key = hash_u64_str(user.value, role);
+    auto it = by_userrole.find(key);
+    check(it != by_userrole.end(),
+          "role " + role + " not found for user " + user.to_string());
 
-    auto it = by_uc.lower_bound(k_uc);
-    for (; it != by_uc.end() && it->by_usercontr() == k_uc; ) {
-        if (it->role == role) {
-            it = by_uc.erase(it);
-            return;
-        } else {
-            ++it;
-        }
-    }
+    by_userrole.erase(it);
 }
 
 void flonauth::checkrole(const name& submitter,
-                    const name& contract,
-                    const name& user,
-                    const std::vector<std::string>& roles) {
-    // 谁发起校验，必须签名（合约 / admin / allowlist）
+                         const name& user,
+                         const std::string& perm) {
     require_auth(submitter);
-    // check(is_allowlist(_gstate, submitter) || submitter == _gstate.admin || submitter == get_self(),
-    //       "submitter not authorized (not admin/allowlist/self)");
 
     check(user.value != 0, "user is empty");
-    check(!roles.empty(), "roles vector is empty");
-    if (contract.value != 0) {
-        check(is_account(contract), "contract not exist");
-    }
+    check(!perm.empty(), "perm is empty");
 
     userroles_idx ur(get_self(), get_self().value);
-    auto by_uc = ur.get_index<"byusercontr"_n>();
-    const uint128_t k_uc = ((uint128_t)user.value << 64) | contract.value;
+    auto by_user = ur.get_index<"byuser"_n>();
+    auto itr = by_user.find(user.value);
 
     bool ok = false;
-    for (auto it = by_uc.lower_bound(k_uc);
-         it != by_uc.end() && it->by_usercontr() == k_uc; ++it) {
-        for (const auto& r : roles) if (it->role == r) { ok = true; break; }
-        if (ok) break;
+    for (; itr != by_user.end() && itr->user == user; ++itr) {
+        roleperms_idx perms_tbl(get_self(), get_self().value);
+        auto byroleperm = perms_tbl.get_index<"byroleperm"_n>();
+        auto rp_key = hash_two_u64_str(0, 0, itr->role + "|" + perm);
+        if (byroleperm.find(rp_key) != byroleperm.end()) {
+            ok = true;
+            break;
+        }
     }
 
-    check(ok, "user has none of the required roles under this contract");
+    check(ok, "user " + user.to_string() +
+              " does not have required permission: " + perm);
 }
 
-
 void flonauth::addroleperm(const name& submitter,
-                           const string& role,
-                           const std::set<string>& perms,
-                           const string& desc) {
-    require_auth(submitter);
-
-    CHECKC(has_role(get_self(), submitter, "R_CREATE_ROLE", get_self()),
-           err::PERMISSION_DENIED, "submitter not authorized: missing R_CREATE_ROLE");
-
+                           const std::string& role,
+                           const std::set<std::string>& perms,
+                           const std::string& desc) {
+    require_manage_perm(submitter, "roleManage");
     CHECKC(!role.empty(), err::INVALID_FORMAT, "role cannot be empty");
     CHECKC(!perms.empty(), err::INVALID_FORMAT, "perms cannot be empty");
 
-    // 校验 role 是否存在
-    roles_idx roles_tbl(get_self(), get_self().value);
-    auto r_idx = roles_tbl.get_index<"byrole"_n>();
-    auto rit   = r_idx.find(hash_str(role));
-    CHECKC(rit != r_idx.end(), err::ROLE_NOT_FOUND, "role not found: " + role);
+    check(role_exists(role), "role not found: " + role);
 
-    // 写入 perms
     roleperms_idx perms_tbl(get_self(), get_self().value);
     auto byroleperm = perms_tbl.get_index<"byroleperm"_n>();
 
     for (const auto& p : perms) {
         CHECKC(!p.empty(), err::INVALID_FORMAT, "perm cannot be empty");
-
         auto rp_key = hash_two_u64_str(0, 0, role + "|" + p);
-        auto it     = byroleperm.find(rp_key);
-        CHECKC(it == byroleperm.end(),
-               err::GRANT_EXISTS,
-               "permission already granted to role: " + p);
+        CHECKC(byroleperm.find(rp_key) == byroleperm.end(),
+               err::GRANT_EXISTS, "permission already granted: " + p);
 
-        perms_tbl.emplace(submitter, [&](auto& r) {
-            r.id         = ++ _gstate.last_roleperm_id;
+        perms_tbl.emplace(get_self(), [&](auto& r) {
+            r.id         = ++_gstate.last_roleperm_id;
             r.role       = role;
             r.perm       = p;
             r.desc       = desc;
@@ -211,24 +210,18 @@ void flonauth::addroleperm(const name& submitter,
 void flonauth::delroleperm(const name& submitter,
                            const std::string& role,
                            const std::set<std::string>& perms) {
-    require_auth(submitter);
-
-
-    CHECKC(has_role(get_self(), submitter, "R_CREATE_ROLE", get_self()),
-           err::PERMISSION_DENIED, "submitter not authorized: missing R_CREATE_ROLE");
-
+    require_manage_perm(submitter, "roleManage");
     CHECKC(!role.empty(), err::INVALID_FORMAT, "role cannot be empty");
-    CHECKC(!perms.empty(), err::INVALID_FORMAT, "perms set cannot be empty");
+    CHECKC(!perms.empty(), err::INVALID_FORMAT, "perms cannot be empty");
 
     roleperms_idx perms_tbl(get_self(), get_self().value);
     auto byroleperm = perms_tbl.get_index<"byroleperm"_n>();
 
     for (const auto& p : perms) {
-        // 拼 key = role|perm
         auto rp_key = hash_two_u64_str(0, 0, role + "|" + p);
         auto it = byroleperm.find(rp_key);
         if (it != byroleperm.end()) {
-            byroleperm.erase(it);   // 找到才删
+            byroleperm.erase(it);
         }
     }
 }

@@ -9,14 +9,14 @@ mset $cisumsummary_con cisumsummary
 mcli set account permission $cisumsummary_con active --add-code
 
 
-# 添加 CISUM
-mpush $cisumsummary_con addtoken '["cisum.token", "8,SING"]' -p $cisumsummary_con
+# 添加 SING
+mpush $cisumsummary_con addtoken '["sing.token", "8,SING"]' -p $cisumsummary_con
 
-# 添加 NESTAR
-mpush $cisumsummary_con addtoken '["nestar.token", "4,SONG"]' -p $cisumsummary_con
+# 添加 SONG
+mpush $cisumsummary_con addtoken '["song.token", "4,SONG"]' -p $cisumsummary_con
 
 # 添加 MUSIC
-mpush $cisumsummary_con addtoken '["cisum.token", "8,MUSIC"]' -p $cisumsummary_con
+mpush $cisumsummary_con addtoken '["sing.token", "8,MUSIC"]' -p $cisumsummary_con
 
 
 

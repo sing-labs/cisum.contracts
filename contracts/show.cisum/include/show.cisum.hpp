@@ -157,8 +157,8 @@ public:
 
 
 private:
-  void require_role(const name& submitter,
-                        const std::vector<std::string>& roles) const;
+  void require_perm(const name& submitter,
+                        const std::string& roles) const;
 
 
 private:

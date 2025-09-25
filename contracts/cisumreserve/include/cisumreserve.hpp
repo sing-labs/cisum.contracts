@@ -51,7 +51,7 @@ public:
                      const asset& quantity,
                      const string& memo);
 
-    [[eosio::on_notify("cisum.token::transfer")]]
+    [[eosio::on_notify("sing.token::transfer")]]
     void on_cisum_transfer(const name& from,
                      const name& to,
                      const asset& quantity,

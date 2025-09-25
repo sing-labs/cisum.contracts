@@ -15,7 +15,8 @@ mcli set account permission $stor_con active --add-code
 badge_ntoken=badge.cvnft
 mpush $badge_ntoken  addwhitelist '["'"${stor_con}"'"]'   -p $badge_ntoken
 
-mpush $stor_con addwhitelist '["nestar.token"]' -p $stor_con
+mpush $stor_con addwhitelist '["song.token"]' -p $stor_con
+
 mpush $stor_con setadmin '["flonian"]' -p $stor_con
 
 mpush $stor_con setbadge '["'"${badge_ntoken}"'","'"${badge_ntoken}"'"]' -p $stor_con
@@ -26,7 +27,7 @@ mpush $badge_ntoken create '[
   "'"${stor_con}"'",
   10000000000,
   {"value":"4299369637478511"},
-  "ipfs://badges/silver21.json",
+  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreihta3lzus36agk5nusdhotodzlgiciup5a4qkkah4eonp6zpxdwee",
   "'"${stor_con}"'"
 ]' -p $stor_con
 
@@ -42,7 +43,7 @@ mpush $badge_ntoken create '[
   "'"${stor_con}"'",
   10000000000,
   {"value":"4299369637478512"},
-  "ipfs://badges/silver12.json",
+  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreibymdy43u5mjjinmvsamsdhfptdofbjyqltznxr5gnh5j53f2fxtu",
   "'"${stor_con}"'"
 ]' -p $stor_con
 
@@ -59,7 +60,7 @@ mpush $badge_ntoken create '[
   "'"${stor_con}"'",
   10000000000,
   {"value":"4299369637478513"},
-  "ipfs://badges/silver13.json",
+  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiattahrdkqcahtervgqvwq7zatdyxwhhyzzt572ftes7ffupxwws4",
   "'"${stor_con}"'"
 ]' -p $stor_con
 
@@ -77,7 +78,7 @@ mpush $badge_ntoken create '[
   "'"${stor_con}"'",
   10000000000,
   {"value":"4299369637478514"},
-  "ipfs://badges/silver14.json",
+  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreibt6mguuph5aotscy4g72huy5numsevbb5dmcuvq3mrlgusgor4qq",
   "'"${stor_con}"'"
 ]' -p $stor_con
 

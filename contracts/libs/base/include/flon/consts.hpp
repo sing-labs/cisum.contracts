@@ -20,8 +20,8 @@ static constexpr eosio::name CVBADGESTORE_CONTRACT  {"badgecvstore"_n};
 static constexpr eosio::name FLONAUTH_CONTRACT      {"flon.auth"_n};
 
 
-static constexpr eosio::name NESTAR_CONTRACT        {"nestar.token"_n};
-static constexpr eosio::name CISUM_CONTRACT         {"cisum.token"_n};
+static constexpr eosio::name NESTAR_CONTRACT        {"song.token"_n};
+static constexpr eosio::name CISUM_CONTRACT         {"sing.token"_n};
 
 static constexpr eosio::name POE_CONTRACT           {"poe.cisum"_n};
 static constexpr eosio::name POH_CONTRACT           {"poh.cisum"_n};
@@ -31,9 +31,9 @@ static constexpr eosio::name POS_CONTRACT           {"pos.cisum"_n};
 static constexpr eosio::name SWAP_CONTRACT          {"flon.swap"_n};
 static constexpr eosio::name OPS_CONTRACT           {"cisumshowman"_n};  //演唱会聚合合约
 
-static constexpr eosio::name CISUM_BANK             {"cisum.token"_n};
-static constexpr eosio::name NESTAR_BANK            {"nestar.token"_n};
-static constexpr eosio::name MUSIC_BANK             {"cisum.token"_n};
+static constexpr eosio::name CISUM_BANK             {"sing.token"_n};
+static constexpr eosio::name NESTAR_BANK            {"song.token"_n};
+static constexpr eosio::name MUSIC_BANK             {"sing.token"_n};
 static constexpr eosio::name USDT_BANK              {"flon.mtoken"_n};
 
 
