@@ -22,9 +22,9 @@ void poh_cisum::init(name platform, name registrar, asset max_issued) {
 
     CHECKC(is_account(platform),  err::ACCOUNT_INVALID, "platform not exist");
     CHECKC(is_account(registrar), err::ACCOUNT_INVALID, "registrar not exist");
-    CHECKC(max_issued.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "max_issued must be SING");
+    CHECKC(max_issued.symbol == SING_SYM, err::SYMBOL_MISMATCH, "max_issued must be SING");
     CHECKC(max_issued.amount > 0,          err::NOT_POSITIVE,    "max_issued must be positive");
-    CHECKC(max_issued.amount >= _gstate.cisum_issued.amount,
+    CHECKC(max_issued.amount >= _gstate.sing_issued.amount,
            err::EXCEED_LIMIT, "max_issued must be greater than current issued");
     _gstate.platform_acct           = platform;
     _gstate.registrar               = registrar;
@@ -32,11 +32,12 @@ void poh_cisum::init(name platform, name registrar, asset max_issued) {
     _global.set(_gstate, get_self());
 }
 
+
 void poh_cisum::setmaxissued(asset max_issued) {
     require_auth(get_self());
-    CHECKC(max_issued.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "max_issued must be SING");
+    CHECKC(max_issued.symbol == SING_SYM, err::SYMBOL_MISMATCH, "max_issued must be SING");
     CHECKC(max_issued.amount > 0,          err::NOT_POSITIVE,    "max_issued must be positive");
-    CHECKC(max_issued.amount >= _gstate.cisum_issued.amount,
+    CHECKC(max_issued.amount >= _gstate.sing_issued.amount,
            err::EXCEED_LIMIT, "max_issued must be greater than current issued");
 
     _gstate.max_issued              = max_issued;
@@ -96,43 +97,43 @@ void poh_cisum::registreward(const name& submitter,
         CHECKC(usdt.symbol == USDT_SYM,         err::SYMBOL_MISMATCH, "usdt_per_user symbol mismatch");
         CHECKC(usdt.amount > 0,                 err::NOT_POSITIVE,    "usdt_per_user not positive");
 
-        asset reward_cisum = usdt_to_cisum(usdt);
-        CHECKC(reward_cisum.symbol == CISUM_SYM,err::SYMBOL_MISMATCH, "reward_cisum symbol mismatch");
-        CHECKC(reward_cisum.amount > 0,         err::NOT_POSITIVE,    "reward_cisum too small");
+        asset reward_sing = exchange_asset(usdt);
+        CHECKC(reward_sing.symbol == SING_SYM,err::SYMBOL_MISMATCH, "reward_sing symbol mismatch");
+        CHECKC(reward_sing.amount > 0,         err::NOT_POSITIVE,    "reward_sing too small");
 
-        // 额度控制：仅在未超上限时铸造 CISUM
-        bool can_issue_cisum = (_gstate.max_issued.amount > 0) &&
-                               (_gstate.cisum_issued.amount + reward_cisum.amount <= _gstate.max_issued.amount);
+        // 额度控制：仅在未超上限时铸造 SING
+        bool can_issue_sing = (_gstate.max_issued.amount > 0) &&
+                               (_gstate.sing_issued.amount + reward_sing.amount <= _gstate.max_issued.amount);
 
-        if (can_issue_cisum) {
+        if (can_issue_sing) {
             ISSUE(
-                CISUM_BANK,
+                SING_BANK,
                 _self,
-                reward_cisum,
+                reward_sing,
                 std::string("NewReg Reward")
             );
             TRANSFER(
-                CISUM_BANK,
+                SING_BANK,
                 _gstate.platform_acct,
-                reward_cisum,
+                reward_sing,
                 std::string("NewReg Reward")
             );
-            _gstate.cisum_issued += reward_cisum;
+            _gstate.sing_issued += reward_sing;
         }
     }
 
-    //  NESTAR 给被邀请人（invitee）
+    //  CISUM 给被邀请人（invitee）
     {
         ISSUE(
-            NESTAR_BANK,
+            CISUM_BANK,
             _self,
-            NESTAR_BONUS,
+            CISUM_BONUS,
             std::string("NewReg Reward")
         );
         TRANSFER(
-            NESTAR_BANK,
+            CISUM_BANK,
             invitee,
-            NESTAR_BONUS,
+            CISUM_BONUS,
             std::string("NewReg Reward")
         );
 
@@ -141,15 +142,15 @@ void poh_cisum::registreward(const name& submitter,
             get_self(),
             { permission_level{ get_self(), "active"_n } }
         }.send(
-            NESTAR_BANK,
+            CISUM_BANK,
             invitee,
-            NESTAR_BONUS,
+            CISUM_BONUS,
             std::string("NewReg Reward"),
             "signupmining",
             "",
             current_time_point().time_since_epoch().count() / 1'000'000
         );
-        _gstate.nestar_issued += NESTAR_BONUS;
+        _gstate.cisum_issued += CISUM_BONUS;
     }
 
     // =====  邀请人奖励：从 rewardacts 读取 act_name="invite" 的配置并发放 =====
@@ -161,20 +162,21 @@ void poh_cisum::registreward(const name& submitter,
         auto it     = byname.find("invite"_n.value);
 
         CHECKC(it != byname.end(),               err::RECORD_NO_FOUND, "invite rewardact not found");
-        CHECKC(it->points.symbol == NESTAR_SYM,  err::SYMBOL_MISMATCH, "invite reward symbol mismatch");
+        CHECKC(it->points.symbol == CISUM_SYM,  err::SYMBOL_MISMATCH, "invite reward symbol mismatch");
         CHECKC(it->points.amount > 0,            err::NOT_POSITIVE,    "invite reward not positive");
 
         const asset invite_bonus = it->points;
 
-        // 发放邀请人奖励（NESTAR：mint -> transfer）
+        // 发放邀请人奖励（CISUM：mint -> transfer）
         ISSUE(
-            NESTAR_BANK,
+            CISUM_BANK,
             _self,
             invite_bonus,
             std::string("Invite Reward(")+ invitee.to_string()+")"
         );
+
         TRANSFER(
-            NESTAR_BANK,
+            CISUM_BANK,
             inviter,
             invite_bonus,
             std::string("Invite Reward(")+ invitee.to_string()+")"
@@ -185,7 +187,7 @@ void poh_cisum::registreward(const name& submitter,
             get_self(),
             { permission_level{ get_self(), "active"_n } }
         }.send(
-            NESTAR_BANK,
+            CISUM_BANK,
             inviter,
             invite_bonus,
             std::string("Invite Reward(")+ invitee.to_string()+")",
@@ -194,8 +196,7 @@ void poh_cisum::registreward(const name& submitter,
             current_time_point().time_since_epoch().count() / 1'000'000
         );
 
-        _gstate.nestar_issued += invite_bonus;
-
+        _gstate.cisum_issued += invite_bonus;
         // 发完 invitee / inviter 奖励后，记账到 poe
         flon::poe_cisum::consumeact_action consume{
             POE_CONTRACT, { permission_level{ get_self(), "active"_n } }

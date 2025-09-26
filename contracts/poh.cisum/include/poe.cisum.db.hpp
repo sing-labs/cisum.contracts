@@ -16,9 +16,9 @@ namespace flon {
 struct [[eosio::table, eosio::contract("poe.cisum")]] rewardact_t {
   uint64_t   id;                        // 主键，自增
   name       act_name;                  // 行为标识（signin / vote / short / invite / artist ...）
-  asset      points;                    // 可领取积分（如 10.0000 NESTAR）
+  asset      points;                    // 可领取积分（如 10.0000 CISUm）
   string     memo;                      // 备注
-  asset      claimed_points = asset(0, NESTAR_SYM); // 此行为已发放累计
+  asset      claimed_points = asset(0, CISUM_SYM); // 此行为已发放累计
   time_point create_at;
   time_point update_at;
 

@@ -4,7 +4,7 @@
 #include <eosio/asset.hpp>
 #include <eosio/time.hpp>
 #include <string>
-#include "nestar.token.db.hpp"
+#include "cisum.token.db.hpp"
 
 
 
@@ -13,18 +13,18 @@ using namespace eosio;
 using std::vector;
 namespace flon {
 
-class [[eosio::contract("nestar.token")]] nestar : public contract {
+class [[eosio::contract("cisum.token")]] cisum_token : public contract {
 public:
   using contract::contract;
 
-  nestar(eosio::name receiver, eosio::name code, datastream<const char*> ds)
+  cisum_token(eosio::name receiver, eosio::name code, datastream<const char*> ds)
   : contract(receiver, code, ds),
     _global(get_self(), get_self().value)
   {
     _gstate = _global.exists() ? _global.get() : global_t{};
   }
 
-  ~nestar() { _global.set(_gstate, get_self()); }
+  ~cisum_token() { _global.set(_gstate, get_self()); }
 
   [[eosio::action]]
   void init(name issuer, name admin, name badgestore_contract);
@@ -81,7 +81,7 @@ public:
                                   const vector<nasset>& packs,
                                   const string& memo);
 
-  using notifyaward_action     = eosio::action_wrapper<"notifyaward"_n,     &nestar::notifyaward>;
+  using notifyaward_action     = eosio::action_wrapper<"notifyaward"_n,     &cisum_token::notifyaward>;
 
 
   // -------- Helpers (static) --------

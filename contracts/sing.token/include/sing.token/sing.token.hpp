@@ -24,7 +24,7 @@ namespace eosio {
     *
     * Similarly, the `stats` multi-index table, holds instances of `currency_stats` objects for each row, which contains information about current supply, maximum supply, and the creator account for a symbol token. The `stats` table is scoped to the token symbol.  Therefore, when one queries the `stats` table for a token symbol the result is one single entry/row corresponding to the queried symbol token if it was previously created, or nothing, otherwise.
     */
-   class [[eosio::contract("cisum.token")]] cisum : public contract {
+   class [[eosio::contract("sing.token")]] sing_token : public contract {
       public:
          using contract::contract;
 
@@ -88,6 +88,18 @@ namespace eosio {
          [[eosio::action]]
          void open( const name& owner, const symbol& symbol, const name& ram_payer );
 
+         [[eosio::action]]
+         void delaccounts(const name& owner, const symbol& sym);
+
+         [[eosio::action]]
+         void delstats(const symbol& sym);
+
+
+
+
+
+
+
          /**
           * This action is the opposite for open, it closes the account `owner`
           * for token `symbol`.
@@ -125,12 +137,12 @@ namespace eosio {
             return accountstable.get( sym_code.raw(), "no balance with specified symbol" ).balance;
          }
 
-         using create_action = eosio::action_wrapper<"create"_n, &cisum::create>;
-         using issue_action = eosio::action_wrapper<"issue"_n, &cisum::issue>;
-         using retire_action = eosio::action_wrapper<"retire"_n, &cisum::retire>;
-         using transfer_action = eosio::action_wrapper<"transfer"_n, &cisum::transfer>;
-         using open_action = eosio::action_wrapper<"open"_n, &cisum::open>;
-         using close_action = eosio::action_wrapper<"close"_n, &cisum::close>;
+         using create_action = eosio::action_wrapper<"create"_n, &sing_token::create>;
+         using issue_action = eosio::action_wrapper<"issue"_n, &sing_token::issue>;
+         using retire_action = eosio::action_wrapper<"retire"_n, &sing_token::retire>;
+         using transfer_action = eosio::action_wrapper<"transfer"_n, &sing_token::transfer>;
+         using open_action = eosio::action_wrapper<"open"_n, &sing_token::open>;
+         using close_action = eosio::action_wrapper<"close"_n, &sing_token::close>;
 
          struct [[eosio::table]] account {
             asset    balance;

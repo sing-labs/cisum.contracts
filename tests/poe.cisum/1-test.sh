@@ -71,7 +71,3 @@ mpush $poe_con addoracle '[
 mpush $poe_con claimpoints '["myadmin","fulgwxvwfw1m",1]' -p myadmin
 
 
-
-
-
-claimpoints(const name& leader, const name& claimer, const uint64_t& rewardact_id)

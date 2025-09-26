@@ -13,7 +13,7 @@ mcli set account permission $cisumsummary_con active --add-code
 mpush $cisumsummary_con addtoken '["sing.token", "8,SING"]' -p $cisumsummary_con
 
 # 添加 SONG
-mpush $cisumsummary_con addtoken '["song.token", "4,SONG"]' -p $cisumsummary_con
+mpush $cisumsummary_con addtoken '["cisum.token", "4,CISUM"]' -p $cisumsummary_con
 
 # 添加 MUSIC
 mpush $cisumsummary_con addtoken '["sing.token", "8,MUSIC"]' -p $cisumsummary_con

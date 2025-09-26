@@ -50,10 +50,10 @@ enum class err: uint8_t {
   { if (!(exp)) eosio::check(false, string("[[") + std::to_string((int)code) + string("]] ") + msg); }
 
 
-static const asset      MAX_REWARD      = asset(25'5000'0000'0000'0000, CISUM_SYM);
+static const asset      MAX_REWARD      = asset(25'5000'0000'0000'0000, SING_SYM);
 
-//发 100 NESTAR 给注册者
-static const asset      NESTAR_BONUS    = asset(100'0000, NESTAR_SYM);
+//发 100 CISUM 给注册者
+static const asset      CISUM_BONUS    = asset(100'0000, CISUM_SYM);
 
 
 // -------- 表：全局 --------
@@ -61,14 +61,14 @@ struct [[eosio::table, eosio::contract("poh.cisum")]] global_t {
   name   platform_acct;                                   // 平台账户（奖励接收方）
   name   registrar;                                       // 合约调用账户
   asset  usdt_per_user     = asset(20'000000, USDT_SYM);   // 默认 20 USDT
-  asset  max_issued       = asset(0, CISUM_SYM);          // 最大发放（CISUM）
-  asset  cisum_issued     = asset(0, CISUM_SYM);          // 已发放累计（CISUM）
-  asset  nestar_issued    = asset(0, NESTAR_SYM);         // 已发放累计（NESTAR）
+  asset  max_issued        = asset(0, SING_SYM);          // 最大发放（SING）
+  asset  sing_issued       = asset(0, SING_SYM);          // 已发放累计（SING）
+  asset  cisum_issued     = asset(0, CISUM_SYM);         // 已发放累计（CISUM）
 
 
   EOSLIB_SERIALIZE(global_t,
     (platform_acct)(registrar)(usdt_per_user)
-    (max_issued)(cisum_issued)(nestar_issued))
+    (max_issued)(sing_issued)(cisum_issued))
 };
 using global_singleton = eosio::singleton<"global"_n, global_t>;
 

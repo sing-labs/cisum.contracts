@@ -68,7 +68,7 @@ class [[eosio::contract("artist.cisum")]] artists : public contract {
       ~artists() { _global.set( _gstate, get_self() ); }
 
     // ===== 管理动作 =====
-    [[eosio::action]] void init(const name& admin, const std::vector<name>& auditors);                   
+    [[eosio::action]] void init(const name& admin, const std::vector<name>& auditors);
     [[eosio::action]] void setadmin(name admin);                    // 变更管理员（admin 或合约）
     [[eosio::action]] void addauditor(name auditor);                // 添加审核员
     [[eosio::action]] void delauditor(name auditor);                // 移除审核员
@@ -95,14 +95,17 @@ class [[eosio::contract("artist.cisum")]] artists : public contract {
                       string language,
                       string links,
                       name status,
-                      name level); 
+                      name level);
 
 
-    [[eosio::action]] void setstatus(name account, name status, bool verified);   
+    [[eosio::action]] void setstatus(name account, name status, bool verified);
 
     [[eosio::action]] void setmeta(name account, string key, string value);       // 细粒度修改（如 avatar_url 等）
     [[eosio::action]] void delartist(name account);                               // 彻底删除（仅管理员）
 
+
+
+    [[eosio::action]] void setuint(const uint64_t& value1,const int64_t& value2,const uint128_t& value3,const int128_t& value4)  ;
 
   };
 

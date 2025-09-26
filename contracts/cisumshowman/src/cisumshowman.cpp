@@ -51,10 +51,10 @@ void cisumshow::publishshow(name creator,
 
   if (ticket.price.amount > 0) {
       auto pcode = ticket.price.symbol.code();
-      if (pcode == NESTAR_SYM.code()) {
-          check(ticket.price.symbol.precision() == NESTAR_SYM.precision(), "SONG price precision must be 4");
-      } else if (pcode == CISUM_SYM.code()) {
-          check(ticket.price.symbol.precision() == CISUM_SYM.precision(), "SING price precision must be 8");
+      if (pcode == CISUM_SYM.code()) {
+          check(ticket.price.symbol.precision() == CISUM_SYM.precision(), "cisum price precision must be 4");
+      } else if (pcode == SING_SYM.code()) {
+          check(ticket.price.symbol.precision() == SING_SYM.precision(), "SING price precision must be 8");
       }
 
   }

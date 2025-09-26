@@ -45,55 +45,48 @@ void cisumreserve::on_usdt_transfer(const name& from,
     check(quantity.symbol == USDT_SYM, "only USDT accepted");
     check(quantity.amount > 0, "amount must be positive");
 
-    // 价格换算：USDT -> CISUM（按 flon.swap 价格）
-    asset cisum_out = usdt_to_cisum(quantity);
+    // ========== 1. 先查价格 ==========
+    asset price = get_price_from_swap(SING_SYM, USDT_SYM);
+    check(price.amount > 0, "invalid price");
+
+    // ========== 2. 计算兑换数量 ==========
+    const int64_t p10C = pow10(SING_SYM.precision());
+    __int128 num = (__int128)quantity.amount * (__int128)p10C;
+    int64_t sing_units = (int64_t)(num / (__int128)price.amount);
+    asset token_out{ sing_units, SING_SYM };
 
     // 手续费（bps）
-    if (_gstate.fee_bps > 0 && cisum_out.amount > 0) {
-        int64_t fee = (int64_t)(((__int128)cisum_out.amount * _gstate.fee_bps) / 10000);
-        cisum_out.amount -= fee;
+    if (_gstate.fee_bps > 0 && token_out.amount > 0) {
+        int64_t fee = (int64_t)(((__int128)token_out.amount * _gstate.fee_bps) / 10000);
+        token_out.amount -= fee;
     }
-    check(cisum_out.amount > 0, "cisum_out too small");
+    check(token_out.amount > 0, "token_out too small");
 
-    // 记录订单汇率：每 1 USDT 可得多少 CISUM（放大 1e6）
-    // price.amount = USDT(最小单位) / 1 CISUM
-    asset price = get_price_from_swap_as_asset(CISUM_SYM, USDT_SYM);
-    check(price.amount > 0, "invalid price");
+    // ========== 3. 计算汇率（每 1 USDT 可得多少 SING，放大 1e6） ==========
     uint64_t rate_ppm = (uint64_t)(
-        ((__int128)pow10(CISUM_SYM.precision()) * 1'000'000) / (__int128)price.amount
+        ((__int128)pow10(SING_SYM.precision()) * 1'000'000) / (__int128)price.amount
     );
 
-    // 向用户发放 CISUM
+    // ========== 4. 发放 SING ==========
     flon::token::transfer_action{
-        CISUM_BANK, { permission_level{ get_self(), "active"_n } }
-    }.send(get_self(), from, cisum_out, "cisumreserve: buy SING");
+        SING_BANK, { permission_level{ get_self(), "active"_n } }
+    }.send(get_self(), from, token_out, "cisumreserve: buy SING");
 
-    // 记录订单
+    // ========== 5. 记录订单 ==========
     orders_idx orders(get_self(), get_self().value);
     _gstate.last_order_id += 1;
     uint64_t oid = _gstate.last_order_id;
     _global.set(_gstate, get_self());
+
     const auto now = current_time_point();
     orders.emplace(get_self(), [&](auto& o){
         o.id         = oid;
         o.user       = from;
         o.usdt_in    = quantity;
-        o.cisum_out  = cisum_out;
+        o.token_out  = token_out;
         o.rate_ppm   = rate_ppm;
         o.fee_bps    = _gstate.fee_bps;
         o.created_at = now;
         o.memo       = memo;
     });
-}
-
-
-void cisumreserve::on_cisum_transfer(const name& from,
-                                     const name& to,
-                                     const asset& quantity,
-                                     const std::string& memo) {
-    if (from == get_self() || to != get_self()) return;
-
-    check(quantity.symbol == CISUM_SYM, "only SING deposits allowed");
-    check(quantity.amount > 0, "amount must be positive");
-
 }

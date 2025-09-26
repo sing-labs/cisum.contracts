@@ -429,18 +429,18 @@ using namespace wasm::safemath;
                "invalid MUSIC memo, use 'return:<save_id>' or 'fund'/'refuel'");
    }
 
-    // 既不是 CISUM 也不是 MUSIC
+    // 既不是 SING 也不是 MUSIC
     CHECKC(false, err::SYMBOL_MISMATCH, "unsupported token symbol from sing.token");
 }
 
 
 
-   void pos_cisum::on_nestar_transfer(const name& from, const name& to, const asset& quant, const string& memo) {
+   void pos_cisum::on_cisum_transfer(const name& from, const name& to, const asset& quant, const string& memo) {
       // 只处理转账给本合约，且不处理自己给自己转账的情况
       if (to != get_self() || from == get_self()) return;
 
       // 校验代币符号
-      check(quant.symbol == NESTAR, "only NESTAR token is accepted for refuel");
+      check(quant.symbol == CISUM_SYMBOL, "only CISUM token is accepted for refuel");
 
       // 解析 memo
       auto memo_params = split(memo, ":");

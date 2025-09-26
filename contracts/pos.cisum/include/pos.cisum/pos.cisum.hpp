@@ -17,15 +17,17 @@ using std::vector;
 using namespace eosio;
 using namespace wasm::db;
 
-static constexpr name   SYS_BANK   = "sing.token"_n;
-static constexpr symbol CISUM      = symbol(symbol_code("SING"), 8);
 
-static constexpr name   POINTS_BANK = "song.token"_n;
-static constexpr symbol NESTAR      = symbol(symbol_code("SONG"), 4);
+
+static constexpr name   CISUM_BANK = "cisum.token"_n;
+static constexpr symbol CISUM_SYMBOL      = symbol(symbol_code("CISUM"), 4);
 
 static constexpr symbol MUSIC_SYMBOL = symbol(symbol_code("MUSIC"), 8);
 static constexpr name   MUSIC_CONTRACT = "sing.token"_n;
 
+
+static constexpr symbol SING_SYMBOL = symbol(symbol_code("SING"), 8);
+static constexpr name   SING_CONTRACT = "sing.token"_n;
 
 static constexpr uint16_t  PCT_BOOST   = 10000;
 static constexpr uint64_t  DAY_SECONDS = 24 * 60 * 60;
@@ -57,7 +59,7 @@ enum class err: uint8_t {
 };
 
 /**
- * The `pos.cisum` sample system contract defines the structures and actions that allow users to create, issue, and manage tokens for CISUM based blockchains. It demonstrates one way to implement a smart contract which allows for creation and management of tokens. It is possible for one to create a similar contract which suits different needs. However, it is recommended that if one only needs a token with the below listed actions, that one uses the `pos.cisum` contract instead of developing their own.
+ * The `pos.cisum` sample system contract defines the structures and actions that allow users to create, issue, and manage tokens for SING based blockchains. It demonstrates one way to implement a smart contract which allows for creation and management of tokens. It is possible for one to create a similar contract which suits different needs. However, it is recommended that if one only needs a token with the below listed actions, that one uses the `pos.cisum` contract instead of developing their own.
  *
  * The `pos.cisum` contract class also implements two useful public static methods: `get_supply` and `get_balance`. The first allows one to check the total supply of a specified token, created by an account and the second allows one to check the balance of a token for a specified account (the token creator account has to be specified as well).
  *
@@ -80,8 +82,8 @@ class [[eosio::contract("pos.cisum")]] pos_cisum : public contract {
    [[eosio::on_notify("sing.token::transfer")]]
    void ontransfer(const name& from, const name& to, const asset& quants, const string& memo);
 
-   [[eosio::on_notify("song.token::transfer")]]
-   void on_nestar_transfer(const name& from, const name& to, const asset& quants, const string& memo);
+   [[eosio::on_notify("cisum.token::transfer")]]
+   void on_cisum_transfer(const name& from, const name& to, const asset& quants, const string& memo);
 
    ACTION init(const extended_symbol& principal_token,
                      const asset&           mini_deposit_amount);

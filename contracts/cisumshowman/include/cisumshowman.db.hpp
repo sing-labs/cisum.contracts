@@ -13,11 +13,6 @@ using std::vector;
 
 namespace flon {
 
-// static constexpr name SHOW_CONTRACT             = "show24.cisum"_n;
-// static constexpr name GRAB_CONTRACT             = "grab23.cisum"_n;
-// static constexpr symbol NESTAR_SYM              = symbol(symbol_code("NESTAR"), 4);
-// static constexpr symbol CISUM_SYM               = symbol(symbol_code("CISUM"), 8);
-// static constexpr symbol USDT_SYM                 = symbol(symbol_code("USDT"), 6);
 
 struct [[eosio::table, eosio::contract("cisumshowman")]] global_t {
     name admin;
@@ -31,7 +26,7 @@ struct ticket_info {
     uint64_t   ticket_id;                 // 与 nsymbol(raw) 对应
     string     token_uri;                 // NFT 元数据 URI
     string     ticket_type;               // 票种类型
-    asset      price;                     // 原来币种的价格（NESTAR是免费票）
+    asset      price;                     // 原来币种的价格（CISUM是免费票）
     asset      price_usdt;                 // 转化的usd价格
     uint64_t   total_count;               // 发行量
     uint64_t   prerequisite_ticket_id = 0;// 前置票（无则 0）

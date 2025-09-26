@@ -72,7 +72,7 @@ spec_version: "0.2.0"
 title: Configure Point Contract
 summary: 'Update the point contract address used for ticket payments.'
 ---
-Admin can update the point contract address (e.g., nestar.token) used for ticket payments. Only admin can call this action. Useful for integration or migration to a new token contract.
+Admin can update the point contract address (e.g., ciusm.token) used for ticket payments. Only admin can call this action. Useful for integration or migration to a new token contract.
 Parameters:
 * new_point_contract: The new point contract account.
 

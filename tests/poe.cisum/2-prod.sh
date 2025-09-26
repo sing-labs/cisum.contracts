@@ -8,53 +8,56 @@ mtran flonian $poe_con "100 FLON"
 mset $poe_con poe.cisum
 mcli set account permission $poe_con active --add-code
 
-nestar_token=nestar.token
+cisum_token=cisum.token
 # 给合约开 NESTAR 余额行（RAM 自付）
-mpush $nestar_token open '[
+mpush $cisum_token open '[
   "'"${poe_con}"'",
-  "4,SONG",
+  "4,CISUM",
   "'"${poe_con}"'"
 ]' -p $poe_con
 
-# 将合约加入白名单（允许转账 NESTAR）
-mpush $nestar_token addwhitelist '["'"${poe_con}"'"]' -p $nestar_token
+# 将合约加入白名单（允许转账 CISUM）
+mpush $cisum_token addwhitelist '["'"${poe_con}"'"]' -p $cisum_token
 
 
-# 日常签到 - 10 NESTAR
+# 日常签到 - 10 CISUM
 mpush $poe_con addrewardact '[
   "signin",
-  "10.0000 SONG",
+  "10.0000 CISUM",
   "日常签到奖励"
 ]' -p $poe_con
 
-# 投票 - 50 NESTAR
+# 投票 - 50 CISUM
 mpush $poe_con addrewardact '[
   "vote",
-  "50.0000 SONG",
+  "50.0000 CISUM",
   "投票奖励"
 ]' -p $poe_con
 
-# 发布短视频内容 - 100 NESTAR
+# 发布短视频内容 - 100 CISUM
 mpush $poe_con addrewardact '[
   "shortvideo",
-  "100.0000 SONG",
+  "100.0000 CISUM",
   "发布短视频内容奖励"
 ]' -p $poe_con
 
-# 邀请好友注册 - 300 NESTAR
+# 邀请好友注册 - 300 CISUM
 mpush $poe_con addrewardact '[
   "invite",
-  "300.0000 SONG",
+  "300.0000 CISUM",
   "邀请好友注册奖励"
 ]' -p $poe_con
 
-# 上传艺人内容 - 200 NESTAR
+# 上传艺人内容 - 200 CISUM
 mpush $poe_con addrewardact '[
   "uploadartist",
-  "200.0000 SONG",
+  "200.0000 CISUM",
   "上传艺人内容奖励"
 ]' -p $poe_con
 
 mpush $poe_con addoracle '[
   "myadmin"
 ]' -p $poe_con
+
+
+

@@ -66,7 +66,7 @@ static constexpr uint32_t RATIO_BASE = 10000;   // 100.00%
 NTBL("grabglobal") global_t {
    uint64_t       last_rush_sale_id;
    eosio::name    admin;
-   eosio::name    point_contract    = NESTAR_CONTRACT;
+   eosio::name    point_contract    = CISUM_CONTRACT;
    eosio::name    ticket_contract   = CVTICKET_CONTRACT;
    set<name>      oracles;
 
@@ -160,7 +160,7 @@ NTBL("grabstats") grab_stat_t {
 // scope: self
 NTBL("allowtokens") allowed_token_t {
     uint64_t    id;          // 自增主键
-    symbol      sym;         // 币种(含精度)，例如 4,NESTAR / 8,CISUM
+    symbol      sym;         // 币种(含精度)，例如 4,CISUM / 8,SING
     name        bank;        // 发行/转账合约账号，例如 song.token / sing.token
     time_point  created_at;
     time_point  updated_at;

@@ -3,7 +3,6 @@
 #include <eosio/asset.hpp>
 #include <string>
 #include <vector>
-#include "nestar.cisum.db.hpp" 
 
 using namespace eosio;
 using std::string;

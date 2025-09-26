@@ -28,6 +28,7 @@ public:
   ~poh_cisum() { _global.set(_gstate, get_self()); }
 
   ACTION init(name platform, name registrar, asset max_issued) ;
+
   ACTION setmaxissued(asset max_issued);
 
   ACTION setplatform(name platform);
@@ -69,7 +70,7 @@ private:
   }
 
   // 从 flon.swap 读取池子并返回按 left 精度放大的 "quote per left"
-  inline asset get_price_from_swap_as_asset(const symbol& left_sym,
+  inline asset get_price_from_swap(const symbol& left_sym,
                                             const symbol& right_sym)
   {
     const name swap_ctr = SWAP_CONTRACT;
@@ -91,17 +92,17 @@ private:
     return asset{ price_amount, right_sym };
   }
 
-  // usdt(asset,6) -> cisum(asset,8)，按 swap 价格换算
-  asset usdt_to_cisum(const asset& usdt) {
-    check(usdt.symbol == USDT_SYM, "usdt_to_cisum: usdt symbol mismatch");
-    asset price = this->get_price_from_swap_as_asset(CISUM_SYM, USDT_SYM);
+  // usdt(asset,6) -> sing(asset,8)，按 swap 价格换算
+  asset exchange_asset(const asset& usdt) {
+    check(usdt.symbol == USDT_SYM, "exchange_asset: usdt symbol mismatch");
+    asset price = this->get_price_from_swap(SING_SYM, USDT_SYM);
     check(price.amount > 0, "invalid price");
 
-    // cisum_amount = usdt.amount * 10^8 / price.amount
-    const int64_t p10C = pow10(CISUM_SYM.precision());
+    //sing_amount = usdt.amount * 10^8 / price.amount
+    const int64_t p10C = pow10(SING_SYM.precision());
     __int128 num = (__int128)usdt.amount * (__int128)p10C;
-    int64_t cisum_units = (int64_t)(num / (__int128)price.amount);
-    return asset{ cisum_units, CISUM_SYM };
+    int64_t token_units = (int64_t)(num / (__int128)price.amount);
+    return asset{ token_units, SING_SYM };
   }
 
 };

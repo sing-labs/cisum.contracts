@@ -51,9 +51,9 @@ enum class err: uint8_t {
 
 
 struct [[eosio::table, eosio::contract("poe.cisum")]] global_t {
-  asset      available_points = asset(0, NESTAR_SYM); // 可用积分
-  asset      claimed_points   = asset(0, NESTAR_SYM); // 已发放累计
-  asset      total_points     = asset(0, NESTAR_SYM); // 总额度（= available + claimed）
+  asset      available_points = asset(0, CISUM_SYM); // 可用积分
+  asset      claimed_points   = asset(0, CISUM_SYM); // 已发放累计
+  asset      total_points     = asset(0, CISUM_SYM); // 总额度（= available + claimed）
   std::set<name>  oracles;
   uint64_t   last_act_id      = 0;                      // 行为自增ID
 
@@ -67,7 +67,7 @@ struct [[eosio::table, eosio::contract("poe.cisum")]] rewardact_t {
   name       act_name;                  // 行为标识（signin / vote / short / invite / artist ...）
   asset      points;                    // 可领取积分（如 10.0000 SONG）
   string     memo;                      // 备注
-  asset      claimed_points = asset(0, NESTAR_SYM); // 此行为已发放累计
+  asset      claimed_points = asset(0, CISUM_SYM); // 此行为已发放累计
   time_point create_at;
   time_point update_at;
 

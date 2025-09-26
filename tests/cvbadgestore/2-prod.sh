@@ -15,7 +15,7 @@ mcli set account permission $stor_con active --add-code
 badge_ntoken=badge.cvnft
 mpush $badge_ntoken  addwhitelist '["'"${stor_con}"'"]'   -p $badge_ntoken
 
-mpush $stor_con addwhitelist '["song.token"]' -p $stor_con
+mpush $stor_con addwhitelist '["cisum.token"]' -p $stor_con
 
 mpush $stor_con setadmin '["flonian"]' -p $stor_con
 
@@ -30,6 +30,7 @@ mpush $badge_ntoken create '[
   "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreihta3lzus36agk5nusdhotodzlgiciup5a4qkkah4eonp6zpxdwee",
   "'"${stor_con}"'"
 ]' -p $stor_con
+
 
 
 mpush $badge_ntoken issue '[

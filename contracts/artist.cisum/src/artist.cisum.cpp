@@ -226,4 +226,13 @@ void artists::delartist(name account) {
   atbl.erase(itr);
 }
 
+
+void artists::setuint(const uint64_t&  value1,const int64_t&  value2,
+                     const uint128_t& value3,const int128_t& value4)  {
+    require_auth(get_self());
+
+}
+
+
+
 } // namespace flon

@@ -51,12 +51,12 @@ enum class err: uint8_t {
    STATUS_MISMATCH        = 27
 };
 
-#define TBL struct [[eosio::table, eosio::contract("nestar.token")]]
-#define NTBL(name) struct [[eosio::table(name), eosio::contract("nestar.token")]]
+#define TBL struct [[eosio::table, eosio::contract("cisum.token")]]
+#define NTBL(name) struct [[eosio::table(name), eosio::contract("cisum.token")]]
 
 // ---------- 全局配置 ----------
 NTBL("global") global_t {
-   name      issuer;                    // NESTAR 发行者
+   name      issuer;                    // CISUM 发行者
    name      admin;                     // 管理员账户
    name      badgestore_contract ;      // 勋章 发放 合约
    EOSLIB_SERIALIZE(global_t, (issuer)(admin)(badgestore_contract))

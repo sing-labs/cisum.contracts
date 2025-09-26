@@ -33,8 +33,8 @@ namespace deposit_type {
 }
 
 namespace pool_type {
-    static constexpr eosio::name CISUM_APR = "cisumapr"_n;  // 池A：利息按时释放（CISUM）
-    static constexpr eosio::name NEST_PONT = "nestpont"_n;  // 池B：一次性积分（NESTAR）
+    static constexpr eosio::name SING_APR = "cisumapr"_n;  // 池A：利息按时释放（SING）
+    static constexpr eosio::name NEST_PONT = "nestpont"_n;  // 池B：一次性积分（CISUM）
 }
 namespace interest_rate_scheme {
     static constexpr eosio::name LADDER3    = "lad3"_n;     //12-mo ladder ir
@@ -68,15 +68,15 @@ typedef eosio::singleton< "global"_n, global_t > global_singleton;
 
 struct plan_conf_s {
     name           type;                     // 存款类型：deposit_type::TERM / deposit_type::DEMAND
-    name           pool_type;                // 池型：pool_type::CISUM_APR | pool_type::NEST_PONT
+    name           pool_type;                // 池型：pool_type::SING_APR | pool_type::NEST_PONT
     name           ir_scheme;                // 利率方案：interest_rate_scheme::*
     uint64_t       deposit_term_days;        // 期限天数 E.g. 365
     bool           allow_advance_redeem;     // 是否允许提前赎回
     uint64_t       advance_redeem_fine_rate; // 提前赎回罚金比例（万分制）
     time_point_sec effective_from;           // 生效期：早于此不允许存入
     time_point_sec effective_to;             // 截止期：晚于此不允许存入
-    extended_symbol interest_token;          // 奖励币（CISUM/NESTAR 等），每计划独立
-    uint64_t       music_reward_rate;        // 新增: NESTAR 对应的 MUSIC 奖励比例（bp），  比如说5000  就是50%
+    extended_symbol interest_token;          // 奖励币（SING/CISUM 等），每计划独立
+    uint64_t       music_reward_rate;        // 新增: CISUM 对应的 MUSIC 奖励比例（bp），  比如说5000  就是50%
 
     EOSLIB_SERIALIZE( plan_conf_s,
         (type)(pool_type)(ir_scheme)(deposit_term_days)
