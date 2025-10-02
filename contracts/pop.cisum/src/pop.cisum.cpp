@@ -88,6 +88,20 @@ void pop_cisum::_try_award_badges(const name &user, int64_t consumed_before, int
 }
 
 
+void pop_cisum::init(const asset& max_rewards) {
+    require_auth(get_self());
+
+    check(max_rewards.amount > 0, "max_rewards must be positive");
+
+
+    // 确保新设置的 max_rewards 不小于已发放的奖励
+    check(max_rewards.symbol == _gstate.issued_rewards.symbol, "symbol mismatch with issued_rewards");
+    check(max_rewards >= _gstate.issued_rewards, "max_rewards must be >= issued_rewards");
+
+    _gstate.max_rewards       = max_rewards;
+    _gstate.available_rewards = max_rewards - _gstate.issued_rewards;  // 可用奖励 = 总额度 - 已发奖励
+}
+
 
 
 void pop_cisum::mine(name payer, asset pay_amount, string memo)

@@ -46,6 +46,7 @@ public:
                                 const string&     reward_ref_id,
                                 const uint64_t&   created_at);
 
+  ACTION init(const asset& max_rewards);
 
   ACTION mine(  name  payer,asset pay_amount,string  memo);
 
