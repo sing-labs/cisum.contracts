@@ -72,10 +72,10 @@ public:
 
   // 新增/修改规则（若 id == 0 则新增，否则修改对应 id）
   [[eosio::action]]
-  void addbrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled);
+  void addrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled);
 
   [[eosio::action]]
-  void delbrule(uint64_t id);
+  void delrule(uint64_t id);
 
   [[eosio::action]] void notifyaward(const name& user,
                                   const vector<nasset>& packs,

@@ -233,7 +233,7 @@ void cisum_token::setwhite(const name& account, const bool& enabled)
     }
 }
 
-void cisum_token::addbrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) {
+void cisum_token::addrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) {
     CHECKC(has_admin_auth(),                     err::DID_NOT_AUTH,     "admin/contract only");
     CHECKC(threshold.amount > 0,                 err::NOT_POSITIVE,     "threshold must be positive");
     CHECKC(symbol.raw() != 0,                    err::INVALID_FORMAT,   "badge symbol required");
@@ -280,7 +280,7 @@ void cisum_token::addbrule(uint64_t id, const asset& threshold, const nsymbol& s
     }
 }
 
-void cisum_token::delbrule(uint64_t id)
+void cisum_token::delrule(uint64_t id)
 {
     CHECKC(has_admin_auth(),          err::DID_NOT_AUTH, "admin/contract only");
     badge_rule_t::idx_t rtbl(get_self(), get_self().value);
