@@ -84,6 +84,24 @@ mpush $badge_ntoken issue '[
 
 
 
+
+mpush $badge_ntoken create '[
+  "badgestore11",
+  10000000000,
+  {"value":"4299369637478514"},
+  "ipfs://badges/silver14.json",
+  "badgestore11"
+]' -p badgestore11
+
+
+mpush $badge_ntoken issue '[
+  "badgestore11",
+  {"amount": 10000000, "symbol": {"value":"4299369637478514"}},
+  "bootstrap batch"
+]' -p badgestore11
+
+
+
 mpush $stor_con setadmin '["flonian"]' -p $stor_con
 
 mpush $stor_con setbadge '["'"${badge_ntoken}"'","'"${badge_ntoken}"'"]' -p $stor_con
@@ -91,4 +109,23 @@ mpush $stor_con setbadge '["'"${badge_ntoken}"'","'"${badge_ntoken}"'"]' -p $sto
 
 
 
+
+mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"value":"4299369637478516"}}],"test1"]' -p badgecvstore
+
+
+
+mpush $badge_ntoken create '[
+  "'"${stor_con}"'",
+  10000000000,
+  {"value":"4299369637478516"},
+  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreibt6mguuph5aotscy4g72huy5numsevbb5dmcuvq3mrlgusgor4qq",
+  "'"${stor_con}"'"
+]' -p $stor_con
+
+
+mpush $badge_ntoken issue '[
+  "'"${stor_con}"'",
+  {"amount": 10000000, "symbol": {"value":"4299369637478516"}},
+  "bootstrap batch"
+]' -p $stor_con
 

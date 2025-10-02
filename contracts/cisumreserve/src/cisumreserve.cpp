@@ -1,5 +1,6 @@
 #include "cisumreserve.hpp"
 #include "flon/flon.token.hpp"
+#include "flon/consts.hpp"
 
 using namespace eosio;
 using namespace flon;
@@ -41,6 +42,7 @@ void cisumreserve::on_usdt_transfer(const name& from,
                                     const string& memo) {
     if (from == get_self() || to != get_self()) return;
 
+    check(from == POP_CONTRACT, "only pop can buy SING from reserve");
     check(get_first_receiver() == USDT_BANK, "only accept USDT from USDT_BANK");
     check(quantity.symbol == USDT_SYM, "only USDT accepted");
     check(quantity.amount > 0, "amount must be positive");

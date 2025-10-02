@@ -26,3 +26,6 @@ mpush $grab_con cfgticket '["flonian","ticket.cvnft"]' -p $grab_con
 
 mpush $grab_con addtoken '["4,CISUM","cisum.token"]' -p $grab_con
 
+# 6) grab 的 oracle 账号
+oracle=
+mpush $grab_con addoracle '["'"$oracle"'"]' -p $grab_con

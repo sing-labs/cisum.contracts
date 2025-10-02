@@ -188,6 +188,29 @@ void grab_cisum::deltoken(const symbol& sym, const name& bank) {
     bysym.erase(it);
 }
 
+void grab_cisum::addoracle(const name& account) {
+    require_auth(get_self());
+
+    CHECKC(account.value != 0,  err::ACCOUNT_INVALID, "oracle account cannot be empty");
+    CHECKC(is_account(account), err::ACCOUNT_INVALID, "oracle account not exist");
+
+    _gstate.oracles.insert(account);
+    _global.set(_gstate, get_self());
+}
+
+void grab_cisum::deloracle(const name&  account) {
+    require_auth(get_self());
+
+    CHECKC(account.value != 0,  err::ACCOUNT_INVALID, "oracle account cannot be empty");
+
+    auto it = _gstate.oracles.find(account);
+    if (it != _gstate.oracles.end()) {
+        _gstate.oracles.erase(it);
+        _global.set(_gstate, get_self());
+    }
+}
+
+
 // ======================================================
 // 核心业务逻辑
 // ======================================================

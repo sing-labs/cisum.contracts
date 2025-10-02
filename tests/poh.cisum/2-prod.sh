@@ -11,13 +11,6 @@ mcli set account permission $poh_con active --add-code
 cisum_token=cisum.token
 mpush $cisum_token  addwhitelist '["poh.cisum"]'   -p $cisum_token
 
-# 给合约开 CISUM 余额行（RAM 自付）
-mpush sing.token open '[
-  "'"${poh_con}"'",
-  "8,SING",
-  "'"${poh_con}"'"
-]' -p $poh_con
-
 max_issued="2500000000.00000000 SING"
 mpush $poh_con init '["cisumreserve","flonian","'"$max_issued"'"]' -p $poh_con
 

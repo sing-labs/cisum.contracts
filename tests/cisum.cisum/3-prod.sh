@@ -40,7 +40,7 @@ mpush $cisum_token  addbrule '[0, "15000000.0000 CISUM", {"value":"4299369637478
 
 
 #要转给poe定量的nestar
-#mpush $nestar_token transfer '["'"${issuer_owner}"'","cvhch4tqi1w3", "3000.0000 SONG", "bootstrap"]' -p $issuer_owner
+#mpush $cisum_token transfer '["'"${issuer_owner}"'","cvug42btfnsi", "3000.0000 CISUM", "bootstrap"]' -p $issuer_owner
 
 
 

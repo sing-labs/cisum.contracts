@@ -76,6 +76,10 @@ public:
      */
     ACTION addtoken(const symbol& sym, const name& bank);
 
+    ACTION addoracle(const name& account);
+    ACTION deloracle(const name& account);
+
+
     /**
      * Delete allowed token.
      * 权限：合约自身 / admin
