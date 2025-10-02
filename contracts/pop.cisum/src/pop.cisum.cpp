@@ -294,7 +294,7 @@ void pop_cisum::delexecutor(const name& acct) {
 }
 
 
-void pop_cisum::setbrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) {
+void pop_cisum::setrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) {
     require_auth(get_self());
     CHECKC(threshold.amount > 0,                 err::NOT_POSITIVE,     "threshold must be positive");
     CHECKC(symbol.raw() != 0,                    err::INVALID_FORMAT,   "badge symbol required");
@@ -332,7 +332,7 @@ void pop_cisum::setbrule(uint64_t id, const asset& threshold, const nsymbol& sym
     }
 }
 
-void pop_cisum::delbrule(uint64_t id)
+void pop_cisum::delrule(uint64_t id)
 {
     require_auth(get_self());
     badge_rule_t::idx_t rtbl(get_self(), get_self().value);

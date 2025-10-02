@@ -56,9 +56,9 @@ public:
   ACTION addexecutor(const name& acct);
   ACTION delexecutor(const name& acct);
 
-  ACTION setbrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) ;
+  ACTION setrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) ;
 
-  ACTION delbrule(uint64_t id);
+  ACTION delrule(uint64_t id);
 
   ACTION notifyaward(const name& user,
                                   const vector<nasset>& packs,
