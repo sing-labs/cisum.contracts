@@ -29,9 +29,9 @@ public:
 
     ACTION delrewardact(const name& act_name);
 
-    ACTION addoracle(const name& account);
+    ACTION addoperator(const name& account);
 
-    ACTION deloracle(const name& account);
+    ACTION deloperator(const name& account);
 
     ACTION claimpoints(const name& submitter, const name& claimer, const name& act_name);
 

@@ -65,32 +65,32 @@ void poe_cisum::delrewardact(const name &act_name)
     byname.erase(it);
 }
 
-void poe_cisum::addoracle(const name& account) {
+void poe_cisum::addoperator(const name& account) {
     require_auth(get_self());
 
-    CHECKC(account.value != 0,  err::ACCOUNT_INVALID, "oracle account cannot be empty");
-    CHECKC(is_account(account), err::ACCOUNT_INVALID, "oracle account not exist");
+    CHECKC(account.value != 0,  err::ACCOUNT_INVALID, "operator account cannot be empty");
+    CHECKC(is_account(account), err::ACCOUNT_INVALID, "operator account not exist");
 
-    _gstate.oracles.insert(account);
+    _gstate.operators.insert(account);
     _global.set(_gstate, get_self());
 }
 
-void poe_cisum::deloracle(const name&  account) {
+void poe_cisum::deloperator(const name&  account) {
     require_auth(get_self());
 
-    CHECKC(account.value != 0,  err::ACCOUNT_INVALID, "oracle account cannot be empty");
+    CHECKC(account.value != 0,  err::ACCOUNT_INVALID, "operator account cannot be empty");
 
-    auto it = _gstate.oracles.find(account);
-    if (it != _gstate.oracles.end()) {
-        _gstate.oracles.erase(it);
+    auto it = _gstate.operators.find(account);
+    if (it != _gstate.operators.end()) {
+        _gstate.operators.erase(it);
         _global.set(_gstate, get_self());
     }
 }
 
 void poe_cisum::claimpoints(const name& submitter, const name& claimer, const name& act_name) {
     require_auth(submitter);
-    CHECKC(_gstate.oracles.count(submitter) > 0, err::DID_NOT_AUTH,
-           "submitter not in oracles whitelist: " + submitter.to_string());
+    CHECKC(_gstate.operators.count(submitter) > 0, err::DID_NOT_AUTH,
+           "submitter not in operators whitelist: " + submitter.to_string());
     CHECKC(claimer.value != 0 && is_account(claimer), err::ACCOUNT_INVALID, "invalid claimer");
 
     rewardact_t::acts_idx acts(get_self(), get_self().value);
@@ -148,11 +148,11 @@ void poe_cisum::claimpoints(const name& submitter, const name& claimer, const na
 
 void poe_cisum::consumeact(const name& submitter, const name& act_name, const asset& amount) {
 
-    // 允许：poe 自身 / POH 合约 / oracle(submitter)
+    // 允许：poe 自身 / POH 合约 / operators(submitter)
     CHECKC( has_auth(get_self())
          || has_auth(POH_CONTRACT)
-         || _gstate.oracles.count(submitter) > 0,
-         err::DID_NOT_AUTH, " not authorized: submitter must be POE, POH, or oracle");
+         || _gstate.operators.count(submitter) > 0,
+         err::DID_NOT_AUTH, " not authorized: submitter must be POE, POH, or operators");
 
     CHECKC(act_name.value != 0,                err::INVALID_FORMAT,   "act_name is empty");
     CHECKC(amount.is_valid(),                  err::INVALID_FORMAT,   "nvalid amount");

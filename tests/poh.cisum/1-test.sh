@@ -34,9 +34,4 @@ mpush $poh_con setregistrar '["flonian"]' -p $poh_con
 
 
 
-mpush $poh_con registreward '["flonian","mywallet2","gahbnbehaskk"]' -p flonian
-
-mpush $poh_con registreward '["gahbnbehaskk","PoH signup reward"]' -p flonian
-
-mpush $poh_con registreward '["mywallet2","PoH signup reward"]' -p flonian
-
+mpush $poh_con registreward '["flonian","flonian","gahbnbehaskk"]' -p flonian

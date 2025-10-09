@@ -9,12 +9,6 @@ mset $poe_con poe.cisum
 mcli set account permission $poe_con active --add-code
 
 cisum_token=cisum.token
-# 给合约开 NESTAR 余额行（RAM 自付）
-mpush $cisum_token open '[
-  "'"${poe_con}"'",
-  "4,CISUM",
-  "'"${poe_con}"'"
-]' -p $poe_con
 
 # 将合约加入白名单（允许转账 CISUM）
 mpush $cisum_token addwhitelist '["'"${poe_con}"'"]' -p $cisum_token
@@ -44,7 +38,7 @@ mpush $poe_con addrewardact '[
 # 邀请好友注册 - 300 CISUM
 mpush $poe_con addrewardact '[
   "invite",
-  "300.0000 CISUM",
+  "50.0000 CISUM",
   "邀请好友注册奖励"
 ]' -p $poe_con
 
@@ -55,8 +49,9 @@ mpush $poe_con addrewardact '[
   "上传艺人内容奖励"
 ]' -p $poe_con
 
-mpush $poe_con addoracle '[
-  "myadmin"
+operator=
+mpush $poe_con addoperator '[
+  "'"${operator}"'"
 ]' -p $poe_con
 
 
