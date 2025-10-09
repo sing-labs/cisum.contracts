@@ -23,7 +23,7 @@ mpush $cisumsummary_con addtoken '["sing.token", "8,MUSIC"]' -p $cisumsummary_co
 #   mpush $cisumsummary_con view '["flonian"]' -p $cisumsummary_con
 
 
-#   mpush $cisumsummary_con view '["flonian"]' --read -j
+#   mpush $cisumsummary_con view '["cvph53ao15sq"]' --read -j
 
 
 

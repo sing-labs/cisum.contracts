@@ -35,10 +35,10 @@ mpush $poe_con addrewardact '[
   "发布短视频内容奖励"
 ]' -p $poe_con
 
-# 邀请好友注册 - 300 CISUM
+# 邀请好友注册 - 200 CISUM
 mpush $poe_con addrewardact '[
   "invite",
-  "50.0000 CISUM",
+  "200.0000 CISUM",
   "邀请好友注册奖励"
 ]' -p $poe_con
 
