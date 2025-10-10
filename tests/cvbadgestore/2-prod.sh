@@ -95,3 +95,27 @@ mpush $badge_ntoken issue '[
 
 
 
+
+
+
+
+mpush badge.cvnft settokenuri '[4000000001,
+"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreigjp2lys54xk2dwfpwmhbgsdymjxzyamqg4wqrv35adfhhgdoljgi"
+]' -p badge.cvnft -p badgecvstore
+
+mpush badge.cvnft settokenuri '[
+  {"value":"4000000002"},
+  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreifb2vphs3zxmf25tz5dxcleu44qfnyrf5paqaytxxaxm3flzh6bdu"
+]' -p badge.cvnft -p badgecvstore
+mpush badge.cvnft settokenuri '[
+  {"value":"4000000003"},
+  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiaiqcmpqzvauuq5mrvh4i5caeu52egsqdsmk4uzovjg75a535q3se"
+]' -p badge.cvnft -p badgecvstore
+
+mpush badge.cvnft settokenuri '[
+  {"value":"4000000004"},
+  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiaxrowvsczmuuir44f2s6xvumb5qi7wjc3sv2ulu4nngan47ilqdm"
+]' -p badge.cvnft -p badgecvstore
+
+
+

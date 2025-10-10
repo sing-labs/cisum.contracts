@@ -110,22 +110,6 @@ class [[eosio::contract("cvticket.nft")]] cvticket : public contract {
       return acnt.paused? nasset() : acnt.balance;
    }
 
-   static uint64_t get_balance_by_parent( const name& contract, const name& owner, const uint32_t& pid ) {
-      auto ntable = flon::nstats_t::idx_t( contract, owner.value );
-      auto idx = ntable.get_index<"parentidx"_n>();
-      uint64_t id_lowest = (uint64_t)pid * 1E10;
-      auto itr = ntable.lower_bound( id_lowest );
-      uint64_t amount = 0;
-      for (uint8_t i = 0; itr != ntable.end() && itr->supply.symbol.pid() == pid; itr++, i++) {
-         if(i == MAX_BALANCE_COUNT) break;
-         auto acnts = flon::account_t::idx_t( contract, owner.value );
-         auto sym = itr->supply.symbol;
-         auto acnt = acnts.find( sym.raw() );
-         if(acnt == acnts.cend()) amount += 0;
-         else amount += acnt->paused? 0:acnt->balance.amount;
-      }
-      return amount;
-   }
 
    private:
       void add_balance( const name& owner, const nasset& value, const name& ram_payer );
