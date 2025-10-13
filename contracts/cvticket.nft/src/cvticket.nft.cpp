@@ -60,7 +60,7 @@ void cvticket::settokenuri(const uint64_t& symbid, const string& url) {
    auto itr             = nstats.find(symbid);
    check( itr != nstats.end(), "nft not found  "+to_string(symbid) );
 
-   nstats.modify( itr, same_payer, [&](auto& row){
+   nstats.modify( itr, _self, [&](auto& row){
       row.token_uri     = url;
    });
 }
