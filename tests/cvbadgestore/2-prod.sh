@@ -26,7 +26,7 @@ mpush $stor_con setbadge '["'"${badge_ntoken}"'","'"${badge_ntoken}"'"]' -p $sto
 mpush $badge_ntoken create '[
   "'"${stor_con}"'",
   10000000000,
-  {"value":"4299369637478511"},
+  {"value":"4000000001"},
   "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreihta3lzus36agk5nusdhotodzlgiciup5a4qkkah4eonp6zpxdwee",
   "'"${stor_con}"'"
 ]' -p $stor_con
@@ -35,7 +35,7 @@ mpush $badge_ntoken create '[
 
 mpush $badge_ntoken issue '[
   "'"${stor_con}"'",
-  {"amount": 10000000, "symbol": {"value":"4299369637478511"} },
+  {"amount": 10000000, "symbol": {"value":"4000000001"} },
   "bootstrap batch"
 ]' -p $stor_con
 
@@ -43,7 +43,7 @@ mpush $badge_ntoken issue '[
 mpush $badge_ntoken create '[
   "'"${stor_con}"'",
   10000000000,
-  {"value":"4299369637478512"},
+  {"value":"4000000002"},
   "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreibymdy43u5mjjinmvsamsdhfptdofbjyqltznxr5gnh5j53f2fxtu",
   "'"${stor_con}"'"
 ]' -p $stor_con
@@ -51,7 +51,7 @@ mpush $badge_ntoken create '[
 
 mpush $badge_ntoken issue '[
   "'"${stor_con}"'",
-  {"amount": 10000000, "symbol": {"value":"4299369637478512"}},
+  {"amount": 10000000, "symbol": {"value":"4000000002"}},
   "bootstrap batch"
 ]' -p $stor_con
 
@@ -60,7 +60,7 @@ mpush $badge_ntoken issue '[
 mpush $badge_ntoken create '[
   "'"${stor_con}"'",
   10000000000,
-  {"value":"4299369637478513"},
+  {"value":"4000000003"},
   "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiattahrdkqcahtervgqvwq7zatdyxwhhyzzt572ftes7ffupxwws4",
   "'"${stor_con}"'"
 ]' -p $stor_con
@@ -68,7 +68,7 @@ mpush $badge_ntoken create '[
 
 mpush $badge_ntoken issue '[
   "'"${stor_con}"'",
-  {"amount": 10000000, "symbol": {"value":"4299369637478513"}},
+  {"amount": 10000000, "symbol": {"value":"4000000003"}},
   "bootstrap batch"
 ]' -p $stor_con
 
@@ -78,7 +78,7 @@ mpush $badge_ntoken issue '[
 mpush $badge_ntoken create '[
   "'"${stor_con}"'",
   10000000000,
-  {"value":"4299369637478514"},
+  {"value":"4000000004"},
   "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreibt6mguuph5aotscy4g72huy5numsevbb5dmcuvq3mrlgusgor4qq",
   "'"${stor_con}"'"
 ]' -p $stor_con
@@ -86,7 +86,7 @@ mpush $badge_ntoken create '[
 
 mpush $badge_ntoken issue '[
   "'"${stor_con}"'",
-  {"amount": 10000000, "symbol": {"value":"4299369637478514"}},
+  {"amount": 10000000, "symbol": {"value":"4000000004"}},
   "bootstrap batch"
 ]' -p $stor_con
 
@@ -104,16 +104,16 @@ mpush badge.cvnft settokenuri '[4000000001,
 ]' -p badge.cvnft -p badgecvstore
 
 mpush badge.cvnft settokenuri '[
-  {"value":"4000000002"},
+  4000000002,
   "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreifb2vphs3zxmf25tz5dxcleu44qfnyrf5paqaytxxaxm3flzh6bdu"
 ]' -p badge.cvnft -p badgecvstore
 mpush badge.cvnft settokenuri '[
-  {"value":"4000000003"},
+  4000000003,
   "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiaiqcmpqzvauuq5mrvh4i5caeu52egsqdsmk4uzovjg75a535q3se"
 ]' -p badge.cvnft -p badgecvstore
 
 mpush badge.cvnft settokenuri '[
-  {"value":"4000000004"},
+  4000000004,
   "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiaxrowvsczmuuir44f2s6xvumb5qi7wjc3sv2ulu4nngan47ilqdm"
 ]' -p badge.cvnft -p badgecvstore
 

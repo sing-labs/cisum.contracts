@@ -110,13 +110,13 @@ void poh_cisum::registreward(const name& submitter,
                 SING_BANK,
                 _self,
                 reward_sing,
-                std::string("NewReg Reward")
+                std::string("NewReg Reward:")+ invitee.to_string()
             );
             TRANSFER(
                 SING_BANK,
                 _gstate.platform_acct,
                 reward_sing,
-                std::string("NewReg Reward")
+                std::string("NewReg Reward:")+ invitee.to_string()
             );
             _gstate.sing_issued += reward_sing;
         }
@@ -128,13 +128,13 @@ void poh_cisum::registreward(const name& submitter,
             CISUM_BANK,
             _self,
             CISUM_BONUS,
-            std::string("NewReg Reward")
+            std::string("NewReg Reward:")+ invitee.to_string()
         );
         TRANSFER(
             CISUM_BANK,
             invitee,
             CISUM_BONUS,
-            std::string("NewReg Reward")
+            std::string("NewReg Reward:")+ invitee.to_string()
         );
 
         // 通知（保持你原有的事件）
@@ -145,7 +145,7 @@ void poh_cisum::registreward(const name& submitter,
             CISUM_BANK,
             invitee,
             CISUM_BONUS,
-            std::string("NewReg Reward"),
+            std::string("NewReg Reward:")+ invitee.to_string(),
             "signupmining",
             "",
             current_time_point().time_since_epoch().count() / 1'000'000
