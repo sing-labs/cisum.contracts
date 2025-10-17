@@ -88,4 +88,4 @@ mpush song.token transfer '["flonian","grab.cisum","100.0000 SONG","grab:20:a179
 
 
 
- mpush cisum.token transfer '["flonian","grab.cisum","100.0000 CISUM","grab:29:a1799ae8e1ea62a20a5f56710347a123"]' -p flonian
+ mpush cisum.token transfer '["gahbnbehaskk","grab.cisum","100.0000 CISUM","grab:30:a1799ae8e1ea62a20a5f56710348a123"]' -p gahbnbehaskk

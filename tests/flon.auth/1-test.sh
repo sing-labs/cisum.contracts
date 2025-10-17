@@ -21,7 +21,7 @@ mpush $rolemanage_con  setrole '["platformadmin","平台管理员"]'   -p flonia
 mpush $rolemanage_con  setrole '["R_REDEMPTION_EXECUTE","核销用户"]'   -p flonian
 
 
-mpush $rolemanage_con  setrole '["admin","超级管理员"]'   -p flonian
+mpush $rolemanage_con  addrole '["gahbnbehaskk","tesssssssss",测试"]'   -p gahbnbehaskk
 mpush $rolemanage_con  delrole '["showadmin1"]'   -p flonian
 
 
@@ -53,16 +53,16 @@ mpush $rolemanage_con delroleperm '["flonian","admin","test"]'   -p flonian
 
 
 rolemanage_con=flon.auth
-mpush $rolemanage_con grantrole '["flon.auth","flonian","pxuqby4g5ogz","admin"]' -p flonian
+mpush $rolemanage_con grantrole '["gahbnbehaskk","pxuqby4g5ogz","admin"]' -p gahbnbehaskk
 
 
 
 mpush $rolemanage_con addroleperm '[
-  "flonian",
-  "管理员",
+  "gahbnbehaskk",
+  "tesssssssss",
   ["create","view","delete"],
   "批量添加权限测试"
-]' -p flonian
+]' -p gahbnbehaskk
 
 
 mpush $rolemanage_con delroleperm '[
@@ -73,7 +73,7 @@ mpush $rolemanage_con delroleperm '[
 ]' -p flonian
 
 
-
+mpush cisum.auth  addrole '["gahbnbehaskk","tesssssssss","测试"]'   -p gahbnbehaskk
 
 mpush $rolemanage_con  addrole '["admin","超级管理员1111"]'   -p flonian
 
