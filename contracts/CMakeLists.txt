@@ -62,7 +62,7 @@ add_subdirectory(sing.token)
 add_subdirectory(pos.cisum)
 
 add_subdirectory(flon.auth)
-
+add_subdirectory(cisum.auth)
 add_subdirectory(cisumreserve)
 # if(BUILD_TESTS)
 #   add_subdirectory(test_contracts)

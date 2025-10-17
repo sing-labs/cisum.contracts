@@ -10,8 +10,8 @@ using std::vector;
 #include <limits>  // for std::numeric_limits
 #include <eosio/crypto.hpp>
 #include <pop.cisum.hpp>
-#include "flon.auth/flon.auth.hpp"
-#include "flon.auth/flon.auth.db.hpp"
+#include "cisum.auth/cisum.auth.hpp"
+#include "cisum.auth/cisum.auth.db.hpp"
 #include "flon/consts.hpp"
 namespace flon {
 
@@ -45,8 +45,8 @@ void show::require_perm(const name& submitter,
                         const std::string& perm) const {
     require_auth(submitter);
 
-    flonauth::checkrole_action(
-        FLONAUTH_CONTRACT,
+    cisumauth::checkrole_action(
+        CISUMAUTH_CONTRACT,
         { get_self(), "active"_n }        // 本合约自己授权
     ).send(
         get_self(),                       // submitter = 本合约
@@ -344,8 +344,8 @@ void show::issue(const name&     submitter,
     if (has_auth(get_self())) {
     } else if (has_auth(_gstate.admin) && submitter == _gstate.admin) {
     } else {
-        flonauth_global global_tbl("flon.auth"_n, "flon.auth"_n.value);
-        check(global_tbl.exists(), "flon.auth global not initialized");
+        cisumauth_global global_tbl("cisum.auth"_n, "cisum.auth"_n.value);
+        check(global_tbl.exists(), "cisum.auth global not initialized");
         auto gstate = global_tbl.get();
         check(gstate.allowlist.find(submitter) != gstate.allowlist.end(), "submitter not in allowlist");
         require_auth(submitter);
@@ -500,8 +500,8 @@ void show::buyticket(const name&  submitter,
     if (has_auth(get_self())) {
     } else if (has_auth(_gstate.admin) && submitter == _gstate.admin) {
     } else {
-        flonauth_global global_tbl("flon.auth"_n, "flon.auth"_n.value);
-        check(global_tbl.exists(), "flon.auth global not initialized");
+        cisumauth_global global_tbl("cisum.auth"_n, "cisum.auth"_n.value);
+        check(global_tbl.exists(), "cisum.auth global not initialized");
         auto gstate = global_tbl.get();
         check(gstate.allowlist.find(submitter) != gstate.allowlist.end(), "submitter not in allowlist");
         require_auth(submitter);

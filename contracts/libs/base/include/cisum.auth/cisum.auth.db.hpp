@@ -13,7 +13,7 @@ using std::string;
 namespace flon {
 
 
-struct [[eosio::table, eosio::contract("flon.auth")]] auth_global_t {
+struct [[eosio::table, eosio::contract("cisum.auth")]] auth_global_t {
   name           admin;
   std::set<name> allowlist;
   uint64_t       last_role_id=0;
@@ -21,7 +21,7 @@ struct [[eosio::table, eosio::contract("flon.auth")]] auth_global_t {
   uint64_t       last_roleperm_id=0;
   EOSLIB_SERIALIZE(auth_global_t, (admin)(allowlist)(last_role_id)(last_userrole_id)(last_roleperm_id))
 };
-using flonauth_global = eosio::singleton<"globals"_n, auth_global_t>;
+using cisumauth_global = eosio::singleton<"globals"_n, auth_global_t>;
 
 
 } // namespace flon

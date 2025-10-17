@@ -56,7 +56,7 @@ enum class err: uint8_t {
   { if (!(exp)) eosio::check(false, string("[[") + std::to_string((int)code) + string("]] ") + msg); }
 
 // -------- 全局配置（原样保留） --------
-struct [[eosio::table, eosio::contract("flon.auth")]] global_t {
+struct [[eosio::table, eosio::contract("cisum.auth")]] global_t {
   name           admin;
   std::set<name> allowlist;
   uint64_t       last_role_id=0;
@@ -67,7 +67,7 @@ struct [[eosio::table, eosio::contract("flon.auth")]] global_t {
 using global_singleton = eosio::singleton<"globals"_n, global_t>;
 
 // scope:_self
-struct [[eosio::table("roles"), eosio::contract("flon.auth")]] role_t {
+struct [[eosio::table("roles"), eosio::contract("cisum.auth")]] role_t {
     uint64_t    id;         // 自增主键
     std::string role;       // 角色名（任意字符串）
     std::string desc;       // 描述
@@ -85,7 +85,7 @@ using roles_idx = eosio::multi_index<
 
 // -------- 表：用户角色绑定（role=string，各索引改为 checksum256 版本） --------
 // scope:  _self
-struct [[eosio::table("userroles"), eosio::contract("flon.auth")]] user_role_t {
+struct [[eosio::table("userroles"), eosio::contract("cisum.auth")]] user_role_t {
     uint64_t    id;         // 自增主键
     name        user;       // 被授予用户
     std::string role;       // 角色名（string）
@@ -114,7 +114,7 @@ using userroles_idx = eosio::multi_index<
 
 // -------- 表：角色权限绑定 --------
 // scope:  _self
-struct [[eosio::table("roleperms"), eosio::contract("flon.auth")]] role_perm_t {
+struct [[eosio::table("roleperms"), eosio::contract("cisum.auth")]] role_perm_t {
     uint64_t    id;         // 自增主键
     std::string role;       // 角色名（string）
     std::string perm;       // 权限名（string）

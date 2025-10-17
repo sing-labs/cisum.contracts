@@ -8,7 +8,7 @@
 #include "grab.cisum.hpp"
 #include <flon/token.protocol.hpp>
 #include "show.cisum.db.hpp"
-#include "flon.auth/flon.auth.hpp"
+#include "cisum.auth/cisum.auth.hpp"
 
 namespace flon {
 
@@ -114,8 +114,8 @@ static inline uint32_t get_random_base(const name& user, uint64_t salt) {
 
 void grab_cisum::require_perm(const name& submitter, const std::string& perm) const {
     require_auth(submitter);
-    flonauth::checkrole_action(
-        FLONAUTH_CONTRACT,
+    cisumauth::checkrole_action(
+        CISUMAUTH_CONTRACT,
         { get_self(), "active"_n }
     ).send(get_self(), submitter, perm);
 }

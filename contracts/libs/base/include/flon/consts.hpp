@@ -17,7 +17,7 @@ static constexpr eosio::name GRAB_CONTRACT          {"grab.cisum"_n};
 static constexpr eosio::name CVTICKET_CONTRACT      {"ticket.cvnft"_n};
 static constexpr eosio::name CVBADGE_CONTRACT       {"badge.cvnft"_n};
 static constexpr eosio::name CVBADGESTORE_CONTRACT  {"badgecvstore"_n};
-static constexpr eosio::name FLONAUTH_CONTRACT      {"flon.auth"_n};
+static constexpr eosio::name CISUMAUTH_CONTRACT      {"cisum.auth"_n};
 
 
 static constexpr eosio::name CISUM_CONTRACT         {"cisum.token"_n};

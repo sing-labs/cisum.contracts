@@ -8,7 +8,7 @@ using std::string;
 
 namespace flon {
 
-class [[eosio::contract("flon.auth")]] flonauth : public contract {
+class [[eosio::contract("cisum.auth")]] cisumauth : public contract {
 public:
     using contract::contract;
 
@@ -16,7 +16,7 @@ public:
                          const name& user,
                          const std::string& perm) ;
 
-    using checkrole_action  = eosio::action_wrapper<"checkrole"_n,  &flonauth::checkrole>;
+    using checkrole_action  = eosio::action_wrapper<"checkrole"_n,  &cisumauth::checkrole>;
 
 };
 
