@@ -64,7 +64,7 @@ struct [[eosio::table, eosio::contract("flon.auth")]] global_t {
   uint64_t       last_roleperm_id=0;
   EOSLIB_SERIALIZE(global_t, (admin)(allowlist)(last_role_id)(last_userrole_id)(last_roleperm_id))
 };
-using global_singleton = eosio::singleton<"globals"_n, global_t>;
+using global_singleton = eosio::singleton<"global"_n, global_t>;
 
 // -------- 表：roles --------
 struct [[eosio::table("roles"), eosio::contract("flon.auth")]] role_t {
