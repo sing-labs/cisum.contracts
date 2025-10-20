@@ -95,7 +95,7 @@ public:
 
   // ===== 票档 =====
   ACTION newticket(const name& submitter,
-                    const uint64_t&         how_id,
+                    const uint64_t&         show_id,
                     const nsymbol&          ticket_nsym,
                     const nsymbol&          prerequisite_nsym,
                     const string&           ticket_type,

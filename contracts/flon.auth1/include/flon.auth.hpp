@@ -33,19 +33,19 @@ public:
     ACTION delallowlist(const name& acct);
 
     // ========= 角色 & 权限 =========
-    ACTION addrole(const name& submitter, const name& role, const string& desc);
-    ACTION delrole(const name& submitter, const name& role);
+    ACTION addrole(const name& submitter, const string& role, const string& desc);   // ✅ role 改为 string
+    ACTION delrole(const name& submitter, const string& role);                      // ✅
 
-    ACTION grantrole(const name& granter, const name& user, const name& role);
-    ACTION revokerole(const name& granter, const name& user, const name& role);
+    ACTION grantrole(const name& granter, const name& user, const string& role);    // ✅
+    ACTION revokerole(const name& granter, const name& user, const string& role);   // ✅
 
     ACTION addroleperm(const name& submitter,
-                       const name& role,
+                       const string& role,                                         // ✅
                        const std::set<string>& perms,
                        const string& desc);
 
     ACTION delroleperm(const name& submitter,
-                       const name& role,
+                       const string& role,                                         // ✅
                        const std::set<string>& perms);
 
     ACTION checkrole(const name& submitter,
@@ -68,10 +68,10 @@ private:
     void require_manage_perm(const name& submitter, const std::string& perm);
 
     /// 用户是否已拥有某个角色
-    bool has_user_role(const name& user, const name& role) const;
+    bool has_user_role(const name& user, const std::string& role) const;   // ✅
 
     /// 角色是否存在
-    bool role_exists(const name& role) const;
+    bool role_exists(const std::string& role) const;                       // ✅
 };
 
 } // namespace flon

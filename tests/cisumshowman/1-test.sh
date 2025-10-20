@@ -14,9 +14,9 @@ ops21.cisum
 
 # ========= 一把提交：cisumshowman::publishshow =========
 mpush $ops_con publishshow '[
-  "gahbnbehaskk",
+  "flonian",
   {
-    "show_id": 20250591,
+    "show_id": 1760855632320,
     "category": "concert",
     "ticket_transferable": true,
     "ticket_refundable": true,
@@ -27,8 +27,8 @@ mpush $ops_con publishshow '[
   },
   [
     {
-      "ticket_id": 21010001000030810,
-      "token_uri": "ipfs://free_ticket399_metadata",
+      "ticket_id": 2101025919476,
+      "token_uri": "ipfs://free_ticket400_metadata",
       "ticket_type": "free",
       "price": "100.0000 CISUM",
       "price_usdt": "0 USDT",
@@ -40,8 +40,8 @@ mpush $ops_con publishshow '[
       "max_grabs_per_user":10000
     },
     {
-      "ticket_id": 21010001000030811,
-      "token_uri": "ipfs://vip_ticket399_metadata",
+      "ticket_id": 2101025074572,
+      "token_uri": "ipfs://vip_ticket400_metadata",
       "ticket_type": "vip",
       "price": "199.00 USDT",
       "price_usdt": "199 USDT",
@@ -53,7 +53,7 @@ mpush $ops_con publishshow '[
       "max_grabs_per_user":0
     }
   ]
-]' -p   gahbnbehaskk
+]' -p   flonian
 
 
 
