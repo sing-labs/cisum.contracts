@@ -35,8 +35,6 @@ bool flonauth::role_exists(const name& role) const {
 
 void flonauth::init(const name& admin) {
     require_auth(get_self());
-    // CHECKC(!_global.exists() || _gstate.admin.value == 0,
-    //        err::INVALID_FORMAT, "already initialized");
     _gstate.admin = admin;
 }
 
