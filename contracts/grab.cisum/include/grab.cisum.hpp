@@ -152,6 +152,17 @@ private:
 
     upgglobal_singleton     _upgglobal;
     upgrade_global_t        _upggstate;
+
+
+    void _process_add_rush_sale(const name& from,
+                                const nasset& tickets,
+                                const std::vector<std::string>& params);
+    void _process_add_rush_upgrade(const name& from,
+                                   const nasset& tickets,
+                                   const std::vector<std::string>& params);
+    void _process_rush_upgrade(const name& from,
+                               const nasset& tickets,
+                               const std::vector<std::string>& params);
 };
 
 } // namespace flon

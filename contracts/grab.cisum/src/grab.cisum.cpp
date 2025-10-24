@@ -551,6 +551,7 @@ void grab_cisum::on_transfer_cisum(const name& from,
     act.send(grab_id, from, 1, result_ticket, now, rush_sale_id);
 }
 
+/* Purpose: pay_ticket -> target_ticket */
 void grab_cisum::on_transfer_ticket(const name& from,
                                     const name& to,
                                     const vector<nasset>& assets,
@@ -564,124 +565,137 @@ void grab_cisum::on_transfer_ticket(const name& from,
     CHECKC(params.size() >= 2, err::INVALID_FORMAT, "invalid memo");
 
     std::string action = params[0];
-
-    // 管理员添加库存 (addrushsale:<rush_sale_id>)
     if (action == "addrushsale") {
-        CHECKC(params.size() == 2, err::INVALID_FORMAT, "memo must be addrushsale:<rush_sale_id>");
-        uint64_t rush_sale_id = std::stoull(params[1]);
-
-        rush_sale::idx_t rs_idx(get_self(), get_self().value);
-        auto rs_itr = rs_idx.find(rush_sale_id);
-        CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found");
-
-        CHECKC(tickets.symbol == rs_itr->total_tickets.symbol, err::SYMBOL_MISMATCH, "ticket symbol mismatch");
-        CHECKC(tickets.amount > 0, err::NOT_POSITIVE, "must transfer positive amount");
-
-        auto now = current_time_point();
-        rs_idx.modify(rs_itr, same_payer, [&](auto& r){
-            r.total_tickets += tickets;
-            r.available_tickets = r.total_tickets - r.grabbed_tickets;
-            r.updated_at = now;
-        });
-        return;
+        _process_add_rush_sale(from, tickets, params); return;
+    } else if (action == "addrushupgrade") {
+        _process_add_rush_upgrade(from, tickets, params); return;
+    } else if (action == "rushupgrade") {
+        _process_rush_upgrade(from, tickets, params); return;
     }
+            
+    CHECKC(false, err::INVALID_FORMAT, "invalid action in memo");
+}
 
-    // 管理员添加 rush_upgrade 库存
+void grab_cisum::_process_add_rush_sale(const name& from,
+                                        const nasset& tickets,
+                                        const std::vector<std::string>& params)
+ {
+// 管理员添加库存 (addrushsale:<rush_sale_id>)
+
+    CHECKC(params.size() == 2, err::INVALID_FORMAT, "memo must be addrushsale:<rush_sale_id>");
+    uint64_t rush_sale_id = std::stoull(params[1]);
+
+    rush_sale::idx_t rs_idx(get_self(), get_self().value);
+    auto rs_itr = rs_idx.find(rush_sale_id);
+    CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found");
+
+    CHECKC(tickets.symbol == rs_itr->total_tickets.symbol, err::SYMBOL_MISMATCH, "ticket symbol mismatch");
+    CHECKC(tickets.amount > 0, err::NOT_POSITIVE, "must transfer positive amount");
+
+    auto now = current_time_point();
+    rs_idx.modify(rs_itr, same_payer, [&](auto& r){
+        r.total_tickets += tickets;
+        r.available_tickets = r.total_tickets - r.grabbed_tickets;
+        r.updated_at = now;
+    });
+}
+
+// 管理员添加 rush_upgrade 库存
+void grab_cisum::_process_add_rush_upgrade(const name& from,
+                                           const nasset& tickets,
+                                           const std::vector<std::string>& params)
+{
     // memo = "addrushupgrade:<rush_upgrade_id>"
-    if (action == "addrushupgrade") {
-        CHECKC(params.size() == 2, err::INVALID_FORMAT, "memo must be addrushupgrade:<rush_upgrade_id>");
-        uint64_t rush_upgrade_id = std::stoull(params[1]);
+    CHECKC(params.size() == 2, err::INVALID_FORMAT, "memo must be addrushupgrade:<rush_upgrade_id>");
+    uint64_t rush_upgrade_id = std::stoull(params[1]);
 
-        rush_upgrade::idx_t ru_idx(get_self(), get_self().value);
-        auto ru_itr = ru_idx.find(rush_upgrade_id);
-        CHECKC(ru_itr != ru_idx.end(), err::RECORD_NO_FOUND, "rush upgrade not found");
+    rush_upgrade::idx_t ru_idx(get_self(), get_self().value);
+    auto ru_itr = ru_idx.find(rush_upgrade_id);
+    CHECKC(ru_itr != ru_idx.end(), err::RECORD_NO_FOUND, "rush upgrade not found");
 
-        CHECKC(tickets.symbol == ru_itr->total_tickets.symbol, err::SYMBOL_MISMATCH, "ticket symbol mismatch");
-        CHECKC(tickets.amount > 0, err::NOT_POSITIVE, "must transfer positive amount");
+    CHECKC(tickets.symbol == ru_itr->total_tickets.symbol, err::SYMBOL_MISMATCH, "ticket symbol mismatch");
+    CHECKC(tickets.amount > 0, err::NOT_POSITIVE, "must transfer positive amount");
 
-        auto now = current_time_point();
-        ru_idx.modify(ru_itr, same_payer, [&](auto& r){
-            r.total_tickets += tickets;
-            r.available_tickets = r.total_tickets - r.grabbed_tickets;
-            r.updated_at = now;
-        });
-        return;
-    }
+    auto now = current_time_point();
+    ru_idx.modify(ru_itr, same_payer, [&](auto& r){
+        r.total_tickets += tickets;
+        r.available_tickets = r.total_tickets - r.grabbed_tickets;
+        r.updated_at = now;
+    });
+}
 
+void grab_cisum::_process_rush_upgrade(const name& from,
+                                       const nasset& tickets,
+                                       const std::vector<std::string>& params)
+{
     // 用户 rush 升级活动参与（rushupgrade:<rush_upgrade_id>:<grab_id>）
-    if (action == "rushupgrade") {
 
-        CHECKC(params.size() == 3, err::INVALID_FORMAT, "memo must be rushupgrade:<rush_upgrade_id>:<grab_id>");
-        uint64_t rush_upgrade_id = std::stoull(params[1]);
-        std::string grab_id = params[2];
-        auto now = current_time_point();
+    CHECKC(params.size() == 3, err::INVALID_FORMAT, "memo must be rushupgrade:<rush_upgrade_id>:<grab_id>");
+    uint64_t rush_upgrade_id = std::stoull(params[1]);
+    std::string grab_id = params[2];
+    auto now = current_time_point();
 
-        // 加载活动
-        rush_upgrade::idx_t ru_idx(get_self(), get_self().value);
-        auto ru_itr = ru_idx.find(rush_upgrade_id);
-        CHECKC(ru_itr != ru_idx.end(), err::RECORD_NO_FOUND, "rush upgrade not found");
+    // 加载活动
+    rush_upgrade::idx_t ru_idx(get_self(), get_self().value);
+    auto ru_itr = ru_idx.find(rush_upgrade_id);
+    CHECKC(ru_itr != ru_idx.end(), err::RECORD_NO_FOUND, "rush upgrade not found");
 
-        CHECKC(now >= ru_itr->started_at, err::STATUS_MISMATCH, "rush upgrade not started");
-        CHECKC(now <= ru_itr->ended_at, err::STATUS_MISMATCH, "rush upgrade ended");
-        CHECKC(ru_itr->available_tickets.amount > 0, err::EXCEED_LIMIT, "no tickets left");
+    CHECKC(now >= ru_itr->started_at, err::STATUS_MISMATCH, "rush upgrade not started");
+    CHECKC(now <= ru_itr->ended_at, err::STATUS_MISMATCH, "rush upgrade ended");
+    CHECKC(ru_itr->available_tickets.amount > 0, err::EXCEED_LIMIT, "no tickets left");
 
-        // 校验符号一致
-        CHECKC(tickets.symbol.value == ru_itr->pay_tickets.symbol.value, err::SYMBOL_MISMATCH, "ticket mismatch");
+    // 校验符号一致
+    CHECKC(tickets.symbol.value == ru_itr->pay_tickets.symbol.value, err::SYMBOL_MISMATCH, "ticket mismatch");
 
-        // 防重复参与（grab_id 唯一）
-        upgrade_log_t::idx_t logs(get_self(), rush_upgrade_id);
-        auto bygrab = logs.get_index<"bygrabid"_n>();
-        auto h = sha256(grab_id.data(), grab_id.size());
-        CHECKC(bygrab.find(h) == bygrab.end(), err::TYPE_INVALID, "duplicate grab_id");
+    // 防重复参与（grab_id 唯一）
+    upgrade_log_t::idx_t logs(get_self(), rush_upgrade_id);
+    auto bygrab = logs.get_index<"bygrabid"_n>();
+    auto h = sha256(grab_id.data(), grab_id.size());
+    CHECKC(bygrab.find(h) == bygrab.end(), err::TYPE_INVALID, "duplicate grab_id");
 
-        // 防止同一用户重复中奖
-        uint128_t key_userwin = ((uint128_t)from.value << 1) | 1;
-        auto byuw = logs.get_index<"byuserwin"_n>();
-        CHECKC(byuw.find(key_userwin) == byuw.end(), err::EXCEED_LIMIT, "user already won in this upgrade");
+    // 防止同一用户重复中奖
+    uint128_t key_userwin = ((uint128_t)from.value << 1) | 1;
+    auto byuw = logs.get_index<"byuserwin"_n>();
+    CHECKC(byuw.find(key_userwin) == byuw.end(), err::EXCEED_LIMIT, "user already won in this upgrade");
 
-        // 抽签判定
-        bool win = false;
-        if (ru_itr->win_ratio > 0) {
-            uint32_t rnd = get_random_base(from, rush_upgrade_id);
-            win = (rnd < ru_itr->win_ratio);
-        }
-
-        // from: 消耗票, to: 升级结果
-        auto from_ticket = tickets;
-        auto num = win ? 1 : 0;
-        auto to_ticket = nasset( num , nsymbol(ru_itr->target_ticket_id) );
-
-        // 更新 rush_upgrade 状态
-        ru_idx.modify(ru_itr, same_payer, [&](auto& r){
-            r.total_grabs++;
-            if (win) {
-                r.grabbed_tickets.amount++;
-                r.available_tickets = r.total_tickets - r.grabbed_tickets;
-            }
-            r.updated_at = now;
-        });
-
-        // 写入日志
-        logs.emplace(get_self(), [&](auto& row){
-            row.id         = logs.available_primary_key();
-            row.grab_id    = grab_id;
-            row.account    = from;
-            row.from       = from_ticket;
-            row.to         = to_ticket;
-            row.created_at = now;
-        });
-
-        // 发奖
-        if (win) {
-            // 发放升级票
-            vector<nasset> assets_out = { to_ticket };
-            TRANSFER_NFT_OUT(_gstate.ticket_contract, from, assets_out, "rushupgrade reward");
-        }
-
-        return;
+    // 抽签判定
+    bool win = false;
+    if (ru_itr->win_ratio > 0) {
+        uint32_t rnd = get_random_base(from, rush_upgrade_id);
+        win = (rnd < ru_itr->win_ratio);
     }
 
-    CHECKC(false, err::INVALID_FORMAT, "unknown memo prefix: " + action);
+    // from: 消耗票, to: 升级结果
+    auto from_ticket = tickets;
+    auto num = win ? 1 : 0;
+    auto to_ticket = nasset( num , nsymbol(ru_itr->target_ticket_id) );
+
+    // 更新 rush_upgrade 状态
+    ru_idx.modify(ru_itr, same_payer, [&](auto& r){
+        r.total_grabs++;
+        if (win) {
+            r.grabbed_tickets.amount++;
+            r.available_tickets = r.total_tickets - r.grabbed_tickets;
+        }
+        r.updated_at = now;
+    });
+
+    // 写入日志
+    logs.emplace(get_self(), [&](auto& row){
+        row.id         = logs.available_primary_key();
+        row.grab_id    = grab_id;
+        row.account    = from;
+        row.from       = from_ticket;
+        row.to         = to_ticket;
+        row.created_at = now;
+    });
+
+    // 发奖
+    if (win) {
+        // 发放升级票
+        vector<nasset> assets_out = { to_ticket };
+        TRANSFER_NFT_OUT(_gstate.ticket_contract, from, assets_out, "rushupgrade reward");
+    }
 }
 
 void grab_cisum::notifyticket(const string& grab_id,
