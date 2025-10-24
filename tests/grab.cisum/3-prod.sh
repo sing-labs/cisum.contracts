@@ -29,3 +29,21 @@ mpush $grab_con addtoken '["4,CISUM","cisum.token"]' -p $grab_con
 # 6) grab 的 oracle 账号
 oracle=
 mpush $grab_con addoracle '["'"$oracle"'"]' -p $grab_con
+
+
+
+
+
+
+mpush $grab_con addupgrade '["flonian",1760855632324,2101025077573,"2025-10-20T00:00:00","2025-11-20T00:00:00",{ "amount": 1, "symbol": { "value": "2101025919776" } },10,5000]' -p flonian
+
+mpush ticket.cvnft transfer '["gahbnbehaskk","grab.cisum",[{"amount":1,"symbol":{"value":2101025919776}}],"rushupgrade:2:a1799ae8e1ea72a20a5f57710342a123"]' -p gahbnbehaskk
+
+
+mpush cisum.token transfer '["gahbnbehaskk","grab.cisum","100.0000 CISUM","grab:33:a1799ae8e1ea72a20a5f56710342a123"]' -p gahbnbehaskk
+
+
+
+show_con=show.cisum
+mpush $show_con issuetograb '["show.cisum","grab.cisum", {"amount":100,"symbol":{"value":'2101025077573'}}, "addrushupgrade:2:1760855632324"]' -p $show_con
+

@@ -40,17 +40,17 @@ public:
     ACTION revokerole(const name& granter, const name& user, const name& role);
 
     ACTION addroleperm(const name& submitter,
-                       const name& role,
-                       const std::set<string>& perms,
-                       const string& desc);
+                        const name& role,
+                        const std::set<string>& perms,
+                        const string& desc);
 
     ACTION delroleperm(const name& submitter,
-                       const name& role,
-                       const std::set<string>& perms);
+                        const name& role,
+                        const std::set<string>& perms);
 
     ACTION checkrole(const name& submitter,
-                     const name& user,
-                     const std::string& perm);
+                        const name& user,
+                        const std::string& perm);
 
     // ========= Aliases =========
     using addrole_action    = eosio::action_wrapper<"addrole"_n,    &flonauth::addrole>;

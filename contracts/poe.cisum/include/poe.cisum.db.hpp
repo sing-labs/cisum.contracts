@@ -80,4 +80,11 @@ struct [[eosio::table, eosio::contract("poe.cisum")]] rewardact_t {
   EOSLIB_SERIALIZE(rewardact_t, (id)(act_name)(points)(memo)(claimed_points)(create_at)(update_at))
 };
 
+
+struct  claim_info {
+    name claimer;
+    uint32_t cnt; //发放次数
+};
+
+
 } // namespace flon

@@ -20,12 +20,16 @@ public:
 
     grab_cisum(name receiver, name code, datastream<const char*> ds)
     : contract(receiver, code, ds),
-      _global(get_self(), get_self().value)
+      _global(get_self(), get_self().value),
+      _upgglobal(get_self(), get_self().value)
     {
         _gstate = _global.exists() ? _global.get() : global_t{};
+
+        _upggstate = _upgglobal.exists() ? _upgglobal.get() : upgrade_global_t{};
     }
 
-    ~grab_cisum() { _global.set(_gstate, get_self()); }
+    ~grab_cisum() { _global.set(_gstate, get_self());
+                    _upgglobal.set(_upggstate, get_self());}
 
     /**
      * Initialize the contract.
@@ -69,6 +73,22 @@ public:
     ACTION delrushsale(const name& submitter,
                        const uint64_t& rush_sale_id,
                        const bool& forced);
+
+
+    ACTION addupgrade(const name& submitter,
+                            const uint64_t& show_id,
+                            const uint64_t& ticket_id,
+                            const time_point& started_at,
+                            const time_point& ended_at,
+                            const nasset& upgrade_fee,
+                            const uint32_t& max_grabs_per_user,
+                            const uint32_t& win_ratio);
+    ACTION setupgrade(const name& submitter,
+                             const uint64_t& rush_upgrade_id,
+                             std::optional<uint32_t> max_grabs_per_user,
+                             std::optional<uint32_t> win_ratio,
+                             std::optional<time_point> ended_at);
+
 
     /**
      * Add or update allowed token.
@@ -131,6 +151,9 @@ private:
 
     global_singleton _global;
     global_t         _gstate;
+
+    upgglobal_singleton     _upgglobal;
+    upgrade_global_t        _upggstate;
 };
 
 } // namespace flon

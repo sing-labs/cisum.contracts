@@ -16,19 +16,19 @@ ops21.cisum
 mpush $ops_con publishshow '[
   "flonian",
   {
-    "show_id": 1760855632320,
+    "show_id": 1760855632324,
     "category": "concert",
     "ticket_transferable": true,
     "ticket_refundable": true,
     "show_started_at": "2025-10-02T19:30:00",
-    "show_ended_at":   "2025-10-02T22:00:00",
+    "show_ended_at":   "2025-11-02T22:00:00",
     "show_name": "CISUM Live in Shanghai",
     "show_address": ""
   },
   [
     {
-      "ticket_id": 2101025919476,
-      "token_uri": "ipfs://free_ticket400_metadata",
+      "ticket_id": 2101025919776,
+      "token_uri": "ipfs://free_ticket401_metadata",
       "ticket_type": "free",
       "price": "100.0000 CISUM",
       "price_usdt": "0 USDT",
@@ -40,12 +40,25 @@ mpush $ops_con publishshow '[
       "max_grabs_per_user":10000
     },
     {
-      "ticket_id": 2101025074572,
-      "token_uri": "ipfs://vip_ticket400_metadata",
+      "ticket_id": 2101025077572,
+      "token_uri": "ipfs://vip_ticket401_metadata",
       "ticket_type": "vip",
       "price": "199.00 USDT",
       "price_usdt": "199 USDT",
       "total_count": 2000,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2025-08-01T00:00:00",
+      "sale_ended_at":   "2025-11-01T20:00:00",
+      "win_ratio":0,
+      "max_grabs_per_user":0
+    },
+    {
+      "ticket_id": 2101025077573,
+      "token_uri": "ipfs://after_ticket401_metadata",
+      "ticket_type": "afterpart",
+      "price": "0.000000 USDT",
+      "price_usdt": "0.000000 USDT",
+      "total_count": 100,
       "prerequisite_ticket_id": 0,
       "sale_started_at": "2025-08-01T00:00:00",
       "sale_ended_at":   "2025-11-01T20:00:00",

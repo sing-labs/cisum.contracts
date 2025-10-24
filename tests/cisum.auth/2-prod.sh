@@ -45,3 +45,32 @@ mpush $rolemanage_con revokerole '["flonian","2knqkuxyumyk","ops"]'   -p flonian
 
 mpush $rolemanage_con delrole '["flonian","ops"]'   -p flonian
 mpush $rolemanage_con delrole '["flonian","admin"]'   -p flonian
+
+
+
+
+admin=flonian
+mpush $rolemanage_con addrole '["'"$admin"'","admin","super admin"]'   -p $admin
+mpush $rolemanage_con addroleperm '["'"$admin"'","admin",["banner", "content", "venues", "show", "giveTicket", "ticketCancel", "roleManage", "userManage"],""]'   -p $admin
+
+mpush $rolemanage_con addrole '["'"$admin"'","ops",""]'   -p $admin
+mpush $rolemanage_con addroleperm '["flonian","ops",["banner", "content", "venues", "show", "giveTicket", "ticketCancel", "roleManage"]]'   -p flonian
+
+
+mpush $rolemanage_con grantrole '["'"$admin"'","'"$admin"'","admin"]' -p $admin
+mpush $rolemanage_con grantrole '["'"$admin"'","cisumshowman","admin"]' -p $admin
+oracle=dragonmaster
+mpush $rolemanage_con grantrole '["'"$admin"'","'"$oracle"'","admin"]' -p $admin
+
+mpush $rolemanage_con grantrole '["'"$admin"'","x1l5s3tgwve5","admin"]' -p $admin
+mpush $rolemanage_con grantrole '["'"$admin"'","hufhq3a1mni4","admin"]' -p $admin
+mpush $rolemanage_con grantrole '["'"$admin"'","2knqkuxyumyk","admin"]' -p $admin
+mpush $rolemanage_con grantrole '["'"$admin"'","fulgwxvwfw1m","admin"]' -p $admin
+
+
+mpush $rolemanage_con grantrole '["'"$admin"'","testtest","admin"]' -p $admin
+
+
+
+
+

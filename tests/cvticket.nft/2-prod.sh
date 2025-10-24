@@ -12,4 +12,7 @@ mcli set account permission $ticket_ntoken active --add-code
 mpush $ticket_ntoken  addwhitelist '["ticket.cvnft"]'   -p $ticket_ntoken
 
 
+mpush $ticket_ntoken  addwhitelist '["grab.cisum"]'   -p $ticket_ntoken
+
+
 

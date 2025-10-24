@@ -75,6 +75,15 @@ NTBL("grabglobal") global_t {
 
 typedef eosio::singleton< "grabglobal"_n, global_t > global_singleton;
 
+NTBL("upgglobal") upgrade_global_t {
+   uint64_t       last_rush_upgrade_id;
+
+   EOSLIB_SERIALIZE(upgrade_global_t, (last_rush_upgrade_id))
+};
+
+typedef eosio::singleton< "upgglobal"_n, upgrade_global_t > upgglobal_singleton;
+
+
 // scope: self
 NTBL("rushsales") rush_sale {
    uint64_t       id; // auto increment, PK
@@ -113,6 +122,7 @@ NTBL("rushsales") rush_sale {
      (created_at)(updated_at)
    )
 };
+
 
 // scope: rush_sale_id
 NTBL("orders") order_t {
@@ -178,6 +188,74 @@ NTBL("allowtokens") allowed_token_t {
     > idx_t;
 
     EOSLIB_SERIALIZE(allowed_token_t, (id)(sym)(bank)(created_at)(updated_at))
+};
+
+// scope: self
+NTBL("rushupgrade") rush_upgrade {
+   uint64_t       id; // auto increment, PK
+   uint64_t       show_id;
+   uint64_t       ticket_id;
+   time_point     started_at;
+   time_point     ended_at;
+   nasset         upgrade_fee;            // ✅ 改名，语义更清晰
+   uint32_t       max_grabs_per_user;
+   uint32_t       win_ratio;              // boost 10000, <= 10000
+   nasset         total_tickets;
+   nasset         available_tickets;
+   nasset         sold_tickets;
+   uint32_t       total_grabs;
+   time_point     created_at;
+   time_point     updated_at;
+
+   uint64_t primary_key() const { return id; }
+   uint64_t byticket() const { return ticket_id; }
+   uint64_t byshow()   const { return show_id;   }
+
+   typedef eosio::multi_index<
+      "rushupgrade"_n,
+      rush_upgrade,
+      indexed_by<"byticket"_n, const_mem_fun<rush_upgrade, uint64_t, &rush_upgrade::byticket>>,
+      indexed_by<"byshow"_n,   const_mem_fun<rush_upgrade, uint64_t, &rush_upgrade::byshow>>
+   > idx_t;
+
+   EOSLIB_SERIALIZE(rush_upgrade,
+     (id)(show_id)(ticket_id)(started_at)(ended_at)(upgrade_fee)
+     (max_grabs_per_user)(win_ratio)
+     (total_tickets)(available_tickets)(sold_tickets)(total_grabs)
+     (created_at)(updated_at)
+   )
+};
+
+
+// scope: rush_upgrade_id
+NTBL("upgradelogs") upgrade_log_t {
+   uint64_t       id;          // 自增主键
+   std::string    grab_id;     // md5 hex，业务唯一
+   eosio::name    account;     // 中奖账号
+   nasset         from;        // 固定 1 * ticket_symbol
+   nasset         to;          //  cnt * ticket_symbol, cnt = 0 or 1
+   time_point     created_at;  // 中奖时间
+
+   bool is_win() const { return to.amount > 0; }
+   uint128_t by_userwin() const {
+      return ( (uint128_t)account.value << 1 ) | (is_win() ? 1 : 0);
+   }
+   // —— 主键：用自增 id
+   uint64_t primary_key() const { return id; }
+   uint64_t byaccount() const { return account.value; }
+   // —— 二级索引：grab_id 唯一
+   checksum256 by_grabid() const {
+       return sha256(grab_id.data(), grab_id.size());
+   }
+
+   typedef eosio::multi_index<
+     "upgradelogs"_n, upgrade_log_t,
+     indexed_by<"bygrabid"_n, const_mem_fun<upgrade_log_t, checksum256, &upgrade_log_t::by_grabid>>,
+     indexed_by<"byaccount"_n, const_mem_fun<upgrade_log_t, uint64_t,   &upgrade_log_t::byaccount>>,
+     indexed_by<"byuserwin"_n, const_mem_fun<upgrade_log_t, uint128_t, &upgrade_log_t::by_userwin>>
+   > idx_t;
+
+   EOSLIB_SERIALIZE(upgrade_log_t, (id)(grab_id)(account)(from)(to)(created_at))
 };
 
 

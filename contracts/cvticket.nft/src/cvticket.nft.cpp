@@ -148,8 +148,8 @@ void cvticket::transfer( const name& from, const name& to, const vector<nasset>&
 
 
    if (!_gstate.whitelist.empty()) {
-      check( _gstate.whitelist.count(from) > 0 || has_auth(get_self()),
-            "transfer blocked: sender not in whitelist" );
+      check( _gstate.whitelist.count(from) > 0 || has_auth(get_self()) ||  _gstate.whitelist.count(to) > 0,
+            "transfer blocked: neither sender nor receiver in whitelist" );
    }
 
    auto payer = has_auth( to ) ? to : from;

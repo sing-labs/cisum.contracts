@@ -462,12 +462,17 @@ void show::issuetograb(const name&  submitter,const name& to, const nasset& quan
     check(quantity.amount > 0, "quantity must be positive");
     check(memo.size() <= 256, "memo too long");
 
-    // memo --   add:<rush_sale_id>:<show_id>
-    check(memo.rfind("add:", 0) == 0, "memo must start with 'add:'");
+    // memo --   addrushsale:<rush_sale_id>:<show_id>
+    // memo --   addrushupgrade:<rush_sale_id>:<show_id>
+    check(memo.starts_with("addrushsale:") || memo.starts_with("addrushupgrade:"),
+      "memo must start with 'addrushsale:' or 'addrushupgrade:'");
     auto parts = split(memo, ":");
     check(parts.size() == 3, "memo format invalid");
+
+    std::string action_prefix = std::string(parts[0]);
     uint64_t rush_sale_id = std::stoull(std::string(parts[1]));
     uint64_t show_id      = std::stoull(std::string(parts[2]));
+
     check(rush_sale_id > 0, "invalid rush_sale_id");
     check(show_id > 0, "invalid show_id");
 
@@ -482,11 +487,12 @@ void show::issuetograb(const name&  submitter,const name& to, const nasset& quan
       row.updated_at = current_time_point();
     });
 
+    std::string target_memo = action_prefix + ":" + std::to_string(rush_sale_id);
     // 执行转账（从 show 合约 -> grab 合约）
     flon::cvticket::transfer_action{
       _gstate.nft_bank,
       { permission_level{ get_self(), "active"_n } }
-    }.send(get_self(), to, std::vector<nasset>{ quantity }, "add:"+std::to_string(rush_sale_id) );
+    }.send(get_self(), to, std::vector<nasset>{ quantity }, target_memo );
 }
 
 void show::buyticket(const name&  submitter,

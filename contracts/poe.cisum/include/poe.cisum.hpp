@@ -33,19 +33,29 @@ public:
 
     ACTION deloperator(const name& account);
 
-    ACTION claimpoints(const name& submitter, const name& claimer, const name& act_name);
+    ACTION claimbatch(const name& submitter,
+                        const name& act_name,
+                        const std::vector<claim_info>& claims) ;
 
     ACTION consumeact(const name& submitter, const name& act_name, const asset& amount);
 
     [[eosio::on_notify("cisum.token::transfer")]]
     void ontransfer(const name& from, const name& to,const asset& quantity, const string& memo);
+    ACTION awardnotice(const name&  from,
+                                const name&       to,
+                                const asset&      award_amount,
+                                const string&     memo,
+                                const name&       reward_type,
+                                const string&     reward_ref_id,
+                                const uint64_t&   created_at);
+
 
 
     // 便捷别名
     using addrewardact_action     = eosio::action_wrapper<"addrewardact"_n,     &poe_cisum::addrewardact>;
     using delrewardact_action     = eosio::action_wrapper<"delrewardact"_n,     &poe_cisum::delrewardact>;
-    using claimpts_action         = eosio::action_wrapper<"claimpoints"_n,      &poe_cisum::claimpoints>;
-
+    using claimbatch_action       = eosio::action_wrapper<"claimbatch"_n,       &poe_cisum::claimbatch>;
+    using awardnotice_action      = eosio::action_wrapper<"awardnotice"_n,      &poe_cisum::awardnotice>;
 private:
     global_singleton _global;
     global_t         _gstate;

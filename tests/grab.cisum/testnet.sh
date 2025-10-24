@@ -89,3 +89,11 @@ mpush song.token transfer '["flonian","grab.cisum","100.0000 SONG","grab:20:a179
 
 
  mpush cisum.token transfer '["gahbnbehaskk","grab.cisum","100.0000 CISUM","grab:30:a1799ae8e1ea62a20a5f56710348a123"]' -p gahbnbehaskk
+
+
+
+
+mpush grab.cisum setrushsale '["flonian",23,105,null,"2025-11-21T03:53:51.000"]' -p flonian
+
+
+mpush grab.cisum setupgrade '["flonian",2,100,10000,null]' -p flonian
