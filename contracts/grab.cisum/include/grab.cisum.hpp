@@ -77,15 +77,13 @@ public:
 
     ACTION addupgrade(const name& submitter,
                             const uint64_t& show_id,
-                            const uint64_t& ticket_id,
+                            const uint64_t& target_ticket_id,
+                            const nasset& pay_tickets,
                             const time_point& started_at,
                             const time_point& ended_at,
-                            const nasset& upgrade_fee,
-                            const uint32_t& max_grabs_per_user,
                             const uint32_t& win_ratio);
     ACTION setupgrade(const name& submitter,
                              const uint64_t& rush_upgrade_id,
-                             std::optional<uint32_t> max_grabs_per_user,
                              std::optional<uint32_t> win_ratio,
                              std::optional<time_point> ended_at);
 

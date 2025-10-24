@@ -75,13 +75,13 @@ NTBL("grabglobal") global_t {
 
 typedef eosio::singleton< "grabglobal"_n, global_t > global_singleton;
 
-NTBL("upgglobal") upgrade_global_t {
+NTBL("upgrdglobal") upgrade_global_t {
    uint64_t       last_rush_upgrade_id;
 
    EOSLIB_SERIALIZE(upgrade_global_t, (last_rush_upgrade_id))
 };
 
-typedef eosio::singleton< "upgglobal"_n, upgrade_global_t > upgglobal_singleton;
+typedef eosio::singleton< "upgrdglobal"_n, upgrade_global_t > upgglobal_singleton;
 
 
 // scope: self
@@ -96,7 +96,7 @@ NTBL("rushsales") rush_sale {
    uint32_t       win_ratio;              // boost 10000, <= 10000
    nasset         total_tickets;
    nasset         available_tickets;
-   nasset         sold_tickets;
+   nasset         grabbed_tickets;
    uint32_t       total_grabs;
    time_point     created_at;
    time_point     updated_at;
@@ -118,7 +118,7 @@ NTBL("rushsales") rush_sale {
    EOSLIB_SERIALIZE(rush_sale,
      (id)(show_id)(ticket_id)(started_at)(ended_at)(price)
      (max_grabs_per_user)(win_ratio)
-     (total_tickets)(available_tickets)(sold_tickets)(total_grabs)
+     (total_tickets)(available_tickets)(grabbed_tickets)(total_grabs)
      (created_at)(updated_at)
    )
 };
@@ -194,34 +194,32 @@ NTBL("allowtokens") allowed_token_t {
 NTBL("rushupgrade") rush_upgrade {
    uint64_t       id; // auto increment, PK
    uint64_t       show_id;
-   uint64_t       ticket_id;
+   uint64_t       target_ticket_id;
+   nasset         pay_tickets;            // ✅ 改名，语义更清晰
    time_point     started_at;
    time_point     ended_at;
-   nasset         upgrade_fee;            // ✅ 改名，语义更清晰
-   uint32_t       max_grabs_per_user;
    uint32_t       win_ratio;              // boost 10000, <= 10000
    nasset         total_tickets;
    nasset         available_tickets;
-   nasset         sold_tickets;
+   nasset         grabbed_tickets;
    uint32_t       total_grabs;
    time_point     created_at;
    time_point     updated_at;
 
    uint64_t primary_key() const { return id; }
-   uint64_t byticket() const { return ticket_id; }
+   uint64_t by_target_ticket() const { return target_ticket_id; }
    uint64_t byshow()   const { return show_id;   }
 
    typedef eosio::multi_index<
       "rushupgrade"_n,
       rush_upgrade,
-      indexed_by<"byticket"_n, const_mem_fun<rush_upgrade, uint64_t, &rush_upgrade::byticket>>,
+      indexed_by<"bytgtticket"_n, const_mem_fun<rush_upgrade, uint64_t, &rush_upgrade::by_target_ticket>>,
       indexed_by<"byshow"_n,   const_mem_fun<rush_upgrade, uint64_t, &rush_upgrade::byshow>>
    > idx_t;
 
    EOSLIB_SERIALIZE(rush_upgrade,
-     (id)(show_id)(ticket_id)(started_at)(ended_at)(upgrade_fee)
-     (max_grabs_per_user)(win_ratio)
-     (total_tickets)(available_tickets)(sold_tickets)(total_grabs)
+     (id)(show_id)(target_ticket_id)(pay_tickets)(started_at)(ended_at)(win_ratio)
+     (total_tickets)(available_tickets)(grabbed_tickets)(total_grabs)
      (created_at)(updated_at)
    )
 };

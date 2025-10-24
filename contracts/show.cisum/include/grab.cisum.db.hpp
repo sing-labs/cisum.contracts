@@ -28,7 +28,7 @@ NTBL("rushsales") rush_sale {
    uint32_t       win_ratio;              // boost 10000, <= 10000
    nasset         total_tickets;
    nasset         available_tickets;
-   nasset         sold_tickets;
+   nasset         grabbed_tickets;
    uint32_t       total_grabs;
    time_point     created_at;
    time_point     updated_at;
@@ -50,7 +50,7 @@ NTBL("rushsales") rush_sale {
    EOSLIB_SERIALIZE(rush_sale,
      (id)(show_id)(ticket_id)(started_at)(ended_at)(price)
      (max_grabs_per_user)(win_ratio)
-     (total_tickets)(available_tickets)(sold_tickets)(total_grabs)
+     (total_tickets)(available_tickets)(grabbed_tickets)(total_grabs)
      (created_at)(updated_at)
    )
 };

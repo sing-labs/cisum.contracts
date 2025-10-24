@@ -247,6 +247,6 @@ BOOST_FIXTURE_TEST_CASE(test_grab, grab_cisum_tester) {
     BOOST_CHECK(user_stat["tickets"]["amount"].as_int64() >= 0);
     auto rush_sale = get_rush_sale_state(1);
     BOOST_REQUIRE_MESSAGE(rush_sale.is_object(), "Rush sale state not found");
-    BOOST_CHECK(rush_sale["sold_tickets"]["amount"].as_int64() >= 0);
+    BOOST_CHECK(rush_sale["grabbed_tickets"]["amount"].as_int64() >= 0);
 }
 BOOST_AUTO_TEST_SUITE_END()

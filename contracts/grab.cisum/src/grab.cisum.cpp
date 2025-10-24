@@ -268,7 +268,7 @@ void grab_cisum::addrushsale(const name& submitter,
         rs.win_ratio          = win_ratio;
         rs.total_tickets      = nasset(0, nsymbol(ticket_id));
         rs.available_tickets  = nasset(0, nsymbol(ticket_id));
-        rs.sold_tickets       = nasset(0, nsymbol(ticket_id));
+        rs.grabbed_tickets       = nasset(0, nsymbol(ticket_id));
         rs.total_grabs        = 0;
         rs.created_at         = now;
         rs.updated_at         = now;
@@ -358,11 +358,10 @@ void grab_cisum::delrushsale(const name& submitter,
 
 void grab_cisum::addupgrade(const name& submitter,
                             const uint64_t& show_id,
-                            const uint64_t& ticket_id,
+                            const uint64_t& target_ticket_id,
+                            const nasset& pay_tickets,
                             const time_point& started_at,
                             const time_point& ended_at,
-                            const nasset& upgrade_fee,
-                            const uint32_t& max_grabs_per_user,
                             const uint32_t& win_ratio)
 {
     // 1) 权限
@@ -376,30 +375,29 @@ void grab_cisum::addupgrade(const name& submitter,
     // 2) 参数校验
 
     CHECKC(started_at < ended_at, err::INVALID_TIME, "started_at must be less than ended_at");
-    CHECKC(upgrade_fee.amount > 0, err::INVALID_FORMAT, "upgrade_fee must be positive");
-    CHECKC(upgrade_fee.is_valid(), err::INVALID_FORMAT, "invalid upgrade_fee (symbol/amount)");
-    CHECKC(max_grabs_per_user > 0, err::NOT_POSITIVE, "max_grabs_per_user must be positive");
+    CHECKC(pay_tickets.amount > 0, err::INVALID_FORMAT, "pay_tickets must be positive");
+    CHECKC(pay_tickets.is_valid(), err::INVALID_FORMAT, "invalid pay_tickets (symbol/amount)");
     CHECKC(win_ratio <= RATIO_BASE, err::INVALID_FORMAT, "win_ratio too large");
 
     // 3) 主票 ticket 是否存在
     ticket_t::ticketidx tickets(SHOW_CONTRACT, show_id);
-    auto tk_itr = tickets.find(ticket_id);
+    auto tk_itr = tickets.find(target_ticket_id);
     CHECKC(tk_itr != tickets.end(), err::RECORD_NO_FOUND,
            "ticket_id not found in show contract");
 
-    // 4) 校验 upgrade_fee 的 NFT 合法性
+    // 4) 校验 pay_tickets 的 NFT 合法性
     //    在 flon::nsymbol 中，id() 返回的是低 9 位的 NFT id（与你们 ticket_id 对应）
-    const uint64_t fee_ticket_id = static_cast<uint64_t>(upgrade_fee.symbol.value);
+    const uint64_t pay_ticket_id = pay_tickets.symbol.value;
 
     // 4.1 不允许费用 NFT 和目标 ticket 是同一个 id
-    CHECKC(fee_ticket_id != ticket_id, err::INVALID_FORMAT,
-           "(fee ticket)  must NOT equal ticket_id");
+    CHECKC(pay_ticket_id != target_ticket_id, err::INVALID_FORMAT,
+           "(pay ticket)  must NOT equal target_ticket_id");
 
     // 4.2 费用 NFT 必须存在于 tickets（按你需求）
     {
-        auto fee_itr = tickets.find(fee_ticket_id);
-        CHECKC(fee_itr != tickets.end(), err::RECORD_NO_FOUND,
-               " (fee ticket) not found in show contract");
+        auto pay_itr = tickets.find(pay_ticket_id);
+        CHECKC(pay_itr != tickets.end(), err::RECORD_NO_FOUND,
+               " (pay ticket) not found in show contract");
     }
 
     // 5) 写入 rush_upgrade 表
@@ -407,27 +405,26 @@ void grab_cisum::addupgrade(const name& submitter,
     _upggstate.last_rush_upgrade_id++; // 确保 _global_state 有此字段
 
     rush_upgrade::idx_t ru_idx(get_self(), get_self().value);
+    auto ticket                 = nasset(0, nsymbol(target_ticket_id));
     ru_idx.emplace(get_self(), [&](auto& ru){
-        ru.id                 = _upggstate.last_rush_upgrade_id;
-        ru.show_id            = show_id;
-        ru.ticket_id          = ticket_id;
-        ru.started_at         = started_at;
-        ru.ended_at           = ended_at;
-        ru.upgrade_fee        = upgrade_fee;
-        ru.max_grabs_per_user = max_grabs_per_user;
-        ru.win_ratio          = win_ratio;
-        ru.total_tickets      = nasset(0, nsymbol(ticket_id));
-        ru.available_tickets  = nasset(0, nsymbol(ticket_id));
-        ru.sold_tickets       = nasset(0, nsymbol(ticket_id));
-        ru.total_grabs = 0;
-        ru.created_at  = now;
-        ru.updated_at  = now;
+        ru.id                   = _upggstate.last_rush_upgrade_id;
+        ru.show_id              = show_id;
+        ru.target_ticket_id     = target_ticket_id;
+        ru.pay_tickets          = pay_tickets;
+        ru.started_at           = started_at;
+        ru.ended_at             = ended_at;
+        ru.win_ratio            = win_ratio;
+        ru.total_tickets        = ticket;
+        ru.available_tickets    = ticket;
+        ru.grabbed_tickets      = ticket;
+        ru.total_grabs          = 0;
+        ru.created_at           = now;
+        ru.updated_at           = now;
     });
 }
 
 void grab_cisum::setupgrade(const name& submitter,
                              const uint64_t& rush_upgrade_id,
-                             std::optional<uint32_t> max_grabs_per_user,
                              std::optional<uint32_t> win_ratio,
                              std::optional<time_point> ended_at) {
     bool authed = has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin);
@@ -442,15 +439,12 @@ void grab_cisum::setupgrade(const name& submitter,
     auto ru_itr = ru_idx.find(rush_upgrade_id);
     CHECKC(ru_itr != ru_idx.end(), err::RECORD_NO_FOUND, "rush upgrade not found");
 
-    if (max_grabs_per_user.has_value())
-        CHECKC(max_grabs_per_user.value() > 0, err::NOT_POSITIVE, "max_grabs_per_user must be positive");
     if (win_ratio.has_value())
         CHECKC(win_ratio.value() <= RATIO_BASE, err::INVALID_FORMAT, "win_ratio too large");
     if (ended_at.has_value())
         CHECKC(ru_itr->started_at < ended_at.value(), err::INVALID_TIME, "ended_at must > started_at");
 
     ru_idx.modify(ru_itr, same_payer, [&](auto& r){
-        if (max_grabs_per_user) r.max_grabs_per_user = *max_grabs_per_user;
         if (win_ratio)          r.win_ratio = *win_ratio;
         if (ended_at)           r.ended_at  = *ended_at;
         r.updated_at = now;
@@ -540,8 +534,8 @@ void grab_cisum::on_transfer(const name& from,
         std::vector<nasset> assets = { nasset(1, nsymbol(rs_itr->ticket_id)) };
         TRANSFER_NFT_OUT(_gstate.ticket_contract, from, assets, "grab ticket");
         rs_idx.modify(rs_itr, same_payer, [&](auto& r){
-            r.sold_tickets.amount += 1;
-            r.available_tickets = r.total_tickets - r.sold_tickets;
+            r.grabbed_tickets.amount += 1;
+            r.available_tickets = r.total_tickets - r.grabbed_tickets;
             r.total_grabs++;
             r.updated_at = now;
         });
@@ -586,7 +580,7 @@ void grab_cisum::on_transfer_ticket(const name& from,
         auto now = current_time_point();
         rs_idx.modify(rs_itr, same_payer, [&](auto& r){
             r.total_tickets += tickets;
-            r.available_tickets = r.total_tickets - r.sold_tickets;
+            r.available_tickets = r.total_tickets - r.grabbed_tickets;
             r.updated_at = now;
         });
         return;
@@ -608,7 +602,7 @@ void grab_cisum::on_transfer_ticket(const name& from,
         auto now = current_time_point();
         ru_idx.modify(ru_itr, same_payer, [&](auto& r){
             r.total_tickets += tickets;
-            r.available_tickets = r.total_tickets - r.sold_tickets;
+            r.available_tickets = r.total_tickets - r.grabbed_tickets;
             r.updated_at = now;
         });
         return;
@@ -632,7 +626,7 @@ void grab_cisum::on_transfer_ticket(const name& from,
         CHECKC(ru_itr->available_tickets.amount > 0, err::EXCEED_LIMIT, "no tickets left");
 
         // 校验符号一致
-        CHECKC(tickets.symbol.value == ru_itr->upgrade_fee.symbol.value, err::SYMBOL_MISMATCH, "ticket mismatch");
+        CHECKC(tickets.symbol.value == ru_itr->pay_tickets.symbol.value, err::SYMBOL_MISMATCH, "ticket mismatch");
 
         // 防重复参与（grab_id 唯一）
         upgrade_log_t::idx_t logs(get_self(), rush_upgrade_id);
@@ -653,15 +647,16 @@ void grab_cisum::on_transfer_ticket(const name& from,
         }
 
         // from: 消耗票, to: 升级结果
-        nasset from_ticket = tickets;
-        nasset to_ticket   = win ? nasset(1, nsymbol(ru_itr->ticket_id)) :  nasset(0, nsymbol(ru_itr->ticket_id));
+        auto from_ticket = tickets;
+        auto num = win ? 1 : 0;
+        auto to_ticket = nasset( num , nsymbol(ru_itr->target_ticket_id) );
 
         // 更新 rush_upgrade 状态
         ru_idx.modify(ru_itr, same_payer, [&](auto& r){
             r.total_grabs++;
             if (win) {
-                r.sold_tickets.amount++;
-                r.available_tickets = r.total_tickets - r.sold_tickets;
+                r.grabbed_tickets.amount++;
+                r.available_tickets = r.total_tickets - r.grabbed_tickets;
             }
             r.updated_at = now;
         });
