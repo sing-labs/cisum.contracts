@@ -1,0 +1,23 @@
+{
+  "expiration": "2025-11-17T04:02:10",
+  "ref_block_num": 18216,
+  "ref_block_prefix": 2001357008,
+  "max_net_usage_words": 0,
+  "max_cpu_usage_ms": 0,
+  "delay_sec": 0,
+  "context_free_actions": [],
+  "actions": [{
+      "account": "flon.token",
+      "name": "transfer",
+      "authorization": [{
+          "actor": "msig1",
+          "permission": "active"
+        }
+      ],
+      "data": "0000000080c01c96000000000030695c0065cd1d0000000008464c4f4e0000000974657374206d736967"
+    }
+  ],
+  "transaction_extensions": [],
+  "signatures": [],
+  "context_free_data": []
+}
