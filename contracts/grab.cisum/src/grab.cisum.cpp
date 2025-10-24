@@ -639,13 +639,12 @@ void grab_cisum::_process_rush_upgrade(const name& from,
     rush_upgrade::idx_t ru_idx(get_self(), get_self().value);
     auto ru_itr = ru_idx.find(rush_upgrade_id);
     CHECKC(ru_itr != ru_idx.end(), err::RECORD_NO_FOUND, "rush upgrade not found");
-
     CHECKC(now >= ru_itr->started_at, err::STATUS_MISMATCH, "rush upgrade not started");
     CHECKC(now <= ru_itr->ended_at, err::STATUS_MISMATCH, "rush upgrade ended");
     CHECKC(ru_itr->available_tickets.amount > 0, err::EXCEED_LIMIT, "no tickets left");
 
     // 校验符号一致
-    CHECKC(tickets.symbol.value == ru_itr->pay_tickets.symbol.value, err::SYMBOL_MISMATCH, "ticket mismatch");
+    CHECKC(tickets == ru_itr->pay_tickets, err::SYMBOL_MISMATCH, "pay tickets requirement mismatch");
 
     // 防重复参与（grab_id 唯一）
     upgrade_log_t::idx_t logs(get_self(), rush_upgrade_id);
@@ -664,9 +663,7 @@ void grab_cisum::_process_rush_upgrade(const name& from,
         uint32_t rnd = get_random_base(from, rush_upgrade_id);
         win = (rnd < ru_itr->win_ratio);
     }
-
-    // from: 消耗票, to: 升级结果
-    auto from_ticket = tickets;
+    
     auto num = win ? 1 : 0;
     auto to_ticket = nasset( num , nsymbol(ru_itr->target_ticket_id) );
 
@@ -685,7 +682,7 @@ void grab_cisum::_process_rush_upgrade(const name& from,
         row.id         = logs.available_primary_key();
         row.grab_id    = grab_id;
         row.account    = from;
-        row.from       = from_ticket;
+        row.from       = tickets; // from: 消耗票, to: 升级结果
         row.to         = to_ticket;
         row.created_at = now;
     });
