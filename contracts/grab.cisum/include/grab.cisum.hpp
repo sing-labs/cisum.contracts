@@ -120,8 +120,8 @@ public:
     ACTION cfgticket(const name& new_ticket_contract);
 
     // -------- on_notify --------
-    [[eosio::on_notify("*::transfer")]]
-    void on_transfer(const name& from,
+    [[eosio::on_notify("cisum.token::transfer")]]
+    void on_transfer_cisum(const name& from,
                      const name& to,
                      const asset& quantity,
                      const std::string& memo);

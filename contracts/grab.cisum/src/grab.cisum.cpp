@@ -453,10 +453,10 @@ void grab_cisum::setupgrade(const name& submitter,
 
 
 
-void grab_cisum::on_transfer(const name& from,
-                             const name& to,
-                             const asset& quantity,
-                             const string& memo) {
+void grab_cisum::on_transfer_cisum(const name& from,
+                                    const name& to,
+                                    const asset& quantity,
+                                    const string& memo) {
     if (from == get_self() || to != get_self()) return;
 
     // 校验 token
