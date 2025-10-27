@@ -96,4 +96,19 @@ mpush show24.cisum addplatadm '["myadmin"]'  -p flonian
 mpush show.cisum buyticket '["flonian","cvph53ao15sq", "20.000000 USDT", 1758268451780, 2101025696004, 1, "1968952961493520384"]' -p flonian
 
 
+mpush show.cisum setticket '["flonian",1758870677786,2101025150959,"vip","100000 VND","10 USDT","2025-09-26T07:03:17.000","2025-11-30T18:00:00"]' -p flonian
 
+mpush show.cisum setticket '["flonian",1758870677786,2101025186415,"dinner","500000 VND","50 USDT","2025-09-26T08:09:44.000","2025-11-30T18:00:00"]' -p flonian
+
+mpush show.cisum setticket '["flonian",1758870677786,2101025194952,"vip","300000 VND","30 USDT","2025-09-26T08:06:13.000","2025-11-30T18:00:00"]' -p flonian
+
+mpush show.cisum setticket '["flonian",1758870677786,2101025468200,"free","100.0000 CISUM","0.0000 USDT","2025-09-26T07:00:48.000","2025-11-30T18:00:00"]' -p flonian
+
+mpush show.cisum setticket '["flonian",1758870677786,2101025538250,"photo_op","450000 VND","45 USDT","2025-09-26T08:08:34.000","2025-11-30T18:00:00"]' -p flonian
+
+mpush show.cisum setticket '["flonian",1758870677786,2101025748071,"vip","150000 VND","15 USDT","2025-10-01T08:05:17.000","2025-11-30T18:00:00"]' -p flonian
+
+mpush show.cisum setticket '["flonian",1758870677786,2101025906313,"afterparty","350000 VND","35 USDT","2025-09-26T08:07:42.000","2025-11-30T18:00:00"]' -p flonian
+
+
+mpush show.cisum setshow '["flonian",1758870677786,"concert",false,false,"2025-11-30T18:00:00","2025-11-30T23:00:00","Vũ Thanh Vân Concert Việt Nam",""]' -p flonian

@@ -58,3 +58,6 @@ mpush grab.cisum clearupgrade '["flonian",1]' -p flonian
 
 
 mpush grab.cisum delrushorder '["flonian",28]' -p flonian
+
+
+mpush cisum.token transfer '["flonian","grab.cisum","5.0000 CISUM","grab:41:a1799ae8e1ea72a20a5f57710642a143"]' -p flonian

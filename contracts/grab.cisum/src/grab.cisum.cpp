@@ -15,7 +15,6 @@ namespace flon {
 using namespace eosio;
 using std::string;
 
-
 // 将 16 字节数组转 32 位小写十六进制（只取前 16 字节 -> 32 hex）
 static inline std::string to_hex32_from160_prefix(const checksum160& cs) {
     auto bytes = cs.extract_as_byte_array();
@@ -32,14 +31,6 @@ static inline std::string to_hex32_from160_prefix(const checksum160& cs) {
     return out;
 }
 
-// 生成 32 位十六进制ID： ripemd160(毫秒时间戳 + account) 前16字节
-static inline std::string create_grab_id(const eosio::name& account) {
-    uint64_t ms = eosio::current_time_point().time_since_epoch().count() / 1000ULL;
-    std::string payload = std::to_string(ms) + account.to_string();
-    checksum160 h = ripemd160(payload.data(), payload.size());
-    return to_hex32_from160_prefix(h);
-}
-
 // 字符串切割
 std::vector<std::string> split(const std::string& s, const std::string& delimiter) {
     std::vector<std::string> result;
@@ -52,59 +43,41 @@ std::vector<std::string> split(const std::string& s, const std::string& delimite
     result.emplace_back(s.substr(pos_start));
     return result;
 }
-
-// sha256 转 uint32
-static inline uint32_t sha256_to_u32(const checksum256& d) {
-    auto b = d.extract_as_byte_array();
-    uint32_t v = 0;
-    v |= (uint32_t)b[31] << 24;
-    v |= (uint32_t)b[30] << 16;
-    v |= (uint32_t)b[29] << 8;
-    v |= (uint32_t)b[28];
-    return v;
+// 通用区块哈希（支持 fallback）
+static inline checksum256 safe_block_hash(uint32_t block_num) {
+    checksum256 h;
+#if __has_builtin(__builtin_eosio_get_block_hash)
+    __builtin_eosio_get_block_hash(&h, block_num);
+#else
+    uint64_t mix = (uint64_t)tapos_block_prefix() ^ ((uint64_t)tapos_block_num() << 32) ^ block_num;
+    h = sha256(reinterpret_cast<const char*>(&mix), sizeof(mix));
+#endif
+    return h;
 }
 
-// 基础随机数生成
-static uint32_t get_random(const name& account, uint32_t range) {
-    uint32_t tapos = tapos_block_prefix();
-    uint32_t timestamp = current_time_point().sec_since_epoch();
-    uint64_t seed = uint64_t(tapos) ^ uint64_t(timestamp);
-
-    uint64_t acc = account.value;
-    uint32_t adata_size = action_data_size();
-
-    char buf[sizeof(seed) + sizeof(acc) + sizeof(adata_size)];
-    size_t offset = 0;
-    memcpy(buf + offset, &seed, sizeof(seed)); offset += sizeof(seed);
-    memcpy(buf + offset, &acc, sizeof(acc)); offset += sizeof(acc);
-    memcpy(buf + offset, &adata_size, sizeof(adata_size)); offset += sizeof(adata_size);
-
-    checksum256 h = sha256(buf, offset);
-    auto arr = h.extract_as_byte_array();
-    uint32_t v = (uint32_t(arr[0]) << 24) | (uint32_t(arr[1]) << 16) |
-                 (uint32_t(arr[2]) << 8)  | (uint32_t(arr[3]));
-    return (v % range) + 1;
-}
-
-// 返回 [0, RATIO_BASE-1] 的随机数；salt 用 rush_sale_id
+// 返回 [0, RATIO_BASE-1] 的随机数；salt 一般用 rush_sale_id
 static inline uint32_t get_random_base(const name& user, uint64_t salt) {
-    uint32_t tapos = tapos_block_prefix();
-    uint32_t timestamp = current_time_point().sec_since_epoch();
-    uint64_t seed = uint64_t(tapos) ^ uint64_t(timestamp) ^ salt;
+    struct RandSeed {
+        uint64_t tapos, blocknum, timestamp, salt, acc;
+        uint32_t adata;
+        checksum256 prev_hash;
+    } seed {
+        .tapos      = static_cast<uint64_t>(tapos_block_prefix()),
+        .blocknum   = static_cast<uint64_t>(eosio::current_block_number()),
+        .timestamp  = static_cast<uint64_t>(current_time_point().sec_since_epoch()),
+        .salt       = salt,
+        .acc        = user.value,
+        .adata      = action_data_size(),
+        .prev_hash  = safe_block_hash(eosio::current_block_number() - 1)
+    };
 
-    uint64_t acc = user.value;
-    uint32_t adata_size = action_data_size();
-
-    char buf[sizeof(seed) + sizeof(acc) + sizeof(adata_size)];
-    size_t offset = 0;
-    memcpy(buf + offset, &seed, sizeof(seed)); offset += sizeof(seed);
-    memcpy(buf + offset, &acc, sizeof(acc)); offset += sizeof(acc);
-    memcpy(buf + offset, &adata_size, sizeof(adata_size)); offset += sizeof(adata_size);
-
-    checksum256 h = sha256(buf, offset);
+    checksum256 h = sha256(reinterpret_cast<const char*>(&seed), sizeof(seed));
     auto arr = h.extract_as_byte_array();
-    uint32_t v = (uint32_t(arr[0]) << 24) | (uint32_t(arr[1]) << 16) |
-                 (uint32_t(arr[2]) << 8)  | (uint32_t(arr[3]));
+
+    uint32_t v = (uint32_t(arr[0]) << 24)
+               | (uint32_t(arr[1]) << 16)
+               | (uint32_t(arr[2]) << 8)
+               | (uint32_t(arr[3]));
     return v % RATIO_BASE;
 }
 
@@ -210,11 +183,7 @@ void grab_cisum::deloracle(const name&  account) {
     }
 }
 
-
-// ======================================================
 // 核心业务逻辑
-// ======================================================
-
 void grab_cisum::addrushsale(const name& submitter,
                              const uint64_t& show_id,
                              const uint64_t& ticket_id,
@@ -223,12 +192,9 @@ void grab_cisum::addrushsale(const name& submitter,
                              const asset& price,
                              const uint32_t& max_grabs_per_user,
                              const uint32_t& win_ratio) {
-    bool authed = has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin);
-    if (!authed) {
+    if (!(has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin))) {
         require_perm(submitter, "show");
-        authed = true;
     }
-    check(authed, "requires self/ops/admin OR submitter with perm=show");
 
     CHECKC(ticket_id != 0, err::INVALID_FORMAT, "invalid ticket_id");
     CHECKC(started_at < ended_at, err::INVALID_TIME, "started_at must be less than ended_at");
@@ -280,12 +246,9 @@ void grab_cisum::setrushsale(const name& submitter,
                              std::optional<uint32_t> max_grabs_per_user,
                              std::optional<uint32_t> win_ratio,
                              std::optional<time_point> ended_at) {
-    bool authed = has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin);
-    if (!authed) {
+    if (!(has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin))) {
         require_perm(submitter, "show");
-        authed = true;
     }
-    check(authed, "requires self/ops/admin OR submitter with perm=show");
 
     auto now = current_time_point();
     rush_sale::idx_t rs_idx(get_self(), get_self().value);
@@ -385,15 +348,11 @@ void grab_cisum::addupgrade(const name& submitter,
                             const uint32_t& win_ratio)
 {
     // 1) 权限
-    bool authed = has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin);
-    if (!authed) {
+    if (!(has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin))) {
         require_perm(submitter, "show");
-        authed = true;
     }
-    check(authed, "requires self/ops/admin OR submitter with perm=show");
 
     // 2) 参数校验
-
     CHECKC(started_at < ended_at, err::INVALID_TIME, "started_at must be less than ended_at");
     CHECKC(pay_tickets.amount > 0, err::INVALID_FORMAT, "pay_tickets must be positive");
     CHECKC(pay_tickets.is_valid(), err::INVALID_FORMAT, "invalid pay_tickets (symbol/amount)");
@@ -623,7 +582,7 @@ void grab_cisum::_process_add_rush_sale(const name& from,
                                         const nasset& tickets,
                                         const std::vector<std::string>& params)
  {
-// 管理员添加库存 (addrushsale:<rush_sale_id>)
+    // 管理员添加库存 (addrushsale:<rush_sale_id>)
 
     CHECKC(params.size() == 2, err::INVALID_FORMAT, "memo must be addrushsale:<rush_sale_id>");
     uint64_t rush_sale_id = std::stoull(params[1]);
@@ -751,13 +710,11 @@ void grab_cisum::notifyticket(const string& grab_id,
 
 void grab_cisum::clearupgrade(const name& submitter, const uint64_t& rush_upgrade_id)
 {
-    bool authed = has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin);
-    if (!authed) {
-        require_perm(submitter, "show");
-        authed = true;
+    if (!(has_auth(get_self()) || has_auth(_gstate.admin))) {
+        check(_gstate.oracles.find(submitter) != _gstate.oracles.end(),
+              "requires self, admin, or oracle auth");
+        require_auth(submitter);
     }
-    check(authed, "requires self/ops/admin OR submitter with perm=show");
-
     // 查 rush_upgrade 表
     rush_upgrade::idx_t rush_tbl(get_self(), get_self().value);
     auto upg_it = rush_tbl.find(rush_upgrade_id);
@@ -803,10 +760,5 @@ void grab_cisum::clearupgrade(const name& submitter, const uint64_t& rush_upgrad
     }
 
 }
-
-
-
-
-
 
 } // namespace flon

@@ -472,5 +472,8 @@ done
 echo "✅ 所有转账已完成！"
 
 
-mpush flon.token transfer '["flonian","acctaa4aaa11","30.00000000 FLON","test"]' -p flonian
+mpush flon.token transfer '["flonian","acctaa1aaa13","30.00000000 FLON","test"]' -p flonian
+
+
+
 
