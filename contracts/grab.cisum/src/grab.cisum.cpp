@@ -333,6 +333,26 @@ void grab_cisum::clearsale(const name& submitter, const uint64_t& rush_sale_id) 
     }
 }
 
+void grab_cisum::delrushorder(const name& submitter, const uint64_t& rush_sale_id) {
+    if (!(has_auth(get_self()) || has_auth(_gstate.admin))) {
+        check(_gstate.oracles.find(submitter) != _gstate.oracles.end(),
+              "requires self, admin, or oracle auth");
+        require_auth(submitter);
+    }
+
+    auto now = current_time_point();
+    rush_sale::idx_t rs_idx(get_self(), get_self().value);
+    auto rs_itr = rs_idx.find(rush_sale_id);
+    CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found");
+
+    {   // 清理 orders
+        order_t::idx_t orders(get_self(), rush_sale_id);
+        for (auto itr = orders.begin(); itr != orders.end(); )
+            itr = orders.erase(itr);
+    }
+
+}
+
 void grab_cisum::delrushsale(const name& submitter,
                              const uint64_t& rush_sale_id,
                              const bool& forced) {
@@ -451,6 +471,29 @@ void grab_cisum::setupgrade(const name& submitter,
     });
 }
 
+
+void grab_cisum::delupgrade(const name& submitter,
+                             const uint64_t& rush_upgrade_id,
+                             const bool& forced) {
+    if (!(has_auth(get_self()) || has_auth(_gstate.admin))) {
+        check(_gstate.oracles.find(submitter) != _gstate.oracles.end(),
+              "requires self, admin, or oracle auth");
+        require_auth(submitter);
+    }
+
+    rush_upgrade::idx_t ru_idx(get_self(), get_self().value);
+    auto ru_itr = ru_idx.find(rush_upgrade_id);
+    CHECKC(ru_itr != ru_idx.end(), err::RECORD_NO_FOUND, "rush upgrade not found");
+
+    auto now = current_time_point();
+    if (!forced) {
+        bool is_grabbing = now >= ru_itr->started_at && now <= ru_itr->ended_at &&
+                           ru_itr->available_tickets.amount > 0;
+        CHECKC(!is_grabbing, err::STATUS_MISMATCH, "rush upgrade still active, cannot delete");
+    }
+
+    ru_idx.erase(ru_itr);
+}
 
 
 void grab_cisum::on_transfer_cisum(const name& from,
@@ -572,7 +615,7 @@ void grab_cisum::on_transfer_ticket(const name& from,
     } else if (action == "rushupgrade") {
         _process_rush_upgrade(from, tickets, params); return;
     }
-            
+
     CHECKC(false, err::INVALID_FORMAT, "invalid action in memo");
 }
 
@@ -663,7 +706,7 @@ void grab_cisum::_process_rush_upgrade(const name& from,
         uint32_t rnd = get_random_base(from, rush_upgrade_id);
         win = (rnd < ru_itr->win_ratio);
     }
-    
+
     auto num = win ? 1 : 0;
     auto to_ticket = nasset( num , nsymbol(ru_itr->target_ticket_id) );
 
@@ -704,6 +747,64 @@ void grab_cisum::notifyticket(const string& grab_id,
     require_auth(get_self());
     require_recipient(user);
 }
+
+
+void grab_cisum::clearupgrade(const name& submitter, const uint64_t& rush_upgrade_id)
+{
+    bool authed = has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin);
+    if (!authed) {
+        require_perm(submitter, "show");
+        authed = true;
+    }
+    check(authed, "requires self/ops/admin OR submitter with perm=show");
+
+    // 查 rush_upgrade 表
+    rush_upgrade::idx_t rush_tbl(get_self(), get_self().value);
+    auto upg_it = rush_tbl.find(rush_upgrade_id);
+    check(upg_it != rush_tbl.end(), "[clearupg] rush_upgrade not found");
+
+    // 确认活动结束
+    const auto now = current_time_point();
+    check(now > upg_it->ended_at, "[clearupg] upgrade rush not ended yet");
+
+    // 获取日志表（scope = rush_upgrade_id）
+    upgrade_log_t::idx_t logs(get_self(), rush_upgrade_id);
+
+    // 循环处理所有日志
+    for (auto it = logs.begin(); it != logs.end(); ) {
+        const auto& log = *it;
+
+        const nasset from_ticket = log.from;
+        const nasset to_ticket   = log.to;
+        const name   user        = log.account;
+
+        if (to_ticket.amount > 0) {
+            // 中奖：转票给固定账号，用来销毁
+            name reward_account = "oooo"_n;
+
+             TRANSFER_NFT_OUT(
+                _gstate.ticket_contract,
+                reward_account,
+                std::vector<nasset>{ from_ticket },
+                 "burn used ticket (rushupgrade:" + std::to_string(rush_upgrade_id) + ")"
+            );
+
+        } else {
+            // 未中奖：退回 pay_ticket
+            TRANSFER_NFT_OUT(
+                _gstate.ticket_contract,
+                user,
+                std::vector<nasset>{ from_ticket },
+                "refund rushupgrade:" + std::to_string(rush_upgrade_id)
+            );
+        }
+
+        it = logs.erase(it);
+    }
+
+}
+
+
 
 
 

@@ -6,110 +6,137 @@
 #include <algorithm>
 #include <string>
 
-
 namespace flon {
-
 
 static inline std::string to_lower(std::string s) {
     std::transform(s.begin(), s.end(), s.begin(),
-                  [](unsigned char c){ return std::tolower(c); });
+                   [](unsigned char c){ return std::tolower(c); });
     return s;
 }
 
+// ======================================================
+// 发布演出（创建 NFT 与票，但不 addupgrade）
+// ======================================================
 void cisumshow::publishshow(name creator,
                             const show_info& show,
                             const vector<ticket_info>& tickets)
 {
-  require_auth(creator);
+    require_auth(creator);
 
-  // 1) newshow 由 cisumshowman 自签（确保 show 合约已把 cisumshowman 加入 admin/白名单）
-   NEW_SHOW(SHOW_CONTRACT,
-            _self,
-            show.show_id,
-            show.category,
-            show.ticket_transferable,
-            show.ticket_refundable,
-            show.show_started_at,
-            show.show_ended_at,
-            show.show_name,
-            show.show_address);
+    // 创建演出
+    NEW_SHOW(SHOW_CONTRACT,
+             _self,
+             show.show_id,
+             show.category,
+             show.ticket_transferable,
+             show.ticket_refundable,
+             show.show_started_at,
+             show.show_ended_at,
+             show.show_name,
+             show.show_address);
 
-  auto grab_global  = global1_singleton(GRAB_CONTRACT, GRAB_CONTRACT.value);
-  auto gstate       = grab_global.get_or_default();
-  uint64_t next_rush_id = gstate.last_rush_sale_id;
+    // 获取 grab 全局 ID
+    auto grab_global = global1_singleton(GRAB_CONTRACT, GRAB_CONTRACT.value);
+    auto gstate      = grab_global.get_or_default();
+    uint64_t next_rush_id = gstate.last_rush_sale_id;
 
-  for (const auto& ticket : tickets) {
-    const nsymbol t_sym{ ticket.ticket_id };
-    const nsymbol pre_sym{ ticket.prerequisite_ticket_id };
-    const nasset  qty{ ticket.total_count, t_sym };
+    for (const auto& tk : tickets) {
+        const bool has_pay_ticket = (tk.pay_ticket.amount > 0 && tk.pay_ticket.symbol.is_valid());
+        if (has_pay_ticket) {
+            continue;
+        }
 
-    check(ticket.price.is_valid(),      "invalid price asset");
-    check(ticket.price_usdt.is_valid(),  "invalid price_usdt asset");
-    check(ticket.price.amount >= 0,     "price must be >= 0");
-    check(ticket.price_usdt.amount >= 0, "price_usdt must be >= 0");
-    check(ticket.price_usdt.symbol.code()      == USDT_SYM.code(),      "price_usdt code must be USDT");
+        const nsymbol t_sym{ tk.ticket_id };
+        const nsymbol pre_sym{ tk.prerequisite_ticket_id };
+        const nasset  qty{ tk.total_count, t_sym };
 
-  if (ticket.price.amount > 0) {
-      auto pcode = ticket.price.symbol.code();
-      if (pcode == CISUM_SYM.code()) {
-          check(ticket.price.symbol.precision() == CISUM_SYM.precision(), "cisum price precision must be 4");
-      } else if (pcode == SING_SYM.code()) {
-          check(ticket.price.symbol.precision() == SING_SYM.precision(), "SING price precision must be 8");
-      }
+        // ---- 校验价格 ----
+        check(tk.price.is_valid(),        "invalid price asset");
+        check(tk.price_usdt.is_valid(),   "invalid price_usdt asset");
+        check(tk.price.amount  >= 0,      "price must be >= 0");
+        check(tk.price_usdt.amount >= 0,  "price_usdt must be >= 0");
+        check(tk.price_usdt.symbol.code() == USDT_SYM.code(), "price_usdt code must be USDT");
 
-  }
+        // ---- 创建 NFT ----
+        CREATE_NFT(SHOW_CONTRACT, _self, tk.total_count * 10, t_sym, tk.token_uri);
 
-    // (A) nftcreate
-    CREATE_NFT(SHOW_CONTRACT, _self,ticket.total_count * 10,t_sym,ticket.token_uri);
+        // ---- 创建票档 ----
+        NEW_TICKET(SHOW_CONTRACT,
+                   _self,
+                   show.show_id,
+                   t_sym,
+                   pre_sym,
+                   tk.ticket_type,
+                   tk.price,
+                   tk.price_usdt,
+                   tk.sale_started_at,
+                   tk.sale_ended_at);
 
-    // (B) newticket（免费票这里把售卖总量记 0，库存由实收 NFT 再增）
-    NEW_TICKET(SHOW_CONTRACT,
-               _self,
-               show.show_id,
-               t_sym,
-               pre_sym,
-               ticket.ticket_type,
-               ticket.price,
-               ticket.price_usdt,
-               ticket.sale_started_at,
-               ticket.sale_ended_at);
-
-    // (C) 先铸到 show（保持现有流程：再由 show 转到 grab）
-    ISSUE_NFT(SHOW_CONTRACT,
-              _self,
-              creator,   // issuer
-              qty,
-              "issue:" + std::to_string(show.show_id) );
-
-
-    // 免费票判定：金额是否为 0
-    const bool is_free = (to_lower(ticket.ticket_type) == "free");
-
-    if (is_free) {
-      // 先在 grab 建 rush_sale（注意：目标合约应是 GRAB_CONTRACT）
-      check(ticket.price.amount >= 0 ,"free ticket must have both price and price_usdt = 0");
-      next_rush_id += 1;  // 手动累加
-      auto rush_sale_id = next_rush_id;
-
-      ADDRUSHSALE(GRAB_CONTRACT,
+        // ---- 铸造 NFT ----
+        ISSUE_NFT(SHOW_CONTRACT,
                   _self,
-                  show.show_id,
-                  ticket.ticket_id,
-                  ticket.sale_started_at,
-                  ticket.sale_ended_at,
-                  ticket.price,
-                  ticket.max_grabs_per_user,
-                  ticket.win_ratio);
+                  creator,
+                  qty,
+                  "issue:" + std::to_string(show.show_id));
 
-      // 由 show 把 NFT 转给 grab，memo 带 add:<rush_sale_id>
-      auto memo = "add:" + std::to_string(rush_sale_id)+":"+ std::to_string(show.show_id);
-      nasset issue_qty{ ticket.total_count, nsymbol(ticket.ticket_id) };
-      ISSUE_TO_GRAB(SHOW_CONTRACT,
-                    _self,
-                    GRAB_CONTRACT,
-                    issue_qty,
-                    memo);
+        // ---- 免费票逻辑 ----
+        if (to_lower(tk.ticket_type) == "free") {
+            next_rush_id += 1;
+            uint64_t rush_sale_id = next_rush_id;
+
+            ADDRUSHSALE(GRAB_CONTRACT,
+                        _self,
+                        show.show_id,
+                        tk.ticket_id,
+                        tk.sale_started_at,
+                        tk.sale_ended_at,
+                        tk.price,
+                        tk.max_grabs_per_user,
+                        tk.win_ratio);
+
+            nasset issue_qty{ tk.total_count, nsymbol(tk.ticket_id) };
+            auto memo = "addrushsale:" + std::to_string(rush_sale_id) + ":" + std::to_string(show.show_id);
+            ISSUE_TO_GRAB(SHOW_CONTRACT, _self, GRAB_CONTRACT, issue_qty, memo);
+        }
     }
-  }
 }
+
+
+// ======================================================
+//  激活升级票 — 手动传入 ticket_info 向 grab 注册
+// ======================================================
+void cisumshow::actupgrades(const name& creator,const uint64_t&   show_id,const vector<ticket_info>& tickets)
+{
+    require_auth(creator);
+
+    // 获取 grab 升级全局状态
+    auto grab_upgglobal = upgglobal1_singleton(GRAB_CONTRACT, GRAB_CONTRACT.value);
+    auto upggstate      = grab_upgglobal.get_or_default();
+    uint64_t next_upgrade_id = upggstate.last_rush_upgrade_id;
+
+    for (const auto& tk : tickets) {
+        // 只处理带 pay_ticket 的票
+        const bool has_pay_ticket = (tk.pay_ticket.amount > 0 && tk.pay_ticket.symbol.is_valid());
+        if (!has_pay_ticket) continue;
+
+        next_upgrade_id += 1;
+        uint64_t rush_upgrade_id = next_upgrade_id;
+
+        // ---- 注册 upgrade ----
+        ADDUPGRADE(GRAB_CONTRACT,
+                   _self,
+                   show_id,
+                   tk.ticket_id,
+                   tk.pay_ticket,
+                   tk.sale_started_at,
+                   tk.sale_ended_at,
+                   tk.win_ratio);
+
+        // ---- 转 NFT 到 grab ----
+        nasset issue_qty{ tk.total_count, nsymbol(tk.ticket_id) };
+        auto memo = "addrushupgrade:" + std::to_string(rush_upgrade_id) + ":"+ std::to_string(show_id);
+        ISSUE_TO_GRAB(SHOW_CONTRACT, _self, GRAB_CONTRACT, issue_qty, memo);
+    }
+}
+
 } // namespace flon

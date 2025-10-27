@@ -14,6 +14,10 @@
     {	flon::grab_cisum::addrushsale_action act{ bank, { {submitter, "active"_n} } };\
 			act.send(submitter, show_id,ticket_id,started_at,ended_at,price,max_grabs_per_user,win_ratio);}
 
+#define ADDUPGRADE(bank,submitter, show_id,ticket_id,pay_ticket,started_at,ended_at,win_ratio) \
+    {	flon::grab_cisum::addupgrade_action act{ bank, { {submitter, "active"_n} } };\
+			act.send(submitter, show_id,ticket_id,pay_ticket,started_at,ended_at,win_ratio);}
+
 namespace flon {
 
 using std::string;
@@ -57,11 +61,23 @@ public:
   ACTION cfgticket(const name& submitter,const name& new_ticket_contract) ;
 
 
+  ACTION addupgrade(const name& submitter,
+                            const uint64_t& show_id,
+                            const uint64_t& target_ticket_id,
+                            const nasset& pay_tickets,
+                            const time_point& started_at,
+                            const time_point& ended_at,
+                            const uint32_t& win_ratio);
+
+
+
+
   // -------- Inline wrappers --------
   using addrushsale_action        = eosio::action_wrapper<"addrushsale"_n,        &grab_cisum::addrushsale>;
   using delrushsale_action        = eosio::action_wrapper<"delrushsale"_n,        &grab_cisum::delrushsale>;
   using cfgrushsale_action        = eosio::action_wrapper<"setrushsale"_n,        &grab_cisum::setrushsale>;
   using notifyticket_action       = eosio::action_wrapper<"notifyticket"_n,        &grab_cisum::notifyticket>;
+  using addupgrade_action         = eosio::action_wrapper<"addupgrade"_n,         &grab_cisum::addupgrade>;
 
 };
 

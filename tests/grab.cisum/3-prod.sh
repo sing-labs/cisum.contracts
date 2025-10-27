@@ -37,13 +37,24 @@ mpush $grab_con addoracle '["'"$oracle"'"]' -p $grab_con
 
 mpush $grab_con addupgrade '["flonian",1760855632324,2101025077573,"2025-10-20T00:00:00","2025-11-20T00:00:00",{ "amount": 1, "symbol": { "value": "2101025919776" } },10,5000]' -p flonian
 
-mpush ticket.cvnft transfer '["gahbnbehaskk","grab.cisum",[{"amount":1,"symbol":{"value":2101025919776}}],"rushupgrade:2:a1799ae8e1ea72a20a5f57710342a123"]' -p gahbnbehaskk
+mpush ticket.cvnft transfer '["flonian","grab.cisum",[{"amount":1,"symbol":{"value":2101025921799}}],"rushupgrade:1:a1799ae8e1ea72a20a5f57710352a123"]' -p flonian
 
 
-mpush cisum.token transfer '["gahbnbehaskk","grab.cisum","100.0000 CISUM","grab:33:a1799ae8e1ea72a20a5f56710342a123"]' -p gahbnbehaskk
+mpush cisum.token transfer '["flonian","grab.cisum","100.0000 CISUM","grab:40:a1799ae8e1ea72a20a5f56710642a143"]' -p flonian
 
 
 
 show_con=show.cisum
 mpush $show_con issuetograb '["show.cisum","grab.cisum", {"amount":100,"symbol":{"value":'2101025077573'}}, "addrushupgrade:2:1760855632324"]' -p $show_con
 
+mpush grab.cisum delupgrade '["flonian",2,true]' -p flonian
+
+mpush grab.cisum setrushsale '["flonian",28,null,null,"2025-12-01T20:00:00.000"]' -p flonian
+mpush grab.cisum setupgrade '["flonian",28,1000,"2025-10-01T20:00:00.000"]' -p flonian
+
+
+
+mpush grab.cisum clearupgrade '["flonian",1]' -p flonian
+
+
+mpush grab.cisum delrushorder '["flonian",28]' -p flonian

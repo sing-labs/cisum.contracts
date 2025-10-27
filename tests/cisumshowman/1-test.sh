@@ -10,41 +10,41 @@ mpush $show_con addshowadm '["ops21.cisum"]' -p flonian
 
 mpush $rolemanage_con grantrole '["show24.cisum","flonian","ops21.cisum","showadmin"]' -p flonian
 
-ops21.cisum
-
 # ========= 一把提交：cisumshowman::publishshow =========
 mpush $ops_con publishshow '[
   "flonian",
   {
-    "show_id": 1760855632324,
+    "show_id": 1760855632539,
     "category": "concert",
     "ticket_transferable": true,
     "ticket_refundable": true,
     "show_started_at": "2025-10-02T19:30:00",
-    "show_ended_at":   "2025-11-02T22:00:00",
+    "show_ended_at":   "2025-12-02T22:00:00",
     "show_name": "CISUM Live in Shanghai",
     "show_address": ""
   },
   [
     {
-      "ticket_id": 2101025919776,
-      "token_uri": "ipfs://free_ticket401_metadata",
+      "ticket_id": 2101025921810,
+      "token_uri": "ipfs://free_ticket513_metadata",
       "ticket_type": "free",
-      "price": "100.0000 CISUM",
+      "price": "5.0000 CISUM",
       "price_usdt": "0 USDT",
-      "total_count": 100,
+      "pay_ticket": {"amount": 0,"symbol": { "value": 0 }},
+      "total_count": 1000,
       "prerequisite_ticket_id": 0,
       "sale_started_at": "2025-08-01T00:00:00",
       "sale_ended_at":   "2025-11-01T20:00:00",
-      "win_ratio":1000,
+      "win_ratio":2000,
       "max_grabs_per_user":10000
     },
     {
-      "ticket_id": 2101025077572,
-      "token_uri": "ipfs://vip_ticket401_metadata",
+      "ticket_id": 2101025921811,
+      "token_uri": "ipfs://vip_ticket513_metadata",
       "ticket_type": "vip",
       "price": "199.00 USDT",
       "price_usdt": "199 USDT",
+      "pay_ticket": {"amount": 0,"symbol": { "value": 0 }},
       "total_count": 2000,
       "prerequisite_ticket_id": 0,
       "sale_started_at": "2025-08-01T00:00:00",
@@ -53,20 +53,62 @@ mpush $ops_con publishshow '[
       "max_grabs_per_user":0
     },
     {
-      "ticket_id": 2101025077573,
-      "token_uri": "ipfs://after_ticket401_metadata",
+      "ticket_id": 2101025921812,
+      "token_uri": "ipfs://after_ticket513_metadata",
       "ticket_type": "afterpart",
-      "price": "0.000000 USDT",
-      "price_usdt": "0.000000 USDT",
+      "price": "199.000000 USDT",
+      "price_usdt": "199.000000 USDT",
+      "pay_ticket": {"amount": 0,"symbol": { "value": 0 }},
       "total_count": 100,
-      "prerequisite_ticket_id": 0,
+      "prerequisite_ticket_id": 2101025921811,
       "sale_started_at": "2025-08-01T00:00:00",
       "sale_ended_at":   "2025-11-01T20:00:00",
       "win_ratio":0,
       "max_grabs_per_user":0
+    },
+    {
+      "ticket_id": 2101025921813,
+      "token_uri": "ipfs://after_ticket513_metadata",
+      "ticket_type": "afterpart",
+      "price": "199.000000 USDT",
+      "price_usdt": "199.000000 USDT",
+      "pay_ticket": {"amount": 1,"symbol": { "value": 2101025920796 }},
+      "total_count": 20,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2025-08-01T00:00:00",
+      "sale_ended_at":   "2025-11-01T20:00:00",
+      "win_ratio":5000,
+      "max_grabs_per_user":0
     }
   ]
 ]' -p   flonian
+
+
+
+mpush $ops_con actupgrades '[
+  "flonian",
+  1760855632531,
+  [
+    {
+      "ticket_id": 2101025921798,
+      "token_uri": "ipfs://after_ticket511_metadata",
+      "ticket_type": "afterpart",
+      "price": "199.000000 USDT",
+      "price_usdt": "199.000000 USDT",
+      "pay_ticket": {"amount": 1,"symbol": { "value": 2101025921799 }},
+      "total_count": 20,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2025-08-01T00:00:00",
+      "sale_ended_at":   "2025-11-01T20:00:00",
+      "win_ratio":5000,
+      "max_grabs_per_user":0
+    }
+  ]
+]' -p   flonian
+
+
+
+
 
 
 

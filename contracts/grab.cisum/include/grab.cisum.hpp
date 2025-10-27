@@ -66,6 +66,9 @@ public:
      */
     ACTION clearsale(const name& submitter, const uint64_t& rush_sale_id);
 
+
+    ACTION delrushorder(const name& submitter, const uint64_t& rush_sale_id);
+
     /**
      * Delete a rush sale (optionally forced).
      * 权限：合约自身 / admin / oracle
@@ -87,7 +90,9 @@ public:
                              std::optional<uint32_t> win_ratio,
                              std::optional<time_point> ended_at);
 
-
+    ACTION delupgrade(const name& submitter,
+                             const uint64_t& rush_upgrade_id,
+                             const bool& forced);
     /**
      * Add or update allowed token.
      * 权限：合约自身 / admin
@@ -132,6 +137,8 @@ public:
                             const vector<nasset>& assets,
                             const std::string& memo);
 
+    ACTION clearupgrade(const name& submitter, const uint64_t& rush_upgrade_id);
+
     // -------- inline wrappers --------
     using init_action         = action_wrapper<"init"_n,         &grab_cisum::init>;
     using addrushsale_action  = action_wrapper<"addrushsale"_n,  &grab_cisum::addrushsale>;
@@ -143,6 +150,9 @@ public:
     using notifyticket_action = action_wrapper<"notifyticket"_n, &grab_cisum::notifyticket>;
     using cfgpoint_action     = action_wrapper<"cfgpoint"_n,     &grab_cisum::cfgpoint>;
     using cfgticket_action    = action_wrapper<"cfgticket"_n,    &grab_cisum::cfgticket>;
+    using addupgrade_action   = action_wrapper<"addupgrade"_n,   &grab_cisum::addupgrade>;
+
+
 
 private:
     void require_perm(const name& submitter, const std::string& perm) const;

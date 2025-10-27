@@ -25,19 +25,20 @@ public:
     ~poe_cisum() { _global.set(_gstate, get_self()); }
 
 
-    ACTION addrewardact(const name& act_name,const asset& points,const string& memo);
+    ACTION addrewardact(const name& reward_code,const asset& points,const string& memo);
 
-    ACTION delrewardact(const name& act_name);
+    ACTION delrewardact(const name& reward_code);
 
     ACTION addoperator(const name& account);
 
     ACTION deloperator(const name& account);
 
     ACTION claimbatch(const name& submitter,
-                        const name& act_name,
-                        const std::vector<claim_info>& claims) ;
+                        const uint64_t& uid,
+                        const name& reward_code,
+                        const std::vector<claim_info>& claims ) ;
 
-    ACTION consumeact(const name& submitter, const name& act_name, const asset& amount);
+    ACTION consumeact(const name& submitter, const name& reward_code, const asset& amount);
 
     [[eosio::on_notify("cisum.token::transfer")]]
     void ontransfer(const name& from, const name& to,const asset& quantity, const string& memo);
@@ -62,7 +63,7 @@ private:
 
     void _pay_points(const name& to, const asset& quant, const string& memo);
 
-    rewardact_t _get_act(const name& act_name);
+    rewardact_t _get_act(const name& reward_code);
 };
 
 } // namespace flon

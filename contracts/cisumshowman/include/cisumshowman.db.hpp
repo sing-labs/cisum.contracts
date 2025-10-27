@@ -27,7 +27,8 @@ struct ticket_info {
     string     token_uri;                 // NFT 元数据 URI
     string     ticket_type;               // 票种类型
     asset      price;                     // 原来币种的价格（CISUM是免费票）
-    asset      price_usdt;                 // 转化的usd价格
+    asset      price_usdt;                // 转化的usd价格
+    nasset     pay_ticket;                // 支付票种（NFT）
     uint64_t   total_count;               // 发行量
     uint64_t   prerequisite_ticket_id = 0;// 前置票（无则 0）
     time_point sale_started_at;           // 售票开始
@@ -36,7 +37,7 @@ struct ticket_info {
     uint32_t   max_grabs_per_user;        // 每人最大抢票数
 
     EOSLIB_SERIALIZE(ticket_info,
-        (ticket_id)(token_uri)(ticket_type)(price)(price_usdt)
+        (ticket_id)(token_uri)(ticket_type)(price)(price_usdt)(pay_ticket)
         (total_count)(prerequisite_ticket_id)
         (sale_started_at)(sale_ended_at)(win_ratio)(max_grabs_per_user)
     )

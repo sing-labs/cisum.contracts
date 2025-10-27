@@ -12,7 +12,7 @@ cisum_token=cisum.token
 mpush $cisum_token  addwhitelist '["poh.cisum"]'   -p $cisum_token
 
 max_issued="2500000000.00000000 SING"
-mpush $poh_con init '["cisumreserve","flonian","'"$max_issued"'"]' -p $poh_con
+mpush $poh_con init '["cisumreserve","cisum.admin","'"$max_issued"'"]' -p $poh_con
 
 
 

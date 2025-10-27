@@ -108,3 +108,8 @@ mpush $poe_con addrewardact '[
 mpush $poe_con delrewardact '[
   "signin"
 ]' -p $poe_con
+
+
+
+
+mpush  $poe_con addoperator '["cisum.admin"]' -p $poe_con

@@ -42,7 +42,8 @@ enum class err: uint8_t {
    STATUS_MISMATCH        = 27,
    EXCEED_LIMIT           = 28,
    QUANTITY_MISMATCH      = 29,
-   INVALID_TIME           = 30
+   INVALID_TIME           = 30,
+   RECORD_FOUND           = 31
 };
 
 
@@ -64,7 +65,7 @@ using global_singleton = eosio::singleton<"global"_n, global_t>;
 
 struct [[eosio::table, eosio::contract("poe.cisum")]] rewardact_t {
   uint64_t   id;                        // 主键，自增
-  name       act_name;                  // 行为标识（signin / vote / short / invite / artist ...）
+  name       reward_code;                  // 行为标识（signin / vote / short / invite / artist ...）
   asset      points;                    // 可领取积分（如 10.0000 SONG）
   string     memo;                      // 备注
   asset      claimed_points = asset(0, CISUM_SYM); // 此行为已发放累计
@@ -72,12 +73,12 @@ struct [[eosio::table, eosio::contract("poe.cisum")]] rewardact_t {
   time_point update_at;
 
   uint64_t primary_key() const { return id; }
-  uint64_t by_name() const { return act_name.value; }
+  uint64_t by_name() const { return reward_code.value; }
 
   typedef eosio::multi_index<"rewardacts"_n, rewardact_t,
       indexed_by<"byname"_n, const_mem_fun<rewardact_t, uint64_t, &rewardact_t::by_name>>
       > acts_idx;
-  EOSLIB_SERIALIZE(rewardact_t, (id)(act_name)(points)(memo)(claimed_points)(create_at)(update_at))
+  EOSLIB_SERIALIZE(rewardact_t, (id)(reward_code)(points)(memo)(claimed_points)(create_at)(update_at))
 };
 
 
@@ -85,6 +86,22 @@ struct  claim_info {
     name claimer;
     uint32_t cnt; //发放次数
 };
+
+struct [[eosio::table, eosio::contract("poe.cisum")]] uid_record_t {
+    uint64_t   id;          // 主键（自增）
+    uint64_t   uid;         // 唯一标识（由 memo 转换）
+    time_point created_at;  // 创建时间
+
+    uint64_t primary_key() const { return id; }
+    uint64_t by_uid() const { return uid; }
+
+    EOSLIB_SERIALIZE(uid_record_t, (id)(uid)(created_at))
+};
+
+typedef eosio::multi_index<
+    "uids"_n, uid_record_t,
+    indexed_by<"byuid"_n, const_mem_fun<uid_record_t, uint64_t, &uid_record_t::by_uid>>
+> uid_index;
 
 
 } // namespace flon

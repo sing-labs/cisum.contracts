@@ -5,11 +5,11 @@ namespace flon {
 using std::string;
 
 
-rewardact_t poe_cisum::_get_act(const name& act_name) {
+rewardact_t poe_cisum::_get_act(const name& reward_code) {
   rewardact_t::acts_idx acts(get_self(), get_self().value);
   auto byname = acts.get_index<"byname"_n>();
-  auto it = byname.find(act_name.value);
-  CHECKC(it != byname.end(), err::RECORD_NO_FOUND, "act not found: " + act_name.to_string());
+  auto it = byname.find(reward_code.value);
+  CHECKC(it != byname.end(), err::RECORD_NO_FOUND, "act not found: " + reward_code.to_string());
   return *it;
 }
 
@@ -30,23 +30,23 @@ void poe_cisum::awardnotice(const name&  from,
 }
 
 
-void poe_cisum::addrewardact(const name& act_name,const asset& points,const string& memo){
+void poe_cisum::addrewardact(const name& reward_code,const asset& points,const string& memo){
   require_auth(get_self());
-  CHECKC(act_name.length() > 0,       err::INVALID_FORMAT,   "act_name cannot be empty");
+  CHECKC(reward_code.length() > 0,       err::INVALID_FORMAT,   "reward_code cannot be empty");
   CHECKC(points.symbol == CISUM_SYM, err::SYMBOL_MISMATCH,   "points symbol mismatch");
   CHECKC(points.amount >= 0,          err::INVALID_FORMAT,   "points must be non-negative");
   CHECKC(memo.size() <= 256,          err::INVALID_FORMAT,  "memo too long");
 
   rewardact_t::acts_idx acts(get_self(), get_self().value);
   auto byname = acts.get_index<"byname"_n>();
-  auto it = byname.find(act_name.value);
+  auto it = byname.find(reward_code.value);
 
   const auto now = current_time_point();
 
   if (it == byname.end()) {
     acts.emplace(get_self(), [&](auto& row){
       row.id              = ++_gstate.last_act_id;
-      row.act_name        = act_name;
+      row.reward_code        = reward_code;
       row.points          = points;
       row.memo            = memo;
       row.claimed_points  = asset(0, CISUM_SYM);
@@ -66,14 +66,14 @@ void poe_cisum::addrewardact(const name& act_name,const asset& points,const stri
 
 
 
-void poe_cisum::delrewardact(const name &act_name)
+void poe_cisum::delrewardact(const name &reward_code)
 {
     require_auth(get_self());
 
     rewardact_t::acts_idx acts(get_self(), get_self().value);
     auto byname = acts.get_index<"byname"_n>();
-    auto it = byname.find(act_name.value);
-    CHECKC(it != byname.end(), err::RECORD_NO_FOUND, "act not found: " + act_name.to_string());
+    auto it = byname.find(reward_code.value);
+    CHECKC(it != byname.end(), err::RECORD_NO_FOUND, "act not found: " + reward_code.to_string());
 
     byname.erase(it);
 }
@@ -101,18 +101,39 @@ void poe_cisum::deloperator(const name&  account) {
 }
 
 void poe_cisum::claimbatch(const name& submitter,
-                        const name& act_name,
-                        const std::vector<claim_info>& claims) {
+                        const uint64_t& uid,
+                        const name& reward_code,
+                        const std::vector<claim_info>& claims ) {
     require_auth(submitter);
     CHECKC(_gstate.operators.count(submitter) > 0, err::DID_NOT_AUTH,
            "submitter not in operators whitelist: " + submitter.to_string());
     CHECKC(!claims.empty(), err::INVALID_FORMAT, "empty claim list");
 
+    // UID 去重逻辑
+    uid_index uidtable(get_self(), get_self().value);
+    auto byuid = uidtable.get_index<"byuid"_n>();
+    auto it_uid = byuid.find(uid);
+    CHECKC(it_uid == byuid.end(), err::RECORD_FOUND,
+           "duplicate uid: already processed " + std::to_string(uid));
+
+    // 插入新 UID（提前记录防止重复提交）
+    uidtable.emplace(get_self(), [&](auto& row) {
+        row.id         = uidtable.available_primary_key();
+        row.uid        = uid;
+        row.created_at = current_time_point();
+    });
+
+    // 如果记录数超过 10,000，删除最旧的
+    if (std::distance(uidtable.begin(), uidtable.end()) > 10000) {
+        auto oldest = uidtable.begin();
+        uidtable.erase(oldest);
+    }
+
     rewardact_t::acts_idx acts(get_self(), get_self().value);
     auto byact = acts.get_index<"byname"_n>();
-    auto it = byact.find(act_name.value);
+    auto it = byact.find(reward_code.value);
     CHECKC(it != byact.end(), err::RECORD_NO_FOUND,
-           "rewardact not found by act_name: " + act_name.to_string());
+           "rewardact not found by reward_code: " + reward_code.to_string());
 
     const asset base_reward = it->points;
     CHECKC(base_reward.amount > 0 && base_reward.symbol == CISUM_SYM,
@@ -151,7 +172,7 @@ void poe_cisum::claimbatch(const name& submitter,
 
     for (const auto& c : claims) {
         asset reward = asset((int64_t)base_reward.amount * c.cnt, CISUM_SYM);
-        string memo = std::string("activereward:")+ act_name.to_string();
+        string memo = std::string("activereward:")+ reward_code.to_string();
         CHECKC(memo.size() <= 256, err::INVALID_FORMAT, "memo too long");
         _pay_points(c.claimer, reward, memo);
 
@@ -164,7 +185,7 @@ void poe_cisum::claimbatch(const name& submitter,
             c.claimer,
             reward,
             memo,
-            act_name.to_string(),
+            reward_code.to_string(),
             "",
             current_time_point().time_since_epoch().count() / 1'000'000
         );
@@ -172,7 +193,7 @@ void poe_cisum::claimbatch(const name& submitter,
     }
 }
 
-void poe_cisum::consumeact(const name& submitter, const name& act_name, const asset& amount) {
+void poe_cisum::consumeact(const name& submitter, const name& reward_code, const asset& amount) {
 
     // 允许：poe 自身 / POH 合约 / operators(submitter)
     CHECKC( has_auth(get_self())
@@ -180,7 +201,7 @@ void poe_cisum::consumeact(const name& submitter, const name& act_name, const as
          || _gstate.operators.count(submitter) > 0,
          err::DID_NOT_AUTH, " not authorized: submitter must be POE, POH, or operators");
 
-    CHECKC(act_name.value != 0,                err::INVALID_FORMAT,   "act_name is empty");
+    CHECKC(reward_code.value != 0,                err::INVALID_FORMAT,   "reward_code is empty");
     CHECKC(amount.is_valid(),                  err::INVALID_FORMAT,   "nvalid amount");
     CHECKC(amount.symbol == CISUM_SYM,        err::SYMBOL_MISMATCH,  "symbol mismatch");
     CHECKC(amount.amount >= 0,                 err::NOT_POSITIVE,     "amount must be non-negative");
@@ -188,8 +209,8 @@ void poe_cisum::consumeact(const name& submitter, const name& act_name, const as
 
     rewardact_t::acts_idx acts(get_self(), get_self().value);
     auto byname = acts.get_index<"byname"_n>();
-    auto it = byname.find(act_name.value);
-    CHECKC(it != byname.end(),                 err::RECORD_NO_FOUND,  "act not found: " + act_name.to_string());
+    auto it = byname.find(reward_code.value);
+    CHECKC(it != byname.end(),                 err::RECORD_NO_FOUND,  "act not found: " + reward_code.to_string());
 
     CHECKC(_gstate.available_points.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "available_points symbol mismatch");
     CHECKC(_gstate.claimed_points.symbol   == CISUM_SYM, err::SYMBOL_MISMATCH, "claimed_points symbol mismatch");
