@@ -421,7 +421,7 @@ void cisum_token::try_award_badges(const name& user,
         const int64_t delta    = k_after - k_before;
 
         if (delta > 0) {
-        packs.emplace_back(delta, it->symbol);
+            packs.emplace_back(delta, it->symbol);
         }
     }
 
