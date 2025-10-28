@@ -48,7 +48,6 @@ void poe_cisum::addrewardact(const name& reward_code, const asset& points, const
             row.reward_code    = reward_code;
             row.points         = points;
             row.memo           = memo;
-            row.claimed_points = asset(0, CISUM_SYM);
             row.create_at      = now;
             row.update_at      = now;
         });
@@ -59,8 +58,6 @@ void poe_cisum::addrewardact(const name& reward_code, const asset& points, const
             row.update_at = now;
         });
     }
-
-    _global.set(_gstate, get_self());
 }
 
 // 删除奖励配置（若已发放禁止删除）
@@ -149,11 +146,11 @@ void poe_cisum::claimbatch(const name& submitter,
     _gstate.available_points.amount -= total_amount;
     _gstate.claimed_points.amount += total_amount;
 
-    byact.modify(it, same_payer, [&](auto& row) {
-        CHECKC(row.points.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "symbol mismatch");
-        row.claimed_points += asset(total_amount, CISUM_SYM);
-        row.update_at = now;
-    });
+    // byact.modify(it, same_payer, [&](auto& row) {
+    //     CHECKC(row.points.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "symbol mismatch");
+    //     row.claimed_points += asset(total_amount, CISUM_SYM);
+    //     row.update_at = now;
+    // });
 
     // 6. 发放奖励与通知
     for (const auto& c : claims) {
@@ -200,9 +197,6 @@ void poe_cisum::consumeact(const name& submitter, const name& reward_code, const
 
     CHECKC(_gstate.available_points.amount >= amount.amount, err::INSUFFICIENT_QUANTITY, "insufficient balance");
 
-    // overflow 检查
-    CHECKC(it->claimed_points.amount <= std::numeric_limits<int64_t>::max() - amount.amount,
-           err::AMOUNT_TOO_LARGE, "claimed_points overflow");
     CHECKC(_gstate.claimed_points.amount <= std::numeric_limits<int64_t>::max() - amount.amount,
            err::AMOUNT_TOO_LARGE, "global claimed_points overflow");
 
@@ -214,10 +208,10 @@ void poe_cisum::consumeact(const name& submitter, const name& reward_code, const
     CHECKC(avail <= std::numeric_limits<int64_t>::max() - claimed, err::AMOUNT_TOO_LARGE, "total_points overflow");
     _gstate.total_points.amount = avail + claimed;
 
-    byname.modify(it, same_payer, [&](auto& r) {
-        r.claimed_points.amount += amount.amount;
-        r.update_at = current_time_point();
-    });
+    // byname.modify(it, same_payer, [&](auto& r) {
+    //     r.claimed_points.amount += amount.amount;
+    //     r.update_at = current_time_point();
+    // });
 }
 
 /*─────────────────────────────────────────────────────────────*

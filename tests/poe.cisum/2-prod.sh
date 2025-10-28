@@ -77,10 +77,10 @@ mpush $poe_con addrewardact '[
   "回复艺人动态"
 ]' -p $poe_con
 
-# 转发艺人动态 - 3 CISUM
+# 转发艺人动态 - 10 CISUM
 mpush $poe_con addrewardact '[
-  "postarticle",
-  "3.0000 CISUM",
+  "repostartist",
+  "10.0000 CISUM",
   "转发艺人动态"
 ]' -p $poe_con
 
@@ -106,7 +106,7 @@ mpush $poe_con addrewardact '[
 ]' -p $poe_con
 
 mpush $poe_con delrewardact '[
-  "signin"
+  "followartist"
 ]' -p $poe_con
 
 
