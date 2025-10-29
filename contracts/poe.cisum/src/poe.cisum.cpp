@@ -18,9 +18,8 @@ rewardact_t poe_cisum::_get_act(const name& reward_code) {
 }
 
 // 转账内部函数（安全封装）
-void poe_cisum::_pay_points( const claim_s & claim ) {
+void poe_cisum::_pay_points( const rewardact_t& acts, const claim_s & claim ) {
     // 1. 获取奖励配置
-    rewardact_t::acts_idx acts(get_self(), get_self().value);
     auto byact = acts.get_index<"byname"_n>();
     auto it = byact.find(claim.reward_code.value);
     CHECKC(it != byact.end(), err::RECORD_NO_FOUND, "rewardact not found by reward_code: " + claim.reward_code.to_string());
@@ -130,15 +129,12 @@ void poe_cisum::batchclaim(const name& claimer,
     while (std::distance(uidtable.begin(), uidtable.end()) > 10000)
         uidtable.erase(uidtable.begin());
 
-    // // 2. 发放奖励与通知
-    // for (const auto& c : claims) {
-    //     _pay_points(c);
+    rewardact_t::acts_idx acts(get_self(), get_self().value);
 
-    //     notifyreward_action{
-    //         get_self(),
-    //         {permission_level{get_self(), "active"_n}}
-    //     }.send(CISUM_BANK, c.beneficiary, reward, memo, reward_code,std::to_string(uid), now.time_since_epoch().count() / 1'000'000);
-    // }
+    // 2. 发放奖励与通知
+    for (const auto& c : claims) {
+        _pay_points(acts, c);
+    }
 }
 
 // // 发放通知（dummy action，用于 require_recipient）
