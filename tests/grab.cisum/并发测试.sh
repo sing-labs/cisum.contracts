@@ -434,11 +434,6 @@ mpush cisum.token transfer '["flonian","'$con'","10000.0000 CISUM","test"]' -p f
 
 
 
-
-
-
-
-
 accounts=(
   acctaa1aaa11 acctaa1aaa12 acctaa1aaa13 acctaa1aaa14 acctaa1aaa15
   acctaa1aaa21 acctaa1aaa22 acctaa1aaa23 acctaa1aaa24 acctaa1aaa25

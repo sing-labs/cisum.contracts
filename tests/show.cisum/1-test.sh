@@ -112,3 +112,27 @@ mpush show.cisum setticket '["flonian",1758870677786,2101025906313,"afterparty",
 
 
 mpush show.cisum setshow '["flonian",1758870677786,"concert",false,false,"2025-11-30T18:00:00","2025-11-30T23:00:00","Vũ Thanh Vân Concert Việt Nam",""]' -p flonian
+
+mpush show.cisum nftissue '["flonian","show.cisum",{"amount":100,"symbol":{"value":2101025468200}},"issue:1758870677786"]' -p show.cisum
+
+
+mpush show.cisum nftissue '["flonian","flonian",{"amount":100,"symbol":{"value":2101025468200}},"issue:1758870677786"]' -p flonian
+
+mpush show.cisum nftissue \
+'["flonian","flonian",{"amount":100,"symbol":{"value":2101025468200}},"issue:1758870677786"]' \
+-p flonian
+
+
+ mcli get table show.cisum show.cisum tickets
+
+
+
+ mpush $show_con nftissue '["show.cisum","show.cisum",{"amount": 11, "symbol": {"value": 2101025468200} },"issue:1758870677786"]' -p show.cisum
+
+
+ mpush $show_con issuetograb '[
+   "show.cisum",
+   "grab.cisum",
+   {"amount": 100, "symbol": {"value": 2101025468200} },
+   "addrushsale:23:1758870677786"]' -p show.cisum
+

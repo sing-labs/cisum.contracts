@@ -107,12 +107,14 @@ void cvticket::issue( const name& to, const nasset& quantity, const string& memo
     check( quantity.symbol == st.supply.symbol, "symbol mismatch" );
     check( quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
 
-    nstats.modify( st, same_payer, [&]( auto& s ) {
+
+
+   nstats.modify( st, _self, [&]( auto& s ) {
       s.supply += quantity;
       s.issued_at = current_time_point();
-    });
+   });
 
-    add_balance( st.issuer, quantity, st.issuer );
+   add_balance( st.issuer, quantity, st.issuer );
 }
 
 void cvticket::retire( const nasset& quantity, const string& memo )
@@ -132,7 +134,7 @@ void cvticket::retire( const nasset& quantity, const string& memo )
 
     check( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
 
-    nstats.modify( st, same_payer, [&]( auto& s ) {
+    nstats.modify( st, _self, [&]( auto& s ) {
        s.supply -= quantity;
     });
 
