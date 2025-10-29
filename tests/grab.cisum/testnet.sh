@@ -88,8 +88,10 @@ mpush song.token transfer '["flonian","grab.cisum","100.0000 SONG","grab:20:a179
 
 
 
- mpush cisum.token transfer '["gahbnbehaskk","grab.cisum","100.0000 CISUM","grab:30:a1799ae8e1ea62a20a5f56710348a123"]' -p gahbnbehaskk
+ mpush cisum.token transfer '["acctaa1aaa41","grab.cisum","100.0000 CISUM","grab:40:a1799ae8e1ea62a20a5f56710349a125"]' -p acctaa1aaa41
 
+
+mpush ticket.cvnft transfer '["acctaa1aaa41","grab.cisum",[{"amount":1,"symbol":{"value":2101025921799}}],"rushupgrade:6:a1799ae8e1ea72a20a5f57710352a127"]' -p acctaa1aaa41
 
 
 

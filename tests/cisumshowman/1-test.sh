@@ -14,7 +14,7 @@ mpush $rolemanage_con grantrole '["show24.cisum","flonian","ops21.cisum","showad
 mpush $ops_con publishshow '[
   "flonian",
   {
-    "show_id": 1760855632539,
+    "show_id": 1760855632545,
     "category": "concert",
     "ticket_transferable": true,
     "ticket_refundable": true,
@@ -25,8 +25,8 @@ mpush $ops_con publishshow '[
   },
   [
     {
-      "ticket_id": 2101025921810,
-      "token_uri": "ipfs://free_ticket513_metadata",
+      "ticket_id": 2101025921819,
+      "token_uri": "ipfs://free_ticket516_metadata",
       "ticket_type": "free",
       "price": "5.0000 CISUM",
       "price_usdt": "0 USDT",
@@ -39,8 +39,8 @@ mpush $ops_con publishshow '[
       "max_grabs_per_user":10000
     },
     {
-      "ticket_id": 2101025921811,
-      "token_uri": "ipfs://vip_ticket513_metadata",
+      "ticket_id": 2101025921820,
+      "token_uri": "ipfs://vip_ticket516_metadata",
       "ticket_type": "vip",
       "price": "199.00 USDT",
       "price_usdt": "199 USDT",
@@ -53,31 +53,17 @@ mpush $ops_con publishshow '[
       "max_grabs_per_user":0
     },
     {
-      "ticket_id": 2101025921812,
-      "token_uri": "ipfs://after_ticket513_metadata",
+      "ticket_id": 2101025921821,
+      "token_uri": "ipfs://after_ticket516_metadata",
       "ticket_type": "afterpart",
       "price": "199.000000 USDT",
       "price_usdt": "199.000000 USDT",
       "pay_ticket": {"amount": 0,"symbol": { "value": 0 }},
       "total_count": 100,
-      "prerequisite_ticket_id": 2101025921811,
-      "sale_started_at": "2025-08-01T00:00:00",
-      "sale_ended_at":   "2025-11-01T20:00:00",
-      "win_ratio":0,
-      "max_grabs_per_user":0
-    },
-    {
-      "ticket_id": 2101025921813,
-      "token_uri": "ipfs://after_ticket513_metadata",
-      "ticket_type": "afterpart",
-      "price": "199.000000 USDT",
-      "price_usdt": "199.000000 USDT",
-      "pay_ticket": {"amount": 1,"symbol": { "value": 2101025920796 }},
-      "total_count": 20,
       "prerequisite_ticket_id": 0,
       "sale_started_at": "2025-08-01T00:00:00",
       "sale_ended_at":   "2025-11-01T20:00:00",
-      "win_ratio":5000,
+      "win_ratio":0,
       "max_grabs_per_user":0
     }
   ]
@@ -87,20 +73,20 @@ mpush $ops_con publishshow '[
 
 mpush $ops_con actupgrades '[
   "flonian",
-  1760855632531,
+  1758870677786,
   [
     {
-      "ticket_id": 2101025921798,
-      "token_uri": "ipfs://after_ticket511_metadata",
+      "ticket_id": 2101025906313,
+      "token_uri": "",
       "ticket_type": "afterpart",
-      "price": "199.000000 USDT",
-      "price_usdt": "199.000000 USDT",
-      "pay_ticket": {"amount": 1,"symbol": { "value": 2101025921799 }},
+      "price": "150000 VND",
+      "price_usdt": "15 USDT",
+      "pay_ticket": {"amount": 1,"symbol": { "value": 2101025748071 }},
       "total_count": 20,
       "prerequisite_ticket_id": 0,
-      "sale_started_at": "2025-08-01T00:00:00",
-      "sale_ended_at":   "2025-11-01T20:00:00",
-      "win_ratio":5000,
+      "sale_started_at": "2025-09-26T08:07:42",
+      "sale_ended_at":   "2025-11-30T18:00:00",
+      "win_ratio":1000,
       "max_grabs_per_user":0
     }
   ]
