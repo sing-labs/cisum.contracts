@@ -81,9 +81,10 @@ struct [[eosio::table, eosio::contract("poe.cisum")]] rewardact_t {
 };
 
 
-struct  claim_info {
-    name claimer;
-    uint32_t cnt; //发放次数
+struct  claim_s {
+    name reward_code;
+    name beneficiary;
+    string memo;
 };
 
 struct [[eosio::table, eosio::contract("poe.cisum")]] uid_record_t {

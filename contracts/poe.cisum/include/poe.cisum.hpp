@@ -33,35 +33,32 @@ public:
 
     ACTION deloperator(const name& account);
 
-    ACTION claimbatch(const name& submitter,
+    ACTION batchclaim(const name& submitter,
                         const uint64_t& uid,
-                        const name& reward_code,
-                        const std::vector<claim_info>& claims ) ;
+                        const std::vector<claim_s>& claims ) ;
 
     ACTION consumeact(const name& submitter, const name& reward_code, const asset& amount);
 
     [[eosio::on_notify("cisum.token::transfer")]]
     void ontransfer(const name& from, const name& to,const asset& quantity, const string& memo);
-    ACTION awardnotice(const name&  from,
-                                const name&       to,
-                                const asset&      award_amount,
-                                const string&     memo,
-                                const name&       reward_type,
-                                const string&     reward_ref_id,
-                                const uint64_t&   created_at);
-
-
+    // ACTION notifyreward(const name&  from,
+    //                             const name&       to,
+    //                             const asset&      award_amount,
+    //                             const string&     memo,
+    //                             const name&       reward_type,
+    //                             const string&     reward_ref_id,
+    //                             const uint64_t&   created_at);
 
     // 便捷别名
     using addrewardact_action     = eosio::action_wrapper<"addrewardact"_n,     &poe_cisum::addrewardact>;
     using delrewardact_action     = eosio::action_wrapper<"delrewardact"_n,     &poe_cisum::delrewardact>;
-    using claimbatch_action       = eosio::action_wrapper<"claimbatch"_n,       &poe_cisum::claimbatch>;
-    using awardnotice_action      = eosio::action_wrapper<"awardnotice"_n,      &poe_cisum::awardnotice>;
+    using batchclaim_action       = eosio::action_wrapper<"batchclaim"_n,       &poe_cisum::batchclaim>;
+    // using notifyreward_action      = eosio::action_wrapper<"notifyreward"_n,      &poe_cisum::notifyreward>;
 private:
     global_singleton _global;
     global_t         _gstate;
 
-    void _pay_points(const name& to, const asset& quant, const string& memo);
+    void _pay_points( const claim_s& claim_info );
 
     rewardact_t _get_act(const name& reward_code);
 };

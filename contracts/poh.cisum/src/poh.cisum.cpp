@@ -59,7 +59,7 @@ void poh_cisum::setregistrar(name registrar) {
     _global.set(_gstate, get_self());
 }
 
-void poh_cisum::awardnotice(const name&  from,
+void poh_cisum::notifyreward(const name&  from,
                                 const name&       to,
                                 const asset&      award_amount,
                                 const string&     memo,
@@ -138,7 +138,7 @@ void poh_cisum::registreward(const name& submitter,
         );
 
         // 通知（保持你原有的事件）
-        awardnotice_action{
+        notifyreward_action{
             get_self(),
             { permission_level{ get_self(), "active"_n } }
         }.send(
@@ -182,8 +182,8 @@ void poh_cisum::registreward(const name& submitter,
             std::string("Invite Reward(")+ invitee.to_string()+")"
         );
 
-        // 发送一条 awardnotice 给邀请人
-        awardnotice_action{
+        // 发送一条 notifyreward 给邀请人
+        notifyreward_action{
             get_self(),
             { permission_level{ get_self(), "active"_n } }
         }.send(

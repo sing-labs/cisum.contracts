@@ -71,7 +71,7 @@ mpush $poe_con addoracle '[
 mpush $poe_con claimpoints '["myadmin","fulgwxvwfw1m",1]' -p myadmin
 
 
-mpush $poe_con claimbatch '[
+mpush $poe_con batchclaim '[
   "myadmin",
   1111,
   "shortvideo",

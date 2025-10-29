@@ -39,7 +39,7 @@ public:
                               const name& invitee     // 被邀请人（拿主奖励）
                                    );
 
-  ACTION awardnotice(const name&  from,
+  ACTION notifyreward(const name&  from,
                                 const name&       to,
                                 const asset&      award_amount,
                                 const string&     memo,
@@ -48,7 +48,7 @@ public:
                                 const uint64_t&   created_at);
 
   using registreward_action = eosio::action_wrapper<"registreward"_n, &poh_cisum::registreward>;
-  using awardnotice_action  = eosio::action_wrapper<"awardnotice"_n, &poh_cisum::awardnotice>;
+  using notifyreward_action  = eosio::action_wrapper<"notifyreward"_n, &poh_cisum::notifyreward>;
 
 private:
   global_singleton _global;

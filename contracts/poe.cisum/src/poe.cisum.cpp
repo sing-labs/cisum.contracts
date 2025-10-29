@@ -18,10 +18,29 @@ rewardact_t poe_cisum::_get_act(const name& reward_code) {
 }
 
 // 转账内部函数（安全封装）
-void poe_cisum::_pay_points(const name& to, const asset& quant, const string& memo) {
-    CHECKC(is_account(to), err::ACCOUNT_INVALID, "invalid recipient account");
-    CHECKC(quant.amount > 0 && quant.is_valid(), err::INVALID_FORMAT, "invalid transfer amount");
+void poe_cisum::_pay_points( const claim_s & claim ) {
+    // 1. 获取奖励配置
+    rewardact_t::acts_idx acts(get_self(), get_self().value);
+    auto byact = acts.get_index<"byname"_n>();
+    auto it = byact.find(claim.reward_code.value);
+    CHECKC(it != byact.end(), err::RECORD_NO_FOUND, "rewardact not found by reward_code: " + claim.reward_code.to_string());
+    const asset quant = it->points;
+    CHECKC(quant.amount > 0 && quant.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "invalid base reward");
+
+    // 2. 预构造 memo
+    const string memo = "poe:" + claim.reward_code.to_string() + ":" + claim.beneficiary.to_string();
     CHECKC(memo.size() <= 256, err::INVALID_FORMAT, "memo too long");
+
+    // 3. 余额检查与更新
+    CHECKC(_gstate.available_points >= quant, err::INSUFFICIENT_QUANTITY, "insufficient available_points");
+    _gstate.available_points    -= quant;
+    _gstate.claimed_points      += quant;
+
+    auto to = claim.beneficiary;
+    CHECKC( is_account(to), err::ACCOUNT_INVALID, "invalid recipient account" + to.to_string() )
+    CHECKC( quant.amount > 0 && quant.is_valid(), err::INVALID_FORMAT, "invalid transfer amount" )
+    CHECKC( memo.size() <= 256, err::INVALID_FORMAT, "memo too long" )
+
     TRANSFER(CISUM_BANK, to, quant, memo)
 }
 
@@ -89,13 +108,12 @@ void poe_cisum::deloperator(const name& account) {
  |                        发放奖励区                           |
  *─────────────────────────────────────────────────────────────*/
 
-void poe_cisum::claimbatch(const name& submitter,
+void poe_cisum::batchclaim(const name& claimer,
                            const uint64_t& uid,
-                           const name& reward_code,
-                           const std::vector<claim_info>& claims) {
-    require_auth(submitter);
-    CHECKC(_gstate.operators.count(submitter) > 0, err::DID_NOT_AUTH,
-           "submitter not in operators whitelist: " + submitter.to_string());
+                           const std::vector<claim_s>& claims) {
+    require_auth(claimer);
+    CHECKC(_gstate.operators.count(claimer) > 0, err::DID_NOT_AUTH,
+           "claimer not in operators whitelist: " + claimer.to_string());
     CHECKC(!claims.empty(), err::INVALID_FORMAT, "empty claim list");
 
     const auto now = current_time_point();
@@ -103,7 +121,7 @@ void poe_cisum::claimbatch(const name& submitter,
     // 1. UID 去重
     uid_index uidtable(get_self(), get_self().value);
     auto byuid = uidtable.get_index<"byuid"_n>();
-    CHECKC(byuid.find(uid) == byuid.end(), err::RECORD_FOUND, "duplicate uid: already processed " + std::to_string(uid));
+    CHECKC( byuid.find(uid) == byuid.end(), err::RECORD_FOUND, "duplicate uid: already processed " + std::to_string(uid) )
     uidtable.emplace(get_self(), [&](auto& row) {
         row.id = uidtable.available_primary_key();
         row.uid = uid;
@@ -112,69 +130,27 @@ void poe_cisum::claimbatch(const name& submitter,
     while (std::distance(uidtable.begin(), uidtable.end()) > 10000)
         uidtable.erase(uidtable.begin());
 
-    // 2. 获取奖励配置
-    rewardact_t::acts_idx acts(get_self(), get_self().value);
-    auto byact = acts.get_index<"byname"_n>();
-    auto it = byact.find(reward_code.value);
-    CHECKC(it != byact.end(), err::RECORD_NO_FOUND, "rewardact not found by reward_code: " + reward_code.to_string());
-    const asset base_reward = it->points;
-    CHECKC(base_reward.amount > 0 && base_reward.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "invalid base reward");
+    // // 2. 发放奖励与通知
+    // for (const auto& c : claims) {
+    //     _pay_points(c);
 
-    // 3. 预构造 memo
-    const string memo = "activereward:" + reward_code.to_string();
-    CHECKC(memo.size() <= 256, err::INVALID_FORMAT, "memo too long");
-
-    // 4. 计算有效总额
-    int64_t total_amount = 0;
-    for (const auto& c : claims) {
-        if (c.claimer.value == 0 || !is_account(c.claimer)) continue;
-        CHECKC(c.cnt > 0, err::INVALID_FORMAT, "invalid cnt value");
-
-        CHECKC(base_reward.amount <= std::numeric_limits<int64_t>::max() / (int64_t)c.cnt,
-               err::AMOUNT_TOO_LARGE, "multiplication overflow");
-        int64_t inc = base_reward.amount * (int64_t)c.cnt;
-
-        CHECKC(total_amount <= std::numeric_limits<int64_t>::max() - inc,
-               err::AMOUNT_TOO_LARGE, "addition overflow");
-        total_amount += inc;
-    }
-    CHECKC(total_amount > 0, err::INVALID_FORMAT, "no valid claimer accounts");
-
-    // 5. 余额检查与更新
-    CHECKC(_gstate.available_points.amount >= total_amount,
-           err::INSUFFICIENT_QUANTITY, "insufficient available_points");
-    _gstate.available_points.amount -= total_amount;
-    _gstate.claimed_points.amount += total_amount;
-
-    // byact.modify(it, same_payer, [&](auto& row) {
-    //     CHECKC(row.points.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "symbol mismatch");
-    //     row.claimed_points += asset(total_amount, CISUM_SYM);
-    //     row.update_at = now;
-    // });
-
-    // 6. 发放奖励与通知
-    for (const auto& c : claims) {
-        if (c.claimer.value == 0 || !is_account(c.claimer)) continue;
-        asset reward((int64_t)base_reward.amount * c.cnt, CISUM_SYM);
-        _pay_points(c.claimer, reward, memo);
-
-        awardnotice_action{
-            get_self(),
-            {permission_level{get_self(), "active"_n}}
-        }.send(CISUM_BANK, c.claimer, reward, memo, reward_code,std::to_string(uid), now.time_since_epoch().count() / 1'000'000);
-    }
+    //     notifyreward_action{
+    //         get_self(),
+    //         {permission_level{get_self(), "active"_n}}
+    //     }.send(CISUM_BANK, c.beneficiary, reward, memo, reward_code,std::to_string(uid), now.time_since_epoch().count() / 1'000'000);
+    // }
 }
 
-// 发放通知（dummy action，用于 require_recipient）
-void poe_cisum::awardnotice(const name& from,
-                            const name& to,
-                            const asset& award_amount,
-                            const string& memo,
-                            const name& reward_type,
-                            const string& reward_ref_id,
-                            const uint64_t& created_at) {
-    require_auth(get_self());
-}
+// // 发放通知（dummy action，用于 require_recipient）
+// void poe_cisum::notifyreward(const name& from,
+//                             const name& to,
+//                             const asset& award_amount,
+//                             const string& memo,
+//                             const name& reward_type,
+//                             const string& reward_ref_id,
+//                             const uint64_t& created_at) {
+//     require_auth(get_self());
+// }
 
 /*─────────────────────────────────────────────────────────────*
  |                        积分管理区                           |

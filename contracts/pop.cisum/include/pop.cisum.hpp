@@ -38,7 +38,7 @@ public:
    */
 
 
-  ACTION awardnotice(const name&  from,
+  ACTION notifyreward(const name&  from,
                                 const name&       to,
                                 const asset&      award_amount,
                                 const string&     memo,
@@ -67,7 +67,7 @@ public:
 
   // -------- Inline wrappers --------
   using mine_action                       = eosio::action_wrapper<"mine"_n,&pop_cisum::mine>;
-  using awardnotice_action                = eosio::action_wrapper<"awardnotice"_n,&pop_cisum::awardnotice>;
+  using notifyreward_action                = eosio::action_wrapper<"notifyreward"_n,&pop_cisum::notifyreward>;
   using notifyaward_action                = eosio::action_wrapper<"notifyaward"_n,&pop_cisum::notifyaward>;
 private:
   global_singleton _global;

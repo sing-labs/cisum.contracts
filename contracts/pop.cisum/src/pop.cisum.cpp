@@ -12,7 +12,7 @@ namespace flon {
 using namespace eosio;
 using std::string;
 
-void pop_cisum::awardnotice(const name&  from,
+void pop_cisum::notifyreward(const name&  from,
                                 const name&       to,
                                 const asset&      award_amount,
                                 const string&     memo,
@@ -204,7 +204,7 @@ void pop_cisum::mine(name payer, asset pay_amount, string memo)
         std::string("Purchase Reward(")+payer.to_string()+")"
     );
 
-    awardnotice_action{
+    notifyreward_action{
             get_self(),
             { permission_level{ get_self(), "active"_n } }
     }.send(
