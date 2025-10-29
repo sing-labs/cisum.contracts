@@ -14,35 +14,7 @@ cisum_token=cisum.token
 mpush $cisum_token addwhitelist '["'"${poe_con}"'"]' -p $cisum_token
 
 
-# 投票 - 50 CISUM
-mpush $poe_con addrewardact '[
-  "vote",
-  "50.0000 CISUM",
-  "投票奖励"
-]' -p $poe_con
-
-# 发布短视频内容 - 100 CISUM
-mpush $poe_con addrewardact '[
-  "shortvideo",
-  "100.0000 CISUM",
-  "发布短视频内容奖励"
-]' -p $poe_con
-
-# 邀请好友注册 - 200 CISUM
-mpush $poe_con addrewardact '[
-  "invite",
-  "200.0000 CISUM",
-  "邀请好友注册奖励"
-]' -p $poe_con
-
-# 上传艺人内容 - 200 CISUM
-mpush $poe_con addrewardact '[
-  "uploadartist",
-  "200.0000 CISUM",
-  "上传艺人内容奖励"
-]' -p $poe_con
-
-operator=
+operator=cisum.admin
 mpush $poe_con addoperator '[
   "'"${operator}"'"
 ]' -p $poe_con

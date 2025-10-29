@@ -30,12 +30,12 @@ void poe_cisum::_pay_points(const name& to, const asset& quant, const string& me
  *─────────────────────────────────────────────────────────────*/
 
 // 添加/更新奖励配置
-void poe_cisum::addrewardact(const name& reward_code, const asset& points, const string& memo) {
+void poe_cisum::addrewardact(const name& reward_code, const asset& points, const string& description) {
     require_auth(get_self());
     CHECKC(reward_code.value != 0, err::INVALID_FORMAT, "reward_code cannot be empty");
     CHECKC(points.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "points symbol mismatch");
     CHECKC(points.amount >= 0, err::INVALID_FORMAT, "points must be non-negative");
-    CHECKC(memo.size() <= 256, err::INVALID_FORMAT, "memo too long");
+    CHECKC(description.size() <= 256, err::INVALID_FORMAT, "description too long");
 
     rewardact_t::acts_idx acts(get_self(), get_self().value);
     auto byname = acts.get_index<"byname"_n>();
@@ -47,15 +47,15 @@ void poe_cisum::addrewardact(const name& reward_code, const asset& points, const
             row.id             = ++_gstate.last_act_id;
             row.reward_code    = reward_code;
             row.points         = points;
-            row.memo           = memo;
+            row.description    = description;
             row.create_at      = now;
             row.update_at      = now;
         });
     } else {
         byname.modify(it, same_payer, [&](auto& row) {
-            row.points    = points;
-            row.memo      = memo;
-            row.update_at = now;
+            row.points          = points;
+            row.description     = description;
+            row.update_at       = now;
         });
     }
 }

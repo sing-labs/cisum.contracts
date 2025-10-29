@@ -67,7 +67,7 @@ struct [[eosio::table, eosio::contract("poe.cisum")]] rewardact_t {
   uint64_t   id;                        // 主键，自增
   name       reward_code;                  // 行为标识（signin / vote / short / invite / artist ...）
   asset      points;                    // 可领取积分（如 10.0000 SONG）
-  string     memo;                      // 备注
+  string     description;               // 行为描述
   time_point create_at;
   time_point update_at;
 
@@ -77,7 +77,7 @@ struct [[eosio::table, eosio::contract("poe.cisum")]] rewardact_t {
   typedef eosio::multi_index<"rewardacts"_n, rewardact_t,
       indexed_by<"byname"_n, const_mem_fun<rewardact_t, uint64_t, &rewardact_t::by_name>>
       > acts_idx;
-  EOSLIB_SERIALIZE(rewardact_t, (id)(reward_code)(points)(memo)(create_at)(update_at))
+  EOSLIB_SERIALIZE(rewardact_t, (id)(reward_code)(points)(description)(create_at)(update_at))
 };
 
 
