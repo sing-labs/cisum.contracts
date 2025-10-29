@@ -215,7 +215,7 @@ mpush $ops_con publishshow '[
     }
   ]
 ]' -p flonian
-# 预期：失败（nftcreate 需要正的 max_supply / 你的逻辑通常会拒绝 0）
+# 预期：失败（createnft 需要正的 max_supply / 你的逻辑通常会拒绝 0）
 
 
 ⸻

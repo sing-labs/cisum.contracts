@@ -21,7 +21,7 @@ public:
 
   ~cisumshow() { _global.set(_gstate, get_self()); }
 
-  // 一次性：newshow -> (nftcreate -> newticket -> nftissue)* -> 若免费票则发给 grap.cisum
+  // 一次性：newshow -> (createnft -> newticket -> issuenft)* -> 若免费票则发给 grap.cisum
   ACTION publishshow(eosio::name creator,
                    const show_info& show,
                    const std::vector<ticket_info>& tickets);

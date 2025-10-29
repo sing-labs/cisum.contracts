@@ -55,7 +55,7 @@ void show::require_perm(const name& submitter,
     );
 }
 
-void show::tkincrease(const uint64_t&  show_id,
+void show::notenftissue(const uint64_t&        show_id,
                       const uint64_t&        ticket_id,
                       const uint64_t&        ticket_count,
                       const uint64_t&        prev_ticket_count,
@@ -76,7 +76,7 @@ void show::init(const name& admin,const name& nft_bank) {
 }
 
 
-void show::nftcreate(const name& submitter,
+void show::createnft(const name& submitter,
                     const int64_t& max_supply,
                     const nsymbol& symbol,
                     const string&  token_uri)
@@ -98,7 +98,7 @@ void show::nftcreate(const name& submitter,
     }.send(get_self(), max_supply, symbol, token_uri, get_self());
 }
 
-void show::nftissue(const name& submitter,
+void show::issuenft(const name& submitter,
                     const name&   issuer,
                     const nasset& quantity,
                     const string& memo)
@@ -128,7 +128,7 @@ void show::nftissue(const name& submitter,
     // 更新库存
     ticket_t::ticketidx tickets(get_self(), show_id);
     auto itr = tickets.find(quantity.symbol.raw());
-    check(itr != tickets.end(), "ticket not found in nftissue");
+    check(itr != tickets.end(), "ticket not found in issuenft");
     uint64_t prev_amount = static_cast<uint64_t>(itr->total_count);
     tickets.modify(itr, same_payer, [&](auto& row){
         row.total_count += quantity.amount;
@@ -136,16 +136,17 @@ void show::nftissue(const name& submitter,
         row.updated_at = current_time_point();
     });
 
-    tkincrease_action{
+    notenftissue_action{
       get_self(),
       { permission_level{ get_self(), "active"_n } }
-    }.send(    show_id,                     // 演出ID
-      quantity.symbol.raw(),       // 票的symbol
-      quantity.amount,             // 增加数量
-      prev_amount,
-      issuer,                      // 实际操作者
-      memo,                         // 备注
-      current_time_point().time_since_epoch().count() / 1'000'000);
+    }.send(    
+        show_id,                     // 演出ID
+        quantity.symbol.raw(),       // 票的symbol
+        quantity.amount,             // 增加数量
+        prev_amount,
+        issuer,                      // 实际操作者
+        memo,                         // 备注
+        current_time_point().time_since_epoch().count() / 1'000'000);
 
 }
 

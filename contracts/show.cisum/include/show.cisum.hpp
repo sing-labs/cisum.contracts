@@ -62,12 +62,12 @@ public:
   // ===== 全局设置 =====
   ACTION init(const name& admin,const name& nft_bank);
 
-  ACTION nftcreate(const name& submitter,
+  ACTION createnft(const name& submitter,
                     const int64_t& max_supply,
                     const nsymbol& symbol,
                     const string&  token_uri);
 
-  ACTION nftissue( const name& submitter,
+  ACTION issuenft( const name& submitter,
                     const name&   issuer,
                     const nasset& quantity,
                     const string& memo);
@@ -129,7 +129,7 @@ public:
                      const vector<name>&    recipients,
                      const string&          memo);
 
-  ACTION tkincrease(const uint64_t&  show_id,
+  ACTION notenftissue(  const uint64_t&        show_id,
                       const uint64_t&        ticket_id,
                       const uint64_t&        ticket_count,
                       const uint64_t&        prev_ticket_count,
@@ -151,8 +151,8 @@ public:
 
 
 
-  using nftcreate_action      = eosio::action_wrapper<"nftcreate"_n,&show::nftcreate>;
-  using tkincrease_action     = eosio::action_wrapper<"tkincrease"_n,&show::tkincrease>;
+  using createnft_action      = eosio::action_wrapper<"createnft"_n,&show::createnft>;
+  using notenftissue_action     = eosio::action_wrapper<"notenftissue"_n,&show::notenftissue>;
   using issue_action          = eosio::action_wrapper<"issue"_n,&show::issue>;
 
 

@@ -11,11 +11,11 @@ using std::string;
 using flon::nsymbol;
 
 #define CREATE_NFT(bank,submitter,max_supply, symbol, token_uri) \
-    { flon::show::nftcreate_action act{ bank, { permission_level{ submitter, "active"_n } } };\
+    { flon::show::createnft_action act{ bank, { permission_level{ submitter, "active"_n } } };\
       act.send(submitter, max_supply, symbol, token_uri); }
 
 #define ISSUE_NFT(bank,submitter,issuer,quantity,memo) \
-    { flon::show::nftissue_action act{ bank, { permission_level{ submitter, "active"_n } } };\
+    { flon::show::issuenft_action act{ bank, { permission_level{ submitter, "active"_n } } };\
       act.send(submitter,issuer, quantity, memo); }
 
 #define NEW_SHOW(bank,submitter,show_id,category,ticket_transferable,ticket_refundable,show_started_at,show_ended_at,show_name,show_address) \
@@ -38,14 +38,14 @@ public:
 
 
   [[eosio::action]]
-  void nftcreate(const name& submitter,
+  void createnft(const name& submitter,
                     const int64_t& max_supply,
                     const nsymbol& symbol,
                     const string&  token_uri);
 
   // === cvticket.nft: 发放（铸造到合约自身，再转出/或直接发放） ===
   [[eosio::action]]
-  void nftissue(const name& submitter,
+  void issuenft(const name& submitter,
                     const name&   issuer,
                     const nasset& quantity,
                     const string& memo);
@@ -101,8 +101,8 @@ public:
   ACTION issuetograb(const name&  submitter,const name& to, const nasset& quantity, const string& memo);
 
   using newshow_action     = eosio::action_wrapper<"newshow"_n,&show::newshow>;
-  using nftcreate_action     = eosio::action_wrapper<"nftcreate"_n,&show::nftcreate>;
-  using nftissue_action     = eosio::action_wrapper<"nftissue"_n,&show::nftissue>;
+  using createnft_action     = eosio::action_wrapper<"createnft"_n,&show::createnft>;
+  using issuenft_action     = eosio::action_wrapper<"issuenft"_n,&show::issuenft>;
   using newticket_action     = eosio::action_wrapper<"newticket"_n,&show::newticket>;
   using issuetograb_action     = eosio::action_wrapper<"issuetograb"_n,&show::issuetograb>;
 

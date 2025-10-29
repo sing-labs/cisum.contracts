@@ -26,26 +26,26 @@ mpush $show_con addshowadm '["flontest"]' -p flonian
 
 
 #普通票
-mpush $show_con nftcreate '[
+mpush $show_con createnft '[
   10000000000,{"value": 21010001000010021},
   "ipfs://ticket/silver11.json"
 ]' -p flonian
 
 
-mpush $show_con nftissue '[
+mpush $show_con issuenft '[
   {"amount": 2000, "symbol": {"value": 21010001000010021} },
   "bootstrap batch"
 ]' -p flonian
 
 
 #合影票
-mpush $show_con nftcreate '[
+mpush $show_con createnft '[
   10000000000,{"value": 21010001000010022},
   "ipfs://ticket/silver12.json"
 ]' -p flonian
 
 
-mpush $show_con nftissue '["flonian",{"amount": 11, "symbol": {"value": 21010001000010241} },"issue:20250064"]' -p flonian
+mpush $show_con issuenft '["flonian",{"amount": 11, "symbol": {"value": 21010001000010241} },"issue:20250064"]' -p flonian
 
 
 mpush $show_con newshow '[41258,"concert", true, true, "2025-09-01T00:00:00", "2025-09-10T23:59:59","test" ,"gasgsgg gq gg sa gdf jhfd j" , "onshelf"]' -p flonian
