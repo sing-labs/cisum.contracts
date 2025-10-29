@@ -4,30 +4,14 @@ namespace flon {
 
 using std::string;
 
-/*─────────────────────────────────────────────────────────────*
- |                       工具函数区                            |
- *─────────────────────────────────────────────────────────────*/
-
-// 获取奖励配置
-rewardact_t poe_cisum::_get_act(const name& reward_code) {
-    rewardact_t::acts_idx acts(get_self(), get_self().value);
-    auto byname = acts.get_index<"byname"_n>();
-    auto it = byname.find(reward_code.value);
-    CHECKC(it != byname.end(), err::RECORD_NO_FOUND, "act not found: " + reward_code.to_string());
-    return *it;
-}
-
 // 转账内部函数（安全封装）
-void poe_cisum::_pay_points( const rewardact_t& acts, const claim_s & claim ) {
+void poe_cisum::_pay_points( const claim_s & claim,const asset& quant ,const uint64_t& uid, const time_point& now ) {
     // 1. 获取奖励配置
-    auto byact = acts.get_index<"byname"_n>();
-    auto it = byact.find(claim.reward_code.value);
-    CHECKC(it != byact.end(), err::RECORD_NO_FOUND, "rewardact not found by reward_code: " + claim.reward_code.to_string());
-    const asset quant = it->points;
+
     CHECKC(quant.amount > 0 && quant.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "invalid base reward");
 
     // 2. 预构造 memo
-    const string memo = "poe:" + claim.reward_code.to_string() + ":" + claim.beneficiary.to_string();
+    const string memo = "poe:" + claim.reward_code.to_string() + ":" + claim.memo;
     CHECKC(memo.size() <= 256, err::INVALID_FORMAT, "memo too long");
 
     // 3. 余额检查与更新
@@ -41,6 +25,11 @@ void poe_cisum::_pay_points( const rewardact_t& acts, const claim_s & claim ) {
     CHECKC( memo.size() <= 256, err::INVALID_FORMAT, "memo too long" )
 
     TRANSFER(CISUM_BANK, to, quant, memo)
+
+    notifyreward_action{
+        get_self(),
+        {permission_level{get_self(), "active"_n}}
+    }.send(CISUM_BANK, claim.beneficiary, quant, memo, claim.reward_code,std::to_string(uid), now.time_since_epoch().count() / 1'000'000);
 }
 
 /*─────────────────────────────────────────────────────────────*
@@ -114,7 +103,8 @@ void poe_cisum::batchclaim(const name& claimer,
     CHECKC(_gstate.operators.count(claimer) > 0, err::DID_NOT_AUTH,
            "claimer not in operators whitelist: " + claimer.to_string());
     CHECKC(!claims.empty(), err::INVALID_FORMAT, "empty claim list");
-
+    CHECKC(claims.size() <= 100, err::EXCEED_LIMIT,
+       "too many claims in batch (max 100, got " + std::to_string(claims.size()) + ")");
     const auto now = current_time_point();
 
     // 1. UID 去重
@@ -130,23 +120,28 @@ void poe_cisum::batchclaim(const name& claimer,
         uidtable.erase(uidtable.begin());
 
     rewardact_t::acts_idx acts(get_self(), get_self().value);
+    auto byact = acts.get_index<"byname"_n>();
 
     // 2. 发放奖励与通知
-    for (const auto& c : claims) {
-        _pay_points(acts, c);
+    for (const auto& claim : claims) {
+        auto it = byact.find(claim.reward_code.value);
+        CHECKC(it != byact.end(), err::RECORD_NO_FOUND, "rewardact not found by reward_code: " + claim.reward_code.to_string());
+        const asset quant = it->points;
+        _pay_points( claim, quant, uid, now);
     }
 }
 
-// // 发放通知（dummy action，用于 require_recipient）
-// void poe_cisum::notifyreward(const name& from,
-//                             const name& to,
-//                             const asset& award_amount,
-//                             const string& memo,
-//                             const name& reward_type,
-//                             const string& reward_ref_id,
-//                             const uint64_t& created_at) {
-//     require_auth(get_self());
-// }
+// 发放通知（dummy action，用于 require_recipient）
+void poe_cisum::notifyreward(const name& from,
+                            const name& to,
+                            const asset& award_amount,
+                            const string& memo,
+                            const name& reward_type,
+                            const string& reward_ref_id,
+                            const uint64_t& created_at) {
+    require_auth(get_self());
+}
+
 
 /*─────────────────────────────────────────────────────────────*
  |                        积分管理区                           |
