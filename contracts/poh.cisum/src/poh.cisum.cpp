@@ -90,8 +90,8 @@ void poh_cisum::registreward(const name& submitter,
 
     CHECKC(_gstate.platform_acct.value != 0,    err::RECORD_NO_FOUND, "platform not set");
 
-    // ===== 主奖励：USDT -> SING 给平台（平台再按你的业务分配），SONG 给 invitee =====
-    //  USDT -> SING（平台入账）
+    // ===== 主奖励：USDT -> SING 给平台（平台再按你的业务分配），CISUM 给 invitee =====
+    //  USDT -> SING 给平台账户
     {
         asset usdt = _gstate.usdt_per_user;
         CHECKC(usdt.symbol == USDT_SYM,         err::SYMBOL_MISMATCH, "usdt_per_user symbol mismatch");
@@ -159,7 +159,7 @@ void poh_cisum::registreward(const name& submitter,
         rewardact_t::acts_idx  acts(POE_CONTRACT, POE_CONTRACT.value);
 
         auto byname = acts.get_index<"byname"_n>();
-        auto it     = byname.find("invite"_n.value);
+        auto it = byname.find("invite"_n.value);
 
         CHECKC(it != byname.end(),               err::RECORD_NO_FOUND, "invite rewardact not found");
         CHECKC(it->points.symbol == CISUM_SYM,  err::SYMBOL_MISMATCH, "invite reward symbol mismatch");
