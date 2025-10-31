@@ -33,9 +33,9 @@ public:
      * Initialize the contract.
      * 权限：合约自身
      */
-    ACTION init(const name& admin,const uint64_t& last_rush_sale_id,const uint64_t& last_order_id) ;
+    ACTION init(const name& admin) ;
 
-    ACTION delglobal();
+    // ACTION delglobal();
 
     /**
      * Create a new rush sale event.
