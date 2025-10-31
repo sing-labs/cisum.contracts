@@ -146,7 +146,7 @@ void poh_cisum::registreward(const name& submitter,
             invitee,
             CISUM_BONUS,
             std::string("NewReg Reward:")+ invitee.to_string(),
-            "signupmining",
+            "signupmining"_n,
             "",
             current_time_point().time_since_epoch().count() / 1'000'000
         );
