@@ -105,7 +105,7 @@ void cisumshow::publishshow(name creator,
 // ======================================================
 //  激活升级票 — 手动传入 ticket_info 向 grab 注册
 // ======================================================
-void cisumshow::actupgrades(const name& creator,const uint64_t&   show_id,const vector<ticket_info>& tickets)
+void cisumshow::addupgrades(const name& creator,const uint64_t&   show_id,const vector<ticket_info>& tickets)
 {
     require_auth(creator);
 

@@ -71,7 +71,7 @@ mpush $ops_con publishshow '[
 
 
 
-mpush $ops_con actupgrades '[
+mpush $ops_con addupgrades '[
   "flonian",
   1760855632557,
   [
