@@ -13,13 +13,14 @@ public:
   using contract::contract;
 
     cisumshow(eosio::name receiver, eosio::name code, datastream<const char*> ds)
-  : contract(receiver, code, ds),
-    _global(get_self(), get_self().value)
+  : contract(receiver, code, ds)
+    //_global(get_self(), get_self().value)
   {
-    _gstate = _global.exists() ? _global.get() : global_t{};
+    //_gstate = _global.exists() ? _global.get() : global_t{};
   }
 
-  ~cisumshow() { _global.set(_gstate, get_self()); }
+  ~cisumshow() { //_global.set(_gstate, get_self());
+  }
 
   // 一次性：newshow -> (createnft -> newticket -> issuenft)* -> 若免费票则发给 grap.cisum
   ACTION publishshow(eosio::name creator,
@@ -31,9 +32,9 @@ public:
 
   using publishshow_action = eosio::action_wrapper<"publishshow"_n, &cisumshow::publishshow>;
 
-private:
-  global_singleton _global;
-  global_t         _gstate;
+// private:
+//   global_singleton _global;
+//   global_t         _gstate;
 
 
 };

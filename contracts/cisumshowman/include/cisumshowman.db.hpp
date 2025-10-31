@@ -14,11 +14,11 @@ using std::vector;
 namespace flon {
 
 
-struct [[eosio::table, eosio::contract("cisumshowman")]] global_t {
-    name admin;
-    EOSLIB_SERIALIZE(global_t, (admin))
-};
-using global_singleton = eosio::singleton<"global"_n, global_t>;
+// struct [[eosio::table, eosio::contract("cisumshowman")]] global_t {
+//     name admin;
+//     EOSLIB_SERIALIZE(global_t, (admin))
+// };
+// using global_singleton = eosio::singleton<"global"_n, global_t>;
 
 
 // —— 票档入参（非表）——

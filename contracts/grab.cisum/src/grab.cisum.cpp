@@ -97,6 +97,8 @@ void grab_cisum::init(const name& admin) {
     require_auth(get_self());
     CHECKC(is_account(admin), err::ACCOUNT_INVALID, "admin must be a valid account");
     _gstate.admin = admin;
+    // _gstate.last_rush_sale_id = last_rush_sale_id;
+    // _gstate.last_order_id = last_order_id;
 
 }
 
