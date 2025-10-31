@@ -63,13 +63,7 @@ mpush grab.cisum delrushorder '["flonian",28]' -p flonian
 mpush cisum.token transfer '["flonian","grab.cisum","5.0000 CISUM","grab:41:a1799ae8e1ea72a20a5f57710642a143"]' -p flonian
 
 
-
-
-
-
-
-
-
+admin=cisumverseop
 mpush $grab_con init '["'"$admin"'",55,3000]' -p $grab_con
 
 # 5) grab 的配置项：方案A下由具备角色的用户（myadmin）提交（带 submitter）
@@ -79,8 +73,6 @@ mpush $grab_con cfgticket '["ticket.cvnft"]' -p $grab_con
 
 # 6) grab 的 oracle 账号
 oracle=cisumgrabops
+grab_con=grab.cisum
 mpush $grab_con addoracle '["'"$oracle"'"]' -p $grab_con
-
-
-
 
