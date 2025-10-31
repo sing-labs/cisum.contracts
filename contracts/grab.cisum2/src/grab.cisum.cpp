@@ -93,12 +93,10 @@ void grab_cisum::require_perm(const name& submitter, const std::string& perm) co
     ).send(get_self(), submitter, perm);
 }
 
-void grab_cisum::init(const name& admin,const uint64_t& last_rush_sale_id,const uint64_t& last_order_id) {
+void grab_cisum::init(const name& admin) {
     require_auth(get_self());
     CHECKC(is_account(admin), err::ACCOUNT_INVALID, "admin must be a valid account");
     _gstate.admin = admin;
-    _gstate.last_rush_sale_id = last_rush_sale_id;
-    _gstate.last_order_id = last_order_id;
 
 }
 
@@ -539,10 +537,9 @@ void grab_cisum::on_transfer_cisum(const name& from,
         win = (rnd < rs_itr->win_ratio);
     }
 
-    uint64_t next_order_id = ++_gstate.last_order_id;
     // 记录 order
     orders.emplace(get_self(), [&](auto& o){
-        o.id         = next_order_id;
+        o.id         = orders.available_primary_key();
         o.grab_id    = grab_id;
         o.account    = from;
         o.grabs      = 1;
@@ -710,10 +707,9 @@ void grab_cisum::_process_rush_upgrade(const name& from,
         r.updated_at = now;
     });
 
-    uint64_t next_order_id = ++_gstate.last_order_id;
     // 写入日志
     logs.emplace(get_self(), [&](auto& row){
-        row.id         = next_order_id;
+        row.id         = logs.available_primary_key();
         row.grab_id    = grab_id;
         row.account    = from;
         row.from       = tickets; // from: 消耗票, to: 升级结果

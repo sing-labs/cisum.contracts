@@ -88,14 +88,20 @@ mpush song.token transfer '["flonian","grab.cisum","100.0000 SONG","grab:20:a179
 
 
 
- mpush cisum.token transfer '["acctaa1aaa41","grab.cisum","100.0000 CISUM","grab:40:a1799ae8e1ea62a20a5f56710349a125"]' -p acctaa1aaa41
+ mpush cisum.token transfer '["acctaa1aaa33","grab.cisum","100.0000 CISUM","grab:40:a1799ae8e1ea62a20a5f56710349a157"]' -p acctaa1aaa33
 
 
-mpush ticket.cvnft transfer '["acctaa1aaa41","grab.cisum",[{"amount":1,"symbol":{"value":2101025921799}}],"rushupgrade:6:a1799ae8e1ea72a20a5f57710352a127"]' -p acctaa1aaa41
+mpush ticket.cvnft transfer '["acctaa1aaa33","grab.cisum",[{"amount":1,"symbol":{"value":2101025921799}}],"rushupgrade:6:a1799ae8e1ea72a20a5f57710352a157"]' -p acctaa1aaa33
 
 
 
 mpush grab.cisum setrushsale '["flonian",23,105,null,"2025-11-21T03:53:51.000"]' -p flonian
 
 
-mpush grab.cisum setupgrade '["flonian",2,100,10000,null]' -p flonian
+mpush grab.cisum setupgrade '["flonian",12,10000,"2025-11-01T00:00:00.000","2025-11-21T03:53:51.000"]' -p flonian
+
+
+
+mpush grab.cisum setrushsale '["flonian",50,null,null,"2025-11-01T00:00:00.000",null]' -p flonian
+
+

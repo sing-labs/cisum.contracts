@@ -65,14 +65,13 @@ static constexpr uint32_t RATIO_BASE = 10000;   // 100.00%
 
 NTBL("global") global_t {
    uint64_t       last_rush_sale_id=1;
-   uint64_t       last_order_id=1;
    eosio::name    admin;
    eosio::name    point_contract    = CISUM_CONTRACT;
    eosio::name    ticket_contract   = CVTICKET_CONTRACT;
    set<name>      oracles;
 
 
-   EOSLIB_SERIALIZE(global_t, (last_rush_sale_id)(last_order_id)(admin)(point_contract)(ticket_contract)(oracles))
+   EOSLIB_SERIALIZE(global_t, (last_rush_sale_id)(admin)(point_contract)(ticket_contract)(oracles))
 };
 
 typedef eosio::singleton< "global"_n, global_t > global_singleton;

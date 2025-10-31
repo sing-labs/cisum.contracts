@@ -110,17 +110,17 @@ void cisumshow::actupgrades(const name& creator,const uint64_t&   show_id,const 
     require_auth(creator);
 
     // 获取 grab 升级全局状态
-    auto grab_upgglobal = upgglobal1_singleton(GRAB_CONTRACT, GRAB_CONTRACT.value);
-    auto upggstate      = grab_upgglobal.get_or_default();
-    uint64_t next_upgrade_id = upggstate.last_rush_upgrade_id;
+    auto grab_global = global1_singleton(GRAB_CONTRACT, GRAB_CONTRACT.value);
+    auto gstate      = grab_global.get_or_default();
+    uint64_t next_rush_id = gstate.last_rush_sale_id;
 
     for (const auto& tk : tickets) {
         // 只处理带 pay_ticket 的票
         const bool has_pay_ticket = (tk.pay_ticket.amount > 0 && tk.pay_ticket.symbol.is_valid());
         if (!has_pay_ticket) continue;
 
-        next_upgrade_id += 1;
-        uint64_t rush_upgrade_id = next_upgrade_id;
+        next_rush_id += 1;
+        uint64_t rush_upgrade_id = next_rush_id;
 
         // ---- 注册 upgrade ----
         ADDUPGRADE(GRAB_CONTRACT,

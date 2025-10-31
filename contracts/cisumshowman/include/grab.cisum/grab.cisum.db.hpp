@@ -23,13 +23,4 @@ struct  glab_global_t {
 typedef eosio::singleton< "grabglobal"_n, glab_global_t > global1_singleton;
 
 
-struct upgrade_global_t {
-   uint64_t       last_rush_upgrade_id;
-
-   EOSLIB_SERIALIZE(upgrade_global_t, (last_rush_upgrade_id))
-};
-
-typedef eosio::singleton< "upgrdglobal"_n, upgrade_global_t > upgglobal1_singleton;
-
-
 } // namespace flon

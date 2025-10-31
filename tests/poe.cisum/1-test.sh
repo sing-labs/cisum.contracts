@@ -73,10 +73,10 @@ mpush $poe_con claimpoints '["myadmin","fulgwxvwfw1m",1]' -p myadmin
 
 mpush $poe_con batchclaim '[
   "myadmin",
-  1715,
+  1719,
   [
-    {"reward_code": "shortvideo", "beneficiary":"fulgwxvwfw1m","memo": ""},
-    {"reward_code": "invite", "beneficiary":"fulgwxvwfw1m","memo": ""}
+    {"reward_code": "shortvideo", "beneficiary":"fulgwxvwfw1m"},
+    {"reward_code": "invite", "beneficiary":"fulgwxvwfw1m"}
   ]
 ]' -p myadmin
 

@@ -34,4 +34,4 @@ mpush $poh_con setregistrar '["flonian"]' -p $poh_con
 
 
 
-mpush $poh_con registreward '["flonian","flonian","gahbnbehaskk"]' -p flonian
+mpush $poh_con registreward '["cisum.admin","flonian","gahbnbehaskk"]' -p cisum.admin

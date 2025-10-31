@@ -26,14 +26,14 @@ public:
     }
 
     ~grab_cisum() {
-        _global.set(_gstate, get_self());
+        //_global.set(_gstate, get_self());
     }
 
     /**
      * Initialize the contract.
      * 权限：合约自身
      */
-    ACTION init(const name& admin,const uint64_t& last_rush_sale_id,const uint64_t& last_order_id) ;
+    ACTION init(const name& admin) ;
 
     ACTION delglobal();
 
