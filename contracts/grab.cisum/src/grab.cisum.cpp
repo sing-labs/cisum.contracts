@@ -93,26 +93,24 @@ void grab_cisum::require_perm(const name& submitter, const std::string& perm) co
     ).send(get_self(), submitter, perm);
 }
 
-void grab_cisum::init(const name& admin,const uint64_t& last_rush_sale_id,const uint64_t& last_order_id) {
+void grab_cisum::init(const name& admin) {
     require_auth(get_self());
     CHECKC(is_account(admin), err::ACCOUNT_INVALID, "admin must be a valid account");
     _gstate.admin = admin;
-    _gstate.last_rush_sale_id = last_rush_sale_id;
-    _gstate.last_order_id = last_order_id;
 
 }
 
 
-void grab_cisum::delglobal() {
-    require_auth(get_self());
+// void grab_cisum::delglobal() {
+//     require_auth(get_self());
 
-    // 初始化 singleton
-    global_singleton _global(get_self(), get_self().value);
-    while (_global.exists()) {
-        _global.remove();   // ✅ 删除唯一一行
-    }
+//     // 初始化 singleton
+//     global_singleton _global(get_self(), get_self().value);
+//     while (_global.exists()) {
+//         _global.remove();   // ✅ 删除唯一一行
+//     }
 
-}
+// }
 
 void grab_cisum::cfgpoint(const name& new_point_contract) {
     check(has_auth(get_self()) || has_auth(_gstate.admin),
