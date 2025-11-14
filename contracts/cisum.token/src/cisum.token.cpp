@@ -10,13 +10,16 @@ using std::string;
 
 void cisum_token::init(name issuer, name admin, name badgestore_contract) {
     require_auth(get_self());
+
     _gstate.issuer             = issuer;
     _gstate.admin              = admin;
     _gstate.badgestore_contract = badgestore_contract;
 }
 
 void cisum_token::addwhitelist(const name& account) {
-    require_auth(get_self());
+    CHECKC( has_auth( _self ) || has_auth( _gstate.admin ), err::NO_AUTH, "admin/contract only" );
+    CHECKC(is_account(account), err::ACCOUNT_INVALID, "account not exist");
+
     transfer_whitelist_t::idx_t tbl(get_self(), get_self().value);
     auto it = tbl.find(account.value);
     if (it == tbl.end()) {
@@ -30,7 +33,9 @@ void cisum_token::addwhitelist(const name& account) {
 }
 
 void cisum_token::delwhitelist(const name& account) {
-    require_auth(get_self());
+    CHECKC( has_auth( _self ) || has_auth( _gstate.admin ), err::NO_AUTH, "admin/contract only" );
+    CHECKC(is_account(account), err::ACCOUNT_INVALID, "account not exist");
+
     transfer_whitelist_t::idx_t tbl(get_self(), get_self().value);
     auto it = tbl.find(account.value);
     check(it != tbl.end(), "whitelist not found");
@@ -39,24 +44,27 @@ void cisum_token::delwhitelist(const name& account) {
 
 
 void cisum_token::addconsumewl(const name& account) {
-  require_auth(get_self());
-  check(is_account(account), "account not exist");
-  redeem_whitelist_t::idx_t wl(get_self(), get_self().value);
-  auto it = wl.find(account.value);
-  if (it == wl.end()) {
-    wl.emplace(get_self(), [&](auto& r){ r.account = account; r.enabled = true; });
-  } else {
-    wl.modify(it, same_payer, [&](auto& r){ r.enabled = true; });
-  }
+    CHECKC( has_auth( _self ) || has_auth( _gstate.admin ), err::NO_AUTH, "admin/contract only" );
+    CHECKC(is_account(account), err::ACCOUNT_INVALID, "account not exist");
+
+    redeem_whitelist_t::idx_t wl(get_self(), get_self().value);
+    auto it = wl.find(account.value);
+    if (it == wl.end()) {
+        wl.emplace(get_self(), [&](auto& r){ r.account = account; r.enabled = true; });
+    } else {
+        wl.modify(it, same_payer, [&](auto& r){ r.enabled = true; });
+    }
 }
 
 
 void cisum_token::delconsumewl(const name& account) {
-  require_auth(get_self());
-  redeem_whitelist_t::idx_t wl(get_self(), get_self().value);
-  auto it = wl.find(account.value);
-  check(it != wl.end(), "cwhitelist: account not found");
-  wl.erase(it);
+    CHECKC( has_auth( _self ) || has_auth( _gstate.admin ), err::NO_AUTH, "admin/contract only" );
+    CHECKC(is_account(account), err::ACCOUNT_INVALID, "account not exist");
+
+    redeem_whitelist_t::idx_t wl(get_self(), get_self().value);
+    auto it = wl.find(account.value);
+    check(it != wl.end(), "cwhitelist: account not found");
+    wl.erase(it);
 }
 
 
