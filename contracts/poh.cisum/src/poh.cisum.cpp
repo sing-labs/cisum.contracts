@@ -119,7 +119,8 @@ void poh_cisum::_merge_fund_balance_s(const name& inviter, const extended_symbol
     tbl.modify( itr, same_payer, [&](auto& row) {
         auto it = row.balances.find( ext_symb );
         if (it != row.balances.end()) { //Found ext_symb
-            it->second.available_quant        += fb.available_quant;
+            it->second.available_quant               += fb.available_quant;
+
             if ( fb.start_time.sec_since_epoch() > 0 ) {
                 it->second.reward_per_invitee        = fb.reward_per_invitee;
                 it->second.start_time                = fb.start_time;
@@ -261,10 +262,13 @@ void poh_cisum::_send_inviter_fund(const name& inviter, const name& invitee)
     auto now = time_point_sec(current_time_point());
 
     tbl.modify(itr, same_payer, [&](auto& row){
-        for ( auto& fbp : row.balances ) {
-            auto es = fbp.first;
-            auto fb = fbp.second;
+        auto bal_map = row.balances;
+        for (auto it = bal_map.begin(); it != bal_map.end(); ) {
+            auto es = it->first;
+            auto fb = it->second;
             if (now < fb.start_time || now > fb.end_time) {
+                // it = bal_map.erase(it);
+                ++it;
                 continue;
             }
 
@@ -276,7 +280,6 @@ void poh_cisum::_send_inviter_fund(const name& inviter, const name& invitee)
             );
 
             fb.available_quant  -= reward;
-
             auto token_contract = es.get_contract();
 
             TRANSFER(
@@ -298,7 +301,17 @@ void poh_cisum::_send_inviter_fund(const name& inviter, const name& invitee)
                 "",
                 current_time_point().time_since_epoch().count() / 1'000'000
             );
+
+            if ( fb.available_quant.amount == 0 ) {
+                it = bal_map.erase( it );
+                continue;
+            }
+
+            ++it;
         }
+
+        if( itr->balances.size() == 0 )
+            tbl.erase( itr );
     });
 }
 
