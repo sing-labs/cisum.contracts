@@ -48,7 +48,8 @@ enum class err: uint8_t {
    FEE_NOT_REQUIRED       = 24,
    DID_NOT_SUPPORTED      = 25,
    DID_PACK_SYMBOL_ERR    = 26,
-   STATUS_MISMATCH        = 27
+   STATUS_MISMATCH        = 27,
+   NO_AUTH                = 28
 };
 
 #define TBL struct [[eosio::table, eosio::contract("cisum.token")]]
