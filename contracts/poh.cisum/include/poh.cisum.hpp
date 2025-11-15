@@ -111,7 +111,7 @@ private:
  void _reward_invitee(const name& invitee) ;
  void _reward_inviter(const name& inviter, const name& invitee);
  void _payout_inviter_fund(const name& inviter, const name& invitee);
- void _merge_token_balance(const name& inviter, const token_balance& tb);
+ void _merge_fund_balance_s(const name& inviter, const extened_symbol& ext_symb, const fund_balance_s& fund_balance);
 
 
 };

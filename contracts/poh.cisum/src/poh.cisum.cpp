@@ -66,37 +66,42 @@ void poh_cisum::on_transfer(const name& from,const name& to,const asset& quantit
 
     // ========= 1. 解析 memo =========
     auto parts = split(memo, ":");
-    CHECKC(parts.size() == 4, err::INVALID_FORMAT,
-           "memo format must be reward:<amount>:<start>:<end>");
-    CHECKC(parts[0] == "reward", err::INVALID_FORMAT, "memo must start with reward");
+    CHECKC(parts.size() == 1 || parts.size() == 4, err::INVALID_FORMAT, 
+                "memo format must be |refuel| or |refuel:<amount>:<start>:<end>|");
+    CHECKC(parts[0] == "refuel", err::INVALID_FORMAT, "memo must start with refuel");
 
-    int64_t reward_raw = std::stoll(string(parts[1]));
-    uint32_t start_ts  = std::stoul(string(parts[2]));
-    uint32_t end_ts    = std::stoul(string(parts[3]));
+    int64_t reward_raw = parts.size() == 1 ? 0 : std::stoll(string(parts[1]));
+    uint32_t start_ts  = parts.size() == 1 ? 0 : std::stoul(string(parts[2]));
+    uint32_t end_ts    = parts.size() == 1 ? 0 : std::stoul(string(parts[3]));
 
-    CHECKC(reward_raw > 0, err::NOT_POSITIVE, "reward amount must > 0");
-    CHECKC(end_ts > start_ts, err::INVALID_FORMAT, "end_time must > start_time");
+    if ( parts.size() == 4 ) {
+        CHECKC( reward_raw > 0, err::NOT_POSITIVE, "reward amount must > 0");
+        CHECKC( start_ts > current_time_point().sec_since_epoch(), err::INVALID_FORMAT, "required: start_time > now");
+        CHECKC( end_ts > start_ts, err::INVALID_FORMAT, "required: end_time > start_time");
+    }
 
     // ========= 2. 构造 reward_per_invitee =========
     int64_t mul = 1;
     for (int i = 0; i < quantity.symbol.precision(); i++) mul *= 10;
-
     asset reward_per_invitee(reward_raw * mul, quantity.symbol);
+    if ( parts.size() == 4 ) {
+        CHECKC( reward_per_invitee < quantity, err::INSUFFICIENT_QUANTITY, "required: reward_per_invitee < quantity" )
+    }
 
-    // ========= 3. 构造 token_balance =========
-    token_balance tb{
-        extended_asset(quantity, get_first_receiver()),
+    // ========= 3. 构造 fund_balance_s =========
+    auto ext_symb = extended_symbol( quantity.symbol(), get_first_receiver() );
+    fund_balance_s fund_balance{
+        quantity,
         reward_per_invitee,
         time_point_sec(start_ts),
         time_point_sec(end_ts)
     };
 
     // ========= 4. 写入/合并到 inviter_fund =========
-    name inviter = from;
-    _merge_token_balance(inviter, tb);
+    _merge_fund_balance_s( from, ext_symb, fund_balance );
 }
 
-void poh_cisum::_merge_token_balance(const name& inviter, const token_balance& tb)
+void poh_cisum::_merge_fund_balance_s(const name& inviter, const extened_symbol& ext_symb, const fund_balance_s& fb)
 {
     inviter_fund_t::tbl_t tbl(get_self(), get_self().value);
     auto itr = tbl.find(inviter.value);
@@ -104,29 +109,26 @@ void poh_cisum::_merge_token_balance(const name& inviter, const token_balance& t
     if (itr == tbl.end()) {
         // 👉 首次创建
         tbl.emplace(get_self(), [&](auto& row){
-            row.inviter_account = inviter;
-            row.balances.push_back(tb);
+            row.inviter = inviter;
+            row.balances[ ext_symb ] = fb;
         });
         return;
     }
 
     // 👉 已存在 → merge 逻辑
     tbl.modify(itr, same_payer, [&](auto& row){
-        for (auto& b : row.balances) {
-            // 按币种 + 合约判断是否同一类型奖励
-            if (b.available_quant.quantity.symbol == tb.available_quant.quantity.symbol &&
-                b.available_quant.contract == tb.available_quant.contract)
-            {
-                b.available_quant.quantity       += tb.available_quant.quantity;
-                b.reward_quant_per_invitee        = tb.reward_quant_per_invitee;
-                b.start_time                      = tb.start_time;
-                b.end_time                        = tb.end_time;
-                return;
+        
+        auto it = row.balances.find( ext_symb );
+        if (it != row.balances.end()) { //Found ext_symb
+            it->second.available_quant        += fb.available_quant;
+            if( fb.start_time > 0) {
+                row.reward_per_invitee        = fb.reward_per_invitee;
+                row.start_time                = fb.start_time;
+                row.end_time                  = fb.end_time;
             }
+        } else { //Not found
+            row.balances[ ext_symb ] = fb;
         }
-
-        // 没找到 → 插入新的币种记录
-        row.balances.push_back(tb);
     });
 }
 
@@ -267,7 +269,7 @@ void poh_cisum::_payout_inviter_fund(const name& inviter, const name& invitee)
                 continue;
             }
 
-            asset reward = tb.reward_quant_per_invitee;
+            asset reward = tb.reward_per_invitee;
             if (reward.amount <= 0) continue;
 
             CHECKC(tb.available_quant.quantity.amount >= reward.amount,

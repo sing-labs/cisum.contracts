@@ -74,26 +74,26 @@ struct [[eosio::table, eosio::contract("poh.cisum")]] global_t {
 };
 using global_singleton = eosio::singleton<"global"_n, global_t>;
 
-struct token_balance {
-    extended_asset   available_quant;          // 余额：包含 symbol + contract
-    asset            reward_quant_per_invitee; // 邀请奖励额度（同 symbol）
-    time_point_sec   start_time;
-    time_point_sec   end_time;
+struct fund_balance_s {
+    asset             available_quant;          // 可用余额
+    asset             reward_per_invitee;       // 邀请奖励额度（同 symbol）
+    time_point_sec    start_time;
+    time_point_sec    end_time;
 };
 
-//scope=self
-struct [[eosio::table, eosio::contract("poh.cisum")]] inviter_fund_t {
-    name                    inviter_account; // PK，邀请人账号
-    std::vector<token_balance> balances;        // 多币种奖励池
 
-    uint64_t primary_key() const { return inviter_account.value; }
+struct [[eosio::table, eosio::contract("poh.cisum")]] inviter_fund_t {  //scope: _self
+    name                                        inviter;                // PK，邀请人账号
+    std::map<extended_symbol, fund_balance_s>   balances;               // 多币种奖励池
+
+    uint64_t primary_key() const { return inviter.value; }
 
     inviter_fund_t() {}
-    inviter_fund_t(const name& inviter): inviter_account(inviter) {}
+    inviter_fund_t(const name& inviter): inviter(inviter) {}
 
     typedef eosio::multi_index<"inviterfunds"_n, inviter_fund_t> tbl_t;
 
-    EOSLIB_SERIALIZE(inviter_fund_t,(inviter_account)(balances))
+    EOSLIB_SERIALIZE( inviter_fund_t, (inviter)(balances) )
 };
 
 
