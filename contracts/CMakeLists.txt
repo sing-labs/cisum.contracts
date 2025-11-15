@@ -46,6 +46,7 @@ set(VOTING_ICON_URI "voting.png#db28cd3db6e62d4509af3644ce7d377329482a14bb4bfaca
 
 
 add_subdirectory(libs)
+add_subdirectory(libs-swap)
 #add_subdirectory(blindboxgame)
 add_subdirectory(cvticket.nft)
 add_subdirectory(cisum.token)
