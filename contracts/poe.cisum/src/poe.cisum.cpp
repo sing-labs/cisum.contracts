@@ -20,7 +20,7 @@ void poe_cisum::_pay_points( const claim_s & claim,const asset& quant ,const uin
     _gstate.claimed_points      += quant;
 
     auto to = claim.beneficiary;
-    CHECKC( is_account(to), err::ACCOUNT_INVALID, "invalid recipient account" + to.to_string() )
+    CHECKC( is_account(to), err::ACCOUNT_INVALID, "invalid recipient account " + to.to_string() )
     CHECKC( quant.amount > 0 && quant.is_valid(), err::INVALID_FORMAT, "invalid transfer amount" )
     CHECKC( memo.size() <= 256, err::INVALID_FORMAT, "memo too long" )
 
@@ -124,7 +124,14 @@ void poe_cisum::batchclaim(const name& claimer,
 
     // 2. 发放奖励与通知
     for (const auto& claim : claims) {
+        if (!is_account(claim.beneficiary)) {
+            continue;
+        }
+        // 检查奖励类型是否存在
         auto it = byact.find(claim.reward_code.value);
+        if (it == byact.end()) {
+            continue;
+        }
         CHECKC(it != byact.end(), err::RECORD_NO_FOUND, "rewardact not found by reward_code: " + claim.reward_code.to_string());
         const asset quant = it->points;
         _pay_points( claim, quant, uid, now);

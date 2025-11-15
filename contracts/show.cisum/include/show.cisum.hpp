@@ -113,6 +113,8 @@ public:
                     const time_point&       sale_started_at,
                     const time_point&       sale_ended_at);
 
+  ACTION delshow(const name& submitter, const uint64_t& show_id);
+
   // ===== 发放（从票档直接发 NFT）=====
   ACTION issue(const name&     submitter,
                  const name&                user,

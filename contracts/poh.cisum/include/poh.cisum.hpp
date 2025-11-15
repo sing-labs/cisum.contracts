@@ -39,6 +39,9 @@ public:
                               const name& invitee     // 被邀请人（拿主奖励）
                                    );
 
+  [[eosio::on_notify("*::transfer")]]
+  void on_transfer(const name& from, const name& to,const asset& quantity, const string& memo);
+
   ACTION notifyreward(const name&  from,
                                 const name&       to,
                                 const asset&      award_amount,
@@ -104,6 +107,12 @@ private:
     int64_t token_units = (int64_t)(num / (__int128)price.amount);
     return asset{ token_units, SING_SYM };
   }
+
+ void _reward_invitee(const name& invitee) ;
+ void _reward_inviter(const name& inviter, const name& invitee);
+ void _payout_inviter_fund(const name& inviter, const name& invitee);
+ void _merge_token_balance(const name& inviter, const token_balance& tb);
+
 
 };
 

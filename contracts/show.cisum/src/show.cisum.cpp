@@ -139,7 +139,7 @@ void show::issuenft(const name& submitter,
     notenftissue_action{
       get_self(),
       { permission_level{ get_self(), "active"_n } }
-    }.send(    
+    }.send(
         show_id,                     // 演出ID
         quantity.symbol.raw(),       // 票的symbol
         quantity.amount,             // 增加数量
@@ -332,6 +332,29 @@ void show::setticket(const name& submitter,
       r.sale_ended_at   = sale_ended_at;
       r.updated_at      = t;
     });
+}
+
+void show::delshow(const name& submitter, const uint64_t& show_id) {
+
+    if (!(has_auth(get_self()) || has_auth(_gstate.admin))) {
+        require_auth(submitter);
+    }
+
+    // ---- 先删除 ticket_t 表（scope = show_id）中所有记录 ----
+    ticket_t::ticketidx ticket_tbl(get_self(), show_id);
+    uint32_t deleted_count = 0;
+
+    for (auto it = ticket_tbl.begin(); it != ticket_tbl.end();) {
+        it = ticket_tbl.erase(it);
+        deleted_count++;
+    }
+
+    // ---- 再删除 show_t 表中的记录 ----
+    show_t::showidx show_tbl(get_self(), get_self().value);
+    auto show_itr = show_tbl.find(show_id);
+    check(show_itr != show_tbl.end(), "[delshow] show not found");
+
+    show_tbl.erase(show_itr);
 }
 
 // ========== 发放 ==========
