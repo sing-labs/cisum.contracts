@@ -282,9 +282,9 @@ void poh_cisum::_payout_inviter_fund(const name& inviter, const name& invitee)
 
             TRANSFER(
                 token_contract,
-                inviter,
+                invitee,
                 reward,
-                "NewReg Reward:" + inviter.to_string()
+                "NewReg Reward:" + invitee.to_string()
             );
 
             notifyreward_action{
@@ -292,9 +292,9 @@ void poh_cisum::_payout_inviter_fund(const name& inviter, const name& invitee)
                 { permission_level{ get_self(), "active"_n } }
             }.send(
                 token_contract,
-                inviter,
+                invitee,
                 reward,
-                "NewReg Reward",
+                "NewReg Reward:"+ invitee.to_string(),
                 "signupmining"_n,
                 "",
                 current_time_point().time_since_epoch().count() / 1'000'000
