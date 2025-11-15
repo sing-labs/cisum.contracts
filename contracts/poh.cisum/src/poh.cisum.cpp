@@ -286,7 +286,7 @@ void poh_cisum::_send_inviter_fund(const name& inviter, const name& invitee)
                 token_contract,
                 invitee,
                 reward,
-                "Inviter Reward(" + inviter.to_string() + ")"
+                "Inviters Airdrop(" + inviter.to_string() + ")"
             );
 
             notifyreward_action{
@@ -296,7 +296,7 @@ void poh_cisum::_send_inviter_fund(const name& inviter, const name& invitee)
                 token_contract,
                 invitee,
                 reward,
-                "Inviter Reward("+ inviter.to_string() + ")",
+                "Inviters Airdrop("+ inviter.to_string() + ")",
                 "signupmining"_n,
                 "",
                 current_time_point().time_since_epoch().count() / 1'000'000
