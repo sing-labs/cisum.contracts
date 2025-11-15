@@ -27,7 +27,7 @@ public:
     }
 
     // ========= 系统配置 =========
-    ACTION init(const name& admin);
+    ACTION init(const name& admin) ;
     ACTION setadmin(const name& new_admin);
     ACTION addallowlist(const name& acct);
     ACTION delallowlist(const name& acct);

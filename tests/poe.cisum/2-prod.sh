@@ -42,6 +42,13 @@ mpush $poe_con addrewardact '[
   "上传艺人内容奖励"
 ]' -p $poe_con
 
+
+mpush poe.cisum addrewardact '[
+  "promoteshow",
+  "100.0000 CISUM",
+  "Concert Promotion Rewards"
+]' -p poe.cisum
+
 operator=
 mpush $poe_con addoperator '[
   "'"${operator}"'"

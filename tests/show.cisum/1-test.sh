@@ -136,3 +136,6 @@ mpush show.cisum nftissue \
    {"amount": 100, "symbol": {"value": 2101025468200} },
    "addrushsale:23:1758870677786"]' -p show.cisum
 
+
+
+mpush $show_con delshow '["flonian",20250289]' -p flonian

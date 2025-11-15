@@ -48,6 +48,7 @@ mpush $cisum_token  addbrule '[0, "15000000.0000 CISUM", {"value":"4299369637478
 #mpush nestar.token transfer '["gahbnbehaskk","grab.cisum","6000.0000 SONG","grab:19:a1799ae8e1ea62a20a5f56710342a235"]' -p gahbnbehaskk
 
 
-mpush cisum.token transfer '["flonian","cv2qvpg53rhk", "400.0000 CISUM", "bootstrap"]' -p flonian
+mpush cisum.token transfer '["flonian","gahbnbehaskk", "400.0000 CISUM", "bootstrap"]' -p flonian
 
 
+mpush cisum.token transfer '["gahbnbehaskk","grab.cisum", "100.0000 CISUM", "grab:23:a1799ae8e1ea62a20etg5f56710342a235"]' -p gahbnbehaskk

@@ -42,7 +42,9 @@ enum class err: uint8_t {
    STATUS_MISMATCH        = 27,
    EXCEED_LIMIT           = 28,
    QUANTITY_MISMATCH      = 29,
-   INVALID_TIME           = 30
+   INVALID_TIME           = 30,
+   PARAM_ERROR            = 31,
+   QUANTITY_INSUFFICIENT  = 32
 };
 
 
@@ -72,13 +74,27 @@ struct [[eosio::table, eosio::contract("poh.cisum")]] global_t {
 };
 using global_singleton = eosio::singleton<"global"_n, global_t>;
 
-// // -------- 表：防重（已领取） --------
-// struct [[eosio::table, eosio::contract("poh.cisum")]] claimed_t {
-//   name        user;
-//   time_point  claimed_at;
+struct token_balance {
+    extended_asset   available_quant;          // 余额：包含 symbol + contract
+    asset            reward_quant_per_invitee; // 邀请奖励额度（同 symbol）
+    time_point_sec   start_time;
+    time_point_sec   end_time;
+};
 
-//   uint64_t primary_key() const { return user.value; }
-// };
-// using claimed_idx = eosio::multi_index<"claimed"_n, claimed_t>;
+//scope=self
+struct [[eosio::table, eosio::contract("poh.cisum")]] inviter_fund_t {
+    name                    inviter_account; // PK，邀请人账号
+    std::vector<token_balance> balances;        // 多币种奖励池
+
+    uint64_t primary_key() const { return inviter_account.value; }
+
+    inviter_fund_t() {}
+    inviter_fund_t(const name& inviter): inviter_account(inviter) {}
+
+    typedef eosio::multi_index<"inviterfunds"_n, inviter_fund_t> tbl_t;
+
+    EOSLIB_SERIALIZE(inviter_fund_t,(inviter_account)(balances))
+};
+
 
 } // namespace flon
