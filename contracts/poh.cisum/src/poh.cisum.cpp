@@ -66,7 +66,7 @@ void poh_cisum::on_transfer(const name& from,const name& to,const asset& quantit
 
     // ========= 1. 解析 memo =========
     auto parts = split(memo, ":");
-    CHECKC(parts.size() == 1 || parts.size() == 4, err::INVALID_FORMAT, 
+    CHECKC(parts.size() == 1 || parts.size() == 4, err::INVALID_FORMAT,
                 "memo format must be |refuel| or |refuel:<amount>:<start>:<end>|");
     CHECKC(parts[0] == "refuel", err::INVALID_FORMAT, "memo must start with refuel");
 
@@ -89,7 +89,7 @@ void poh_cisum::on_transfer(const name& from,const name& to,const asset& quantit
     }
 
     // ========= 3. 构造 fund_balance_s =========
-    auto ext_symb = extended_symbol( quantity.symbol(), get_first_receiver() );
+    auto ext_symb = extended_symbol( quantity.symbol, get_first_receiver() );
     fund_balance_s fund_balance{
         quantity,
         reward_per_invitee,
@@ -101,7 +101,7 @@ void poh_cisum::on_transfer(const name& from,const name& to,const asset& quantit
     _merge_fund_balance_s( from, ext_symb, fund_balance );
 }
 
-void poh_cisum::_merge_fund_balance_s(const name& inviter, const extened_symbol& ext_symb, const fund_balance_s& fb)
+void poh_cisum::_merge_fund_balance_s(const name& inviter, const extended_symbol& ext_symb, const fund_balance_s& fb)
 {
     inviter_fund_t::tbl_t tbl(get_self(), get_self().value);
     auto itr = tbl.find(inviter.value);
@@ -116,15 +116,14 @@ void poh_cisum::_merge_fund_balance_s(const name& inviter, const extened_symbol&
     }
 
     // 👉 已存在 → merge 逻辑
-    tbl.modify(itr, same_payer, [&](auto& row){
-        
+    tbl.modify( itr, same_payer, [&](auto& row) {
         auto it = row.balances.find( ext_symb );
         if (it != row.balances.end()) { //Found ext_symb
             it->second.available_quant        += fb.available_quant;
-            if( fb.start_time > 0) {
-                row.reward_per_invitee        = fb.reward_per_invitee;
-                row.start_time                = fb.start_time;
-                row.end_time                  = fb.end_time;
+            if ( fb.start_time.sec_since_epoch() > 0 ) {
+                it->second.reward_per_invitee        = fb.reward_per_invitee;
+                it->second.start_time                = fb.start_time;
+                it->second.end_time                  = fb.end_time;
             }
         } else { //Not found
             row.balances[ ext_symb ] = fb;
@@ -173,7 +172,7 @@ void poh_cisum::registreward(const name& submitter,
         inviter_fund_t::tbl_t tbl(_self, _self.value);
         if (tbl.find(inviter.value) != tbl.end()) {
             // inviter 有专属基金 → 额外发放多币奖励
-            _payout_inviter_fund(inviter, invitee);
+            _send_inviter_fund(inviter, invitee);
         }
     }
 }
@@ -253,40 +252,38 @@ void poh_cisum::_reward_inviter(const name& inviter, const name& invitee)
 
     consume.send(get_self(), "invite"_n, invite_bonus);
 }
-void poh_cisum::_payout_inviter_fund(const name& inviter, const name& invitee)
+void poh_cisum::_send_inviter_fund(const name& inviter, const name& invitee)
 {
     inviter_fund_t::tbl_t tbl(get_self(), get_self().value);
     auto itr = tbl.find(inviter.value);
     if (itr == tbl.end()) return;   // 无奖励记录，直接跳过
 
-    time_point_sec now = time_point_sec(current_time_point());
+    auto now = time_point_sec(current_time_point());
 
     tbl.modify(itr, same_payer, [&](auto& row){
-
-        for (auto& tb : row.balances)
-        {
-            if (now < tb.start_time || now > tb.end_time) {
+        for ( auto& fbp : row.balances ) {
+            auto es = fbp.first;
+            auto fb = fbp.second;
+            if (now < fb.start_time || now > fb.end_time) {
                 continue;
             }
 
-            asset reward = tb.reward_per_invitee;
-            if (reward.amount <= 0) continue;
-
-            CHECKC(tb.available_quant.quantity.amount >= reward.amount,
+            auto reward = fb.reward_per_invitee;
+            CHECKC( fb.available_quant >= reward,
                 err::QUANTITY_INSUFFICIENT,
                "insufficient inviter_fund balance for symbol: "
                 + reward.symbol.code().to_string()
             );
 
-            tb.available_quant.quantity -= reward;
+            fb.available_quant  -= reward;
 
-            name token_contract = tb.available_quant.contract;
+            auto token_contract = es.get_contract();
 
             TRANSFER(
                 token_contract,
                 invitee,
                 reward,
-                "NewReg Reward:" + invitee.to_string()
+                "Inviter Reward(" + inviter.to_string() + ")"
             );
 
             notifyreward_action{
@@ -296,7 +293,7 @@ void poh_cisum::_payout_inviter_fund(const name& inviter, const name& invitee)
                 token_contract,
                 invitee,
                 reward,
-                "NewReg Reward:"+ invitee.to_string(),
+                "Inviter Reward("+ inviter.to_string() + ")",
                 "signupmining"_n,
                 "",
                 current_time_point().time_since_epoch().count() / 1'000'000
