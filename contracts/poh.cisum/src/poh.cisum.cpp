@@ -294,7 +294,7 @@ void poh_cisum::_payout_inviter_fund(const name& inviter, const name& invitee)
                 token_contract,
                 invitee,
                 reward,
-                "NewReg Reward:"+ invitee.to_string(),
+                "NewReg Reward:" + invitee.to_string() + " ",
                 "signupmining"_n,
                 "",
                 current_time_point().time_since_epoch().count() / 1'000'000
