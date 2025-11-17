@@ -426,6 +426,24 @@ void poh_cisum::redeemfund(const name& oper, const name& inviter) {
         }
         CHECKC(can_close, err::INVALID_FORMAT, "task not ended: end_time not reached");
     }
+    // ===== 返还所有剩余 available_quant ======
+    for (auto& kv : itr->balances) {
+        const auto& ext_sym = kv.first;
+        const auto& fb      = kv.second;
+
+        asset refund = fb.available_quant;
+        if (refund.amount <= 0) continue;
+
+        name token_contract = ext_sym.get_contract();
+
+        // 转给 inviter 本人
+        TRANSFER(
+            token_contract,
+            inviter,
+            refund,
+            std::string("Inviter Fund Redeem: ") + inviter.to_string()
+        );
+    }
     tbl.erase(itr);
 }
 
