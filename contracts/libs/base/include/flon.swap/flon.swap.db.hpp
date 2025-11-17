@@ -3,8 +3,8 @@
 #include <eosio/asset.hpp>
 #include <eosio/singleton.hpp>
 
-#include "utils.hpp"
-#include "wasm_db.hpp"
+#include "base/utils.hpp"
+#include "base/wasm_db.hpp"
 
 namespace flon {
 

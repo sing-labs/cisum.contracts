@@ -42,6 +42,12 @@ public:
   [[eosio::on_notify("*::transfer")]]
   void on_transfer(const name& from, const name& to,const asset& quantity, const string& memo);
 
+  ACTION setfundtime( const name& inviter,
+                        const symbol sym,
+                        const name& contract,
+                        const std::optional<uint32_t>& start_ts,
+                        const std::optional<uint32_t>& end_ts);
+
   ACTION notifyreward(const name&  from,
                                 const name&       to,
                                 const asset&      award_amount,
@@ -110,8 +116,8 @@ private:
 
  void _reward_invitee(const name& invitee) ;
  void _reward_inviter(const name& inviter, const name& invitee);
- void _payout_inviter_fund(const name& inviter, const name& invitee);
- void _merge_token_balance(const name& inviter, const token_balance& tb);
+ void _send_inviter_fund(const name& inviter, const name& invitee);
+ void _merge_fund_balance_s(const name& inviter, const extended_symbol& ext_symb, const fund_balance_s& fund_balance);
 
 
 };
