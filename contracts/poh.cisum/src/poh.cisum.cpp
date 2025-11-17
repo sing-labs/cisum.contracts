@@ -67,7 +67,7 @@ void poh_cisum::on_transfer(const name& from,const name& to,const asset& quantit
     // ========= 1. 解析 memo =========
     auto parts = split(memo, ":");
     CHECKC(parts.size() == 1 || parts.size() == 5, err::INVALID_FORMAT,
-                "memo format must be |refuel| or |refuel:<amount>:<start>:<end>|");
+                "memo format must be |refuel| or |refuel:<title><amount>:<start>:<end>|");
     CHECKC(parts[0] == "refuel", err::INVALID_FORMAT, "memo must start with refuel");
 
     auto reward_title  = parts.size() == 1 ? "" : string(parts[1]);
