@@ -5,31 +5,24 @@ namespace flon {
 using std::string;
 
 // 转账内部函数（安全封装）
-void poe_cisum::_pay_points( const claim_s & claim,const asset& quant ,const uint64_t& uid, const time_point& now ) {
+void poe_cisum::_pay_points( const claim_s & claim, const asset& quant, const uint64_t& uid, const time_point& now ) {
     // 1. 获取奖励配置
+    CHECKC(quant.amount > 0 && quant.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "invalid quant");
 
-    CHECKC(quant.amount > 0 && quant.symbol == CISUM_SYM, err::SYMBOL_MISMATCH, "invalid base reward");
-
-    // 2. 预构造 memo
-    const string memo = "poe:" + claim.reward_code.to_string() + ":" + claim.memo;
-    CHECKC(memo.size() <= 256, err::INVALID_FORMAT, "memo too long");
-
-    // 3. 余额检查与更新
+    // 2. 余额检查与更新
     CHECKC(_gstate.available_points >= quant, err::INSUFFICIENT_QUANTITY, "insufficient available_points");
     _gstate.available_points    -= quant;
     _gstate.claimed_points      += quant;
 
-    auto to = claim.beneficiary;
-    CHECKC( is_account(to), err::ACCOUNT_INVALID, "invalid recipient account " + to.to_string() )
-    CHECKC( quant.amount > 0 && quant.is_valid(), err::INVALID_FORMAT, "invalid transfer amount" )
-    CHECKC( memo.size() <= 256, err::INVALID_FORMAT, "memo too long" )
+    const auto to               = claim.beneficiary;
+    const string memo           = "poe:" + claim.reward_code.to_string() + ":" + claim.memo;
 
-    TRANSFER(CISUM_BANK, to, quant, memo)
+    TRANSFER( CISUM_BANK, to, quant, memo )
 
     notifyreward_action{
         get_self(),
-        {permission_level{get_self(), "active"_n}}
-    }.send(CISUM_BANK, claim.beneficiary, quant, memo, claim.reward_code,std::to_string(uid), now.time_since_epoch().count() / 1'000'000);
+        { permission_level{get_self(), "active"_n} }
+    }.send(CISUM_BANK, to, quant, memo, claim.reward_code, std::to_string(uid), now.time_since_epoch().count() / 1'000'000);
 }
 
 /*─────────────────────────────────────────────────────────────*
@@ -107,33 +100,17 @@ void poe_cisum::batchclaim(const name& claimer,
        "too many claims in batch (max 100, got " + std::to_string(claims.size()) + ")");
     const auto now = current_time_point();
 
-    // 1. UID 去重
-    uid_index uidtable(get_self(), get_self().value);
-    auto byuid = uidtable.get_index<"byuid"_n>();
-    CHECKC( byuid.find(uid) == byuid.end(), err::RECORD_FOUND, "duplicate uid: already processed " + std::to_string(uid) )
-    uidtable.emplace(get_self(), [&](auto& row) {
-        row.id = uidtable.available_primary_key();
-        row.uid = uid;
-        row.created_at = now;
-    });
-    while (std::distance(uidtable.begin(), uidtable.end()) > 10000)
-        uidtable.erase(uidtable.begin());
-
     rewardact_t::acts_idx acts(get_self(), get_self().value);
     auto byact = acts.get_index<"byname"_n>();
 
     // 2. 发放奖励与通知
     for (const auto& claim : claims) {
-        if (!is_account(claim.beneficiary)) {
-            continue;
-        }
+        if (!is_account(claim.beneficiary)) continue;
         // 检查奖励类型是否存在
         auto it = byact.find(claim.reward_code.value);
-        if (it == byact.end()) {
-            continue;
-        }
-        CHECKC(it != byact.end(), err::RECORD_NO_FOUND, "rewardact not found by reward_code: " + claim.reward_code.to_string());
-        const asset quant = it->points;
+        CHECKC(it != byact.end(), err::RECORD_NO_FOUND, "rewardact not found by: " + claim.reward_code.to_string());
+        
+        const auto quant = it->points;
         _pay_points( claim, quant, uid, now);
     }
 }
