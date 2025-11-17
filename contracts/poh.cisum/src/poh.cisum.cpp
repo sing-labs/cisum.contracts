@@ -200,10 +200,11 @@ void poh_cisum::registreward(const name& submitter,
     }
 }
 
-ACTION poh_cisum::setfundtime(
+ACTION poh_cisum::setfundinfo(
                         const name& inviter,               // 要修改的目标 inviter
                         const symbol sym,
                         const name& contract,
+                        const string& reward_title,
                         const std::optional<uint32_t>& start_ts,
                         const std::optional<uint32_t>& end_ts)
 {
@@ -232,6 +233,9 @@ ACTION poh_cisum::setfundtime(
 
         auto& fb = it->second;
 
+        if (reward_title != "")
+            fb.reward_title = reward_title;
+            
         if (start_ts.has_value()) {
             fb.start_time = time_point_sec(start_ts.value());
         }

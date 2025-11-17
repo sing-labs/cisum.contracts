@@ -42,9 +42,10 @@ public:
   [[eosio::on_notify("*::transfer")]]
   void on_transfer(const name& from, const name& to,const asset& quantity, const string& memo);
 
-  ACTION setfundtime( const name& inviter,
+  ACTION setfundinfo( const name& inviter,
                         const symbol sym,
                         const name& contract,
+                        const string& reward_title,
                         const std::optional<uint32_t>& start_ts,
                         const std::optional<uint32_t>& end_ts);
 
