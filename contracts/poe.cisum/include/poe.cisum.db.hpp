@@ -87,21 +87,21 @@ struct  claim_s {
     string memo;
 };
 
-struct [[eosio::table, eosio::contract("poe.cisum")]] uid_record_t {
-    uint64_t   id;          // 主键（自增）
-    uint64_t   uid;         // 唯一标识（由 memo 转换）
-    time_point created_at;  // 创建时间
+// struct [[eosio::table, eosio::contract("poe.cisum")]] uid_record_t {
+//     uint64_t   id;          // 主键（自增）
+//     uint64_t   uid;         // 唯一标识（由 memo 转换）
+//     time_point created_at;  // 创建时间
 
-    uint64_t primary_key() const { return id; }
-    uint64_t by_uid() const { return uid; }
+//     uint64_t primary_key() const { return id; }
+//     uint64_t by_uid() const { return uid; }
 
-    EOSLIB_SERIALIZE(uid_record_t, (id)(uid)(created_at))
-};
+//     EOSLIB_SERIALIZE(uid_record_t, (id)(uid)(created_at))
+// };
 
-typedef eosio::multi_index<
-    "uids"_n, uid_record_t,
-    indexed_by<"byuid"_n, const_mem_fun<uid_record_t, uint64_t, &uid_record_t::by_uid>>
-> uid_index;
+// typedef eosio::multi_index<
+//     "uids"_n, uid_record_t,
+//     indexed_by<"byuid"_n, const_mem_fun<uid_record_t, uint64_t, &uid_record_t::by_uid>>
+// > uid_index;
 
 
 } // namespace flon

@@ -37,17 +37,20 @@ public:
                         const uint64_t& uid,
                         const std::vector<claim_s>& claims ) ;
 
-    ACTION deluids() {
-      uid_index uids_table(get_self(), get_self().value);
+    // ACTION deluids(const name& submitter) {
+    //   require_auth(submitter);
 
-      auto itr = uids_table.begin();
-      uint32_t count = 0;
+    //   uid_index uids_table(get_self(), _self.value);
+
+    //   auto itr = uids_table.begin();
+    //   uint32_t count = 0;
       
-      while (itr != uids_table.end() && count < 500) {
-          itr = uids_table.erase(itr);
-          count++;
-      }
-    }
+    //   while (itr != uids_table.end() && count < 500) {
+    //       itr = uids_table.erase(itr);
+    //       count++;
+    //   }
+    //   CHECKC( count > 0, err::EXPIRED, "none deleted" )
+    // }
     ACTION consumeact(const name& submitter, const name& reward_code, const asset& amount);
 
     [[eosio::on_notify("cisum.token::transfer")]]
