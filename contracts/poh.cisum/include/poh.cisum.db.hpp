@@ -75,6 +75,7 @@ struct [[eosio::table, eosio::contract("poh.cisum")]] global_t {
 using global_singleton = eosio::singleton<"global"_n, global_t>;
 
 struct fund_balance_s {
+    string            reward_title;             //E.g. "POAP Reward" | "Inviters Airdrop"
     asset             available_quant;          // 可用余额
     asset             reward_per_invitee;       // 邀请奖励额度（同 symbol）
     time_point_sec    start_time;

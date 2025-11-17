@@ -66,15 +66,18 @@ void poh_cisum::on_transfer(const name& from,const name& to,const asset& quantit
 
     // ========= 1. 解析 memo =========
     auto parts = split(memo, ":");
-    CHECKC(parts.size() == 1 || parts.size() == 4, err::INVALID_FORMAT,
+    CHECKC(parts.size() == 1 || parts.size() == 5, err::INVALID_FORMAT,
                 "memo format must be |refuel| or |refuel:<amount>:<start>:<end>|");
     CHECKC(parts[0] == "refuel", err::INVALID_FORMAT, "memo must start with refuel");
 
-    int64_t reward_raw = parts.size() == 1 ? 0 : std::stoll(string(parts[1]));
-    uint32_t start_ts  = parts.size() == 1 ? 0 : std::stoul(string(parts[2]));
-    uint32_t end_ts    = parts.size() == 1 ? 0 : std::stoul(string(parts[3]));
+    auto reward_title  = parts.size() == 1 ? "" : string(parts[1]);
+    int64_t reward_raw = parts.size() == 1 ? 0 : std::stoll(string(parts[2]));
+    uint32_t start_ts  = parts.size() == 1 ? 0 : std::stoul(string(parts[3]));
+    uint32_t end_ts    = parts.size() == 1 ? 0 : std::stoul(string(parts[4]));
 
-    if ( parts.size() == 4 ) {
+    CHECKC( reward_title.size() <= 64, err::INVALID_FORMAT, "required: reward title size <= 64" )
+
+    if ( parts.size() == 5 ) {
         CHECKC( reward_raw > 0, err::NOT_POSITIVE, "reward amount must > 0");
         CHECKC( start_ts > current_time_point().sec_since_epoch(), err::INVALID_FORMAT, "required: start_time > now");
         CHECKC( end_ts > start_ts, err::INVALID_FORMAT, "required: end_time > start_time");
@@ -84,13 +87,14 @@ void poh_cisum::on_transfer(const name& from,const name& to,const asset& quantit
     int64_t mul = 1;
     for (int i = 0; i < quantity.symbol.precision(); i++) mul *= 10;
     asset reward_per_invitee(reward_raw * mul, quantity.symbol);
-    if ( parts.size() == 4 ) {
-        CHECKC( reward_per_invitee < quantity, err::INSUFFICIENT_QUANTITY, "required: reward_per_invitee < quantity" )
+    if ( parts.size() == 5 ) {
+        CHECKC( reward_per_invitee <= quantity, err::INSUFFICIENT_QUANTITY, "required: reward_per_invitee <= quantity" )
     }
 
     // ========= 3. 构造 fund_balance_s =========
     auto ext_symb = extended_symbol( quantity.symbol, get_first_receiver() );
     fund_balance_s fund_balance{
+        reward_title,
         quantity,
         reward_per_invitee,
         time_point_sec(start_ts),
@@ -140,6 +144,9 @@ void poh_cisum::_merge_fund_balance_s(const name& inviter,const extended_symbol&
 
         old.available_quant += fb.available_quant;
 
+        if (fb.reward_title != "" ) {
+            old.reward_title = fb.reward_title;
+        }
         if (fb.reward_per_invitee.amount > 0) {
             old.reward_per_invitee = fb.reward_per_invitee;
         }
