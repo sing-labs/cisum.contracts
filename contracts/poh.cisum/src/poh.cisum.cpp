@@ -401,5 +401,31 @@ void poh_cisum::_send_inviter_fund(const name& inviter, const name& invitee)
     }
 }
 
+void poh_cisum::redeemfund(const name& oper, const name& inviter) {
+    require_auth(oper);
+
+    inviter_fund_t::tbl_t tbl(get_self(), get_self().value);
+    auto itr = tbl.find(inviter.value);
+    CHECKC(itr != tbl.end(), err::RECORD_NO_FOUND, "no fund record found for inviter");
+
+    const time_point_sec now = time_point_sec(current_time_point());
+
+    bool is_self_close = (oper == inviter);
+    bool is_admin = (_gstate.registrar.value != 0 && oper == _gstate.registrar);
+
+    // 非 inviter 本人 & 非 admin → 必须等任务结束
+    if (!is_self_close && !is_admin) {
+        bool can_close = true;
+        for (auto& kv : itr->balances) {
+            const auto& fb = kv.second;
+            if (fb.end_time > now) {
+                can_close = false;
+                break;
+            }
+        }
+        CHECKC(can_close, err::INVALID_FORMAT, "task not ended: end_time not reached");
+    }
+    tbl.erase(itr);
+}
 
 } // namespace flon

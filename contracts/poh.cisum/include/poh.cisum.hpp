@@ -48,6 +48,8 @@ public:
                         const std::optional<uint32_t>& start_ts,
                         const std::optional<uint32_t>& end_ts);
 
+  ACTION redeemfund(const name& oper, const name& inviter);
+
   ACTION notifyreward(const name&  from,
                                 const name&       to,
                                 const asset&      award_amount,
