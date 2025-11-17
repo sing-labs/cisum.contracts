@@ -192,16 +192,11 @@ void poh_cisum::registreward(const name& submitter,
     _reward_invitee(invitee);
 
     // 若有 inviter
-    if (inviter.value != 0)
-    {
+    if (inviter.value != 0) {
         _reward_inviter(inviter, invitee);
 
-        // === inviter_fund_t 检查 ===
-        inviter_fund_t::tbl_t tbl(_self, _self.value);
-        if (tbl.find(inviter.value) != tbl.end()) {
-            // inviter 有专属基金 → 额外发放多币奖励
-            _send_inviter_fund(inviter, invitee);
-        }
+        // inviter 有专属基金 → 额外发放多币奖励
+        _send_inviter_fund(inviter, invitee);
     }
 }
 
@@ -337,8 +332,7 @@ void poh_cisum::_send_inviter_fund(const name& inviter, const name& invitee)
 
         auto& balances = row.balances;
 
-        for (auto it = balances.begin(); it != balances.end(); )
-        {
+        for (auto it = balances.begin(); it != balances.end(); ) {
             auto es  = it->first;
             auto& fb = it->second;
 
@@ -346,7 +340,7 @@ void poh_cisum::_send_inviter_fund(const name& inviter, const name& invitee)
                 ++it;
                 continue;
             }
-            asset reward = fb.reward_per_invitee;
+            auto reward = fb.reward_per_invitee;
             if (reward.amount <= 0) {
                 ++it;
                 continue;
