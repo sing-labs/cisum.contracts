@@ -29,10 +29,13 @@ static std::string to_hex(const checksum256& c) {
 }
 
 // 生成“批次哈希”：oper + 当前秒级时间戳 -> sha256 -> hex（取前16位，缩短 memo）
-static std::string make_batch_hash(const eosio::name& oper) {
-    uint64_t ts = eosio::current_time_point().sec_since_epoch();
+static std::string make_batch_hash(const eosio::name& oper, uint64_t seq) {
+    uint64_t ts_us = eosio::current_time_point().time_since_epoch().count();
+
     std::string input = oper.to_string();
-    input += std::to_string(ts);
+    input += std::to_string(ts_us);
+    input += std::to_string(seq);
+
     checksum256 d = sha256(input.c_str(), input.size());
     std::string hex = to_hex(d);
     return hex.substr(0, 32); // 控制长度，避免 memo 超 256
@@ -453,8 +456,8 @@ void show::giftbatch(const name&          oper,
 
     // 内联 issue
     // giftissue:$<show_id>:$<ticket_id>:$<md5>:$<oper>
-    auto inline_issue = [&](const name& to, uint32_t qty) {
-        std::string batch_hash = make_batch_hash(to);
+    auto inline_issue = [&](const name& to, uint32_t qty, uint64_t seq) {
+        std::string batch_hash = make_batch_hash(oper, seq);
         std::string full_memo = "giftissue:"
                           + std::to_string(show_id)
                           + ":"
@@ -467,9 +470,11 @@ void show::giftbatch(const name&          oper,
     };
 
     // 发票
+    uint64_t seq = 0;
     for (const auto& to : recipients) {
         CHECKC(to.value && is_account(to), err::ACCOUNT_INVALID, "invalid recipient");
-        inline_issue(to, ticket_count);
+        inline_issue(to, ticket_count, seq);
+        seq++;
     }
 }
 

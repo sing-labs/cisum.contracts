@@ -17,6 +17,9 @@ mpush $show_con giftbatch '["flonian",
   1761796803533,
   2101025490959,
   1,
-  ["myadmin","testtest","fulgwxvwfw1m","flontest"],
+  ["fulgwxvwfw1m","fulgwxvwfw1m","fulgwxvwfw1m","fulgwxvwfw1m"],
   "batch gift issue"
 ]' -p flonian
+
+
+
