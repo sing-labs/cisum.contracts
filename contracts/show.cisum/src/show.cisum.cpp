@@ -130,7 +130,7 @@ void show::issuenft(const name& submitter,
 
     // 更新库存
     ticket_t::ticketidx tickets(get_self(), show_id);
-    auto itr = tickets.find(quantity.symbol.raw());
+    auto itr = tickets.find(quantity.symbol.nid);
     check(itr != tickets.end(), "ticket not found in issuenft");
     uint64_t prev_amount = static_cast<uint64_t>(itr->total_count);
     tickets.modify(itr, same_payer, [&](auto& row){
@@ -143,9 +143,9 @@ void show::issuenft(const name& submitter,
       get_self(),
       { permission_level{ get_self(), "active"_n } }
     }.send(
-        show_id,                     // 演出ID
-        quantity.symbol.raw(),       // 票的symbol
-        quantity.amount,             // 增加数量
+        show_id,                    // 演出ID
+        quantity.symbol.nid,        // 票的symbol
+        quantity.amount,            // 增加数量
         prev_amount,
         issuer,                      // 实际操作者
         memo,                         // 备注
@@ -275,16 +275,16 @@ void show::newticket(const name& submitter,
     check(sit != shows.end(), "show not found");
 
     ticket_t::ticketidx tks(get_self(), show_id);
-    auto it = tks.find(ticket_nsym.raw());
+    auto it = tks.find(ticket_nsym.nid);
     check(it == tks.end(), "ticket already exists in this show");
 
     const auto t = nowtp();
     tks.emplace(get_self(), [&](auto& r){
-      r.ticket_id               = ticket_nsym.raw();
-      r.prerequisite_ticket_id  = prerequisite_nsym.raw();
+      r.ticket_id               = ticket_nsym.nid;
+      r.prerequisite_ticket_id  = prerequisite_nsym.nid;
       r.ticket_type             = ticket_type;
       r.price                   = price;
-      r.price_usdt               = price_usdt;
+      r.price_usdt              = price_usdt;
       r.total_count             = 0;
       r.sold_count              = 0;
       r.stock_count             = 0;
@@ -507,7 +507,7 @@ void show::issuetograb(const name&  submitter,const name& to, const nasset& quan
 
     // 更新票档库存
     ticket_t::ticketidx tickets(get_self(), show_id);
-    auto itr = tickets.find(quantity.symbol.raw());
+    auto itr = tickets.find( quantity.symbol.nid );
     check(itr != tickets.end(), "ticket not found for this symbol");
 
     tickets.modify(itr, same_payer, [&](auto& row){

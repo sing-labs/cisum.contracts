@@ -22,7 +22,7 @@ void cvticket::create( const name& issuer, const int64_t& maximum_supply, const 
    // auto upper_itr = idx.upper_bound( token_uri_hash );
    // check( lower_itr == idx.end() || lower_itr == upper_itr, "token with token_uri already exists" );
    check( idx.find(token_uri_hash) == idx.end(), "token with token_uri already exists" );
-   check( nstats.find(nsymb.value) == nstats.end(), "token of nsymbol: " + to_string(nsymb.value) + " alreay exists" );
+   check( nstats.find(nsymb.nid) == nstats.end(), "token of nsymbol: " + to_string(nsymb.nid) + " alreay exists" );
    check( nsymb.pid() != 0, "parent id shall not be equal to 0" );
    check( nsymb.id() != 0, "id shall not be equal to 0" );
    // if (nsymb.id != 0)
@@ -95,7 +95,7 @@ void cvticket::issue( const name& to, const nasset& quantity, const string& memo
     check( memo.size() <= 256, "memo has more than 256 bytes" );
 
     auto nstats = nstats_t::idx_t( _self, _self.value );
-    auto existing = nstats.find( sym.value );
+    auto existing = nstats.find( sym.nid );
     check( existing != nstats.end(), "token with symbol does not exist, create token before issue" );
     const auto& st = *existing;
     check( to == st.issuer, "tokens can only be issued to issuer account" );
@@ -124,7 +124,7 @@ void cvticket::retire( const nasset& quantity, const string& memo )
     check( memo.size() <= 256, "memo has more than 256 bytes" );
 
     auto nstats = nstats_t::idx_t( _self, _self.value );
-    auto existing = nstats.find( sym.value );
+    auto existing = nstats.find( sym.nid );
     check( existing != nstats.end(), "token with symbol does not exist" );
     const auto& st = *existing;
 
@@ -162,7 +162,7 @@ void cvticket::transfer( const name& from, const name& to, const vector<nasset>&
    for( auto& quantity : assets) {
       auto sym = quantity.symbol;
       auto nstats = nstats_t::idx_t( _self, _self.value );
-      const auto& st = nstats.get( sym.value );
+      const auto& st = nstats.get( sym.nid );
 
       // check( quantity.is_valid(), "invalid quantity" );
       check( quantity.amount > 0, "must transfer positive quantity" );
@@ -178,7 +178,7 @@ void cvticket::transfer( const name& from, const name& to, const vector<nasset>&
 void cvticket::sub_balance( const name& owner, const nasset& value ) {
    auto from_acnts = account_t::idx_t( get_self(), owner.value );
 
-   const auto& from = from_acnts.get( value.symbol.raw(), "no balance object found" );
+   const auto& from = from_acnts.get( value.symbol.nid, "no balance object found" );
    check( from.balance.amount >= value.amount, "overdrawn balance" );
 
    from_acnts.modify( from, owner, [&]( auto& a ) {
@@ -189,7 +189,7 @@ void cvticket::sub_balance( const name& owner, const nasset& value ) {
 void cvticket::add_balance( const name& owner, const nasset& value, const name& ram_payer )
 {
    auto to_acnts = account_t::idx_t( get_self(), owner.value );
-   auto to = to_acnts.find( value.symbol.raw() );
+   auto to = to_acnts.find( value.symbol.nid );
    if( to == to_acnts.end() ) {
       to_acnts.emplace( ram_payer, [&]( auto& a ){
         a.balance = value;

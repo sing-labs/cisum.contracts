@@ -106,7 +106,7 @@ class [[eosio::contract("cvticket.nft")]] cvticket : public contract {
 
    static nasset get_balance(const name& contract, const name& owner, const nsymbol& sym) {
       auto acnts = flon::account_t::idx_t( contract, owner.value );
-      const auto& acnt = acnts.get( sym.raw(), "no balance object found" );
+      const auto& acnt = acnts.get( sym.nid, "no balance object found" );
       return acnt.paused? nasset() : acnt.balance;
    }
 

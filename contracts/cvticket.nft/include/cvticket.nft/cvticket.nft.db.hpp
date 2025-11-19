@@ -48,7 +48,7 @@ TBL nstats_t {
 
     nstats_t() {};
 
-    uint64_t primary_key() const { return supply.symbol.value; }// must use id to keep available_primary_key increase consistenly
+    uint64_t primary_key() const    { return supply.symbol.nid; }// must use id to keep available_primary_key increase consistenly
     uint64_t by_ipowner()const      { return ipowner.value; }
     uint64_t by_issuer()const       { return issuer.value; }
     uint128_t by_issuer_created()const { return (uint128_t) issuer.value << 64 | (uint128_t) issued_at.sec_since_epoch(); }
@@ -73,7 +73,7 @@ TBL account_t {
     account_t() {}
     account_t(const nasset& asset): balance(asset) {}
 
-    uint64_t primary_key()const { return balance.symbol.raw(); }
+    uint64_t primary_key()const { return balance.symbol.nid; }
 
     EOSLIB_SERIALIZE(account_t, (balance)(paused) )
 

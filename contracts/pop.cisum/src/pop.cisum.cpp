@@ -310,8 +310,8 @@ void pop_cisum::delexecutor(const name& acct) {
 
 void pop_cisum::setrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) {
     require_auth(get_self());
-    CHECKC(threshold.amount > 0,                 err::NOT_POSITIVE,     "threshold must be positive");
-    CHECKC(symbol.raw() != 0,                    err::INVALID_FORMAT,   "badge symbol required");
+    CHECKC(threshold.amount > 0,                err::NOT_POSITIVE,     "threshold must be positive");
+    CHECKC(symbol.nid != 0,                     err::INVALID_FORMAT,   "badge symbol required");
 
 
     badge_rule_t::idx_t rtbl(get_self(), get_self().value);
@@ -319,7 +319,7 @@ void pop_cisum::setrule(uint64_t id, const asset& threshold, const nsymbol& symb
 
     if (id == 0) {
 
-        CHECKC(by_symbol.find(symbol.raw()) == by_symbol.end(),
+        CHECKC(by_symbol.find(symbol.nid) == by_symbol.end(),
                err::REDPACK_EXIST, "rule for this badge symbol already exists");
 
         rtbl.emplace(get_self(), [&](auto& r){
@@ -333,8 +333,8 @@ void pop_cisum::setrule(uint64_t id, const asset& threshold, const nsymbol& symb
         auto it = rtbl.find(id);
         CHECKC(it != rtbl.end(), err::RECORD_NO_FOUND, "badge rule not found");
 
-        if (it->symbol.raw() != symbol.raw()) {
-            CHECKC(by_symbol.find(symbol.raw()) == by_symbol.end(),
+        if (it->symbol.nid != symbol.nid) {
+            CHECKC(by_symbol.find(symbol.nid) == by_symbol.end(),
                    err::REDPACK_EXIST, "rule for this badge symbol already exists");
         }
 

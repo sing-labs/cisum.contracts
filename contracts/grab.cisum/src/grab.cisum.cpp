@@ -390,7 +390,7 @@ void grab_cisum::addupgrade(const name& submitter,
 
     // 4) 校验 pay_tickets 的 NFT 合法性
     //    在 flon::nsymbol 中，id() 返回的是低 9 位的 NFT id（与你们 ticket_id 对应）
-    const uint64_t pay_ticket_id = pay_tickets.symbol.value;
+    const uint64_t pay_ticket_id = pay_tickets.symbol.nid;
 
     // 4.1 不允许费用 NFT 和目标 ticket 是同一个 id
     CHECKC(pay_ticket_id != target_ticket_id, err::INVALID_FORMAT,

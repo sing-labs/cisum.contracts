@@ -69,11 +69,10 @@ void cvbadgestore::on_notifyaward(const name& user,
 
   for (const auto& na : packs) {
     CHECKC(na.amount > 0,         err::NOT_POSITIVE,    "nasset amount must be positive");
-    CHECKC(na.symbol.raw() != 0,  err::INVALID_FORMAT,  "invalid nsymbol");
+    CHECKC(na.symbol.nid != 0,    err::INVALID_FORMAT,  "invalid nsymbol");
   }
 
-
-
+  // 发放勋章
   NTOKEN_TRANSFER(_gstate.badge_contract, get_self(), user, packs, memo);
 
 }

@@ -6,44 +6,39 @@ namespace flon {
 
 
 struct nsymbol {
-    uint64_t value = 0;
+    uint64_t nid = 0;
 
     // consts
     static constexpr uint32_t U1E9  = 10'0000'0000UL;
+    
     nsymbol() = default;
 
-    static uint64_t to_raw_value(uint32_t i, uint32_t p) {
+    explicit nsymbol(uint32_t i, uint32_t p = 0) {
         eosio::check( p < U1E9, "pid must be below 10**9" );
         eosio::check( i < U1E9, "id must be below 10**9" );
-        return (uint64_t)p * U1E9 + i;
+        nid = (uint64_t)p * U1E9 + i;
     }
 
-    explicit nsymbol(uint32_t i, uint32_t p = 0): value(to_raw_value(i, p)) {}
-
-    explicit nsymbol(uint64_t raw): value(raw) {}
+    explicit nsymbol(uint64_t n): nid(n) {}
 
     friend bool operator==(const nsymbol& a, const nsymbol& b) {
-        return( a.value == b.value );
-    }
-
-    inline uint64_t raw() const {
-        return value;
+        return( a.nid == b.nid );
     }
 
     inline uint32_t id() const {
-        return value % U1E9;
+        return nid % U1E9;
     }
 
     inline uint32_t pid() const {
-        return value / U1E9;
+        return nid / U1E9;
     }
 
     /**
      * Is this symbol valid
      */
-    constexpr bool is_valid()const                 { return value != 0; }
+    constexpr bool is_valid()const                 { return nid != 0; }
 
-    EOSLIB_SERIALIZE( nsymbol, (value) )
+    EOSLIB_SERIALIZE( nsymbol, (nid) )
 };
 
 struct nasset {

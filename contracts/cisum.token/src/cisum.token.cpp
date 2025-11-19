@@ -242,9 +242,9 @@ void cisum_token::setwhite(const name& account, const bool& enabled)
 }
 
 void cisum_token::addrule(uint64_t id, const asset& threshold, const nsymbol& symbol, bool enabled) {
-    CHECKC(has_admin_auth(),                     err::DID_NOT_AUTH,     "admin/contract only");
-    CHECKC(threshold.amount > 0,                 err::NOT_POSITIVE,     "threshold must be positive");
-    CHECKC(symbol.raw() != 0,                    err::INVALID_FORMAT,   "badge symbol required");
+    CHECKC(has_admin_auth(),                    err::DID_NOT_AUTH,     "admin/contract only");
+    CHECKC(threshold.amount > 0,                err::NOT_POSITIVE,     "threshold must be positive");
+    CHECKC(symbol.nid != 0,                     err::INVALID_FORMAT,   "badge symbol required");
 
     auto symcode = threshold.symbol.code();
     stats_t::idx_t statstable(get_self(), symcode.raw());
@@ -252,7 +252,7 @@ void cisum_token::addrule(uint64_t id, const asset& threshold, const nsymbol& sy
     CHECKC(itr != statstable.end(), err::RECORD_NO_FOUND, "threshold token not exist");
 
     flon::nstats_t::idx_t nstats_tbl(CVBADGE_CONTRACT, CVBADGE_CONTRACT.value);
-    auto it_symbol = nstats_tbl.find(symbol.value);
+    auto it_symbol = nstats_tbl.find(symbol.nid);
 
     CHECKC(it_symbol != nstats_tbl.end(), err::RECORD_NO_FOUND, "badge symbol not exist in badge nft");
 
@@ -261,7 +261,7 @@ void cisum_token::addrule(uint64_t id, const asset& threshold, const nsymbol& sy
 
     if (id == 0) {
 
-        CHECKC(by_symbol.find(symbol.raw()) == by_symbol.end(),
+        CHECKC(by_symbol.find(symbol.nid) == by_symbol.end(),
                err::REDPACK_EXIST, "rule for this badge symbol already exists");
 
         rtbl.emplace(get_self(), [&](auto& r){
@@ -275,8 +275,8 @@ void cisum_token::addrule(uint64_t id, const asset& threshold, const nsymbol& sy
         auto it = rtbl.find(id);
         CHECKC(it != rtbl.end(), err::RECORD_NO_FOUND, "badge rule not found");
 
-        if (it->symbol.raw() != symbol.raw()) {
-            CHECKC(by_symbol.find(symbol.raw()) == by_symbol.end(),
+        if (it->symbol.nid != symbol.nid) {
+            CHECKC(by_symbol.find(symbol.nid) == by_symbol.end(),
                    err::REDPACK_EXIST, "rule for this badge symbol already exists");
         }
 

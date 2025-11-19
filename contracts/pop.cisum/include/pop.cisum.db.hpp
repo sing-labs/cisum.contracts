@@ -97,8 +97,8 @@ TBL badge_rule_t {
    time_point     created_at;
 
    uint64_t  primary_key()    const { return id; }
-   uint64_t  by_threshold()      const { return threshold.amount; }
-   uint64_t  by_symbol()      const { return symbol.raw(); }
+   uint64_t  by_threshold()   const { return threshold.amount; }
+   uint64_t  by_symbol()      const { return symbol.nid; }
 
    typedef eosio::multi_index<
      "badgerules"_n, badge_rule_t,

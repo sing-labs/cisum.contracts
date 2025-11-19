@@ -36,7 +36,7 @@ struct [[eosio::table, eosio::contract("cvbadge.nft")]] nstats_t {
     nstats_t(const uint64_t& id, const uint64_t& pid): supply(id, pid) {};
     nstats_t(const uint64_t& id, const uint64_t& pid, const int64_t& am): supply(id, pid, am) {};
 
-    uint64_t primary_key()const     { return supply.symbol.value; } // must use id to keep available_primary_key increase consistenly
+    uint64_t primary_key()const     { return supply.symbol.nid; } // must use id to keep available_primary_key increase consistenly
     uint64_t by_ipowner()const      { return ipowner.value; }
     uint64_t by_issuer()const       { return issuer.value; }
     uint128_t by_issuer_created()const { return (uint128_t) issuer.value << 64 | (uint128_t) issued_at.sec_since_epoch(); }
