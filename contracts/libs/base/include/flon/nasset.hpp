@@ -25,6 +25,10 @@ struct nsymbol {
         return( a.nid == b.nid );
     }
 
+    inline uint64_t raw() const {
+        return nid;
+    }
+
     inline uint32_t id() const {
         return nid % U1E9;
     }
