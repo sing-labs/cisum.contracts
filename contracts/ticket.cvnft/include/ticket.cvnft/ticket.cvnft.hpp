@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include <cvticket.nft/cvticket.nft.db.hpp>
+#include <ticket.cvnft/ticket.cvnft.db.hpp>
 
 namespace flon {
 
@@ -28,7 +28,7 @@ static constexpr uint32_t DID_SYMBOL_ID = 1000001;
  *
  * Similarly, the `stats` multi-index table, holds instances of `currency_stats` objects for each row, which contains information about current supply, maximum supply, and the creator account for a symbol token. The `stats` table is scoped to the token symbol.  Therefore, when one queries the `stats` table for a token symbol the result is one single entry/row corresponding to the queried symbol token if it was previously created, or nothing, otherwise.
  */
-class [[eosio::contract("cvticket.nft")]] cvticket : public contract {
+class [[eosio::contract("ticket.cvnft")]] cvticket : public contract {
    public:
       using contract::contract;
 

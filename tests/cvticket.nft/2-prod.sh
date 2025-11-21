@@ -5,7 +5,7 @@ source ~/.bashrc
 ticket_ntoken=ticket.cvnft
 mreg flon $ticket_ntoken flonian
 mtran flonian $ticket_ntoken "100 FLON"
-mset $ticket_ntoken cvticket.nft
+mset $ticket_ntoken ticket.cvnft
 mcli set account permission $ticket_ntoken active --add-code
 
 

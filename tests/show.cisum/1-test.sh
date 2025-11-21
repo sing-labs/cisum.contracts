@@ -6,9 +6,9 @@ mcli set account permission $show_con active --add-code
 
 
 
-mpush cvticket.nft  addwhitelist '["'"${show_con}"'"]'   -p cvticket.nft
+mpush ticket.cvnft  addwhitelist '["'"${show_con}"'"]'   -p ticket.cvnft
 
-mpush $show_con init '["flonian", "cvticket.nft"]' -p $show_con
+mpush $show_con init '["flonian", "ticket.cvnft"]' -p $show_con
 
 mpush $show_con addshowadm '["flonian","myadmin"]' -p flonian
 

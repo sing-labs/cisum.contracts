@@ -6,7 +6,7 @@
 #include <set>
 #include <string>
 
-#include <cvticket.nft.hpp>
+#include <ticket.cvnft.hpp>
 #include <flon/consts.hpp>
 namespace flon {
 
