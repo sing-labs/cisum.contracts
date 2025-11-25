@@ -79,25 +79,25 @@ void cisumshow::publishshow(name creator,
                   qty,
                   "issue:" + std::to_string(show.show_id));
 
-        // ---- 免费票逻辑 ----
-        if (to_lower(tk.ticket_type) == "free") {
-            next_rush_id += 1;
-            uint64_t rush_sale_id = next_rush_id;
+        // // ---- 免费票逻辑 ----
+        // if (to_lower(tk.ticket_type) == "free") {
+        //     next_rush_id += 1;
+        //     uint64_t rush_sale_id = next_rush_id;
 
-            ADDRUSHSALE(GRAB_CONTRACT,
-                        _self,
-                        show.show_id,
-                        tk.ticket_id,
-                        tk.sale_started_at,
-                        tk.sale_ended_at,
-                        tk.price,
-                        tk.max_grabs_per_user,
-                        tk.win_ratio);
+        //     ADDRUSHSALE(GRAB_CONTRACT,
+        //                 _self,
+        //                 show.show_id,
+        //                 tk.ticket_id,
+        //                 tk.sale_started_at,
+        //                 tk.sale_ended_at,
+        //                 tk.price,
+        //                 tk.max_grabs_per_user,
+        //                 tk.win_ratio);
 
-            nasset issue_qty{ tk.total_count, nsymbol(tk.ticket_id) };
-            auto memo = "addrushsale:" + std::to_string(rush_sale_id) + ":" + std::to_string(show.show_id);
-            ISSUE_TO_GRAB(SHOW_CONTRACT, _self, GRAB_CONTRACT, issue_qty, memo);
-        }
+        //     nasset issue_qty{ tk.total_count, nsymbol(tk.ticket_id) };
+        //     auto memo = "addrushsale:" + std::to_string(rush_sale_id) + ":" + std::to_string(show.show_id);
+        //     ISSUE_TO_GRAB(SHOW_CONTRACT, _self, GRAB_CONTRACT, issue_qty, memo);
+        // }
     }
 }
 
@@ -115,27 +115,45 @@ void cisumshow::addupgrades(const name& creator,const uint64_t&   show_id,const 
     uint64_t next_rush_id = gstate.last_rush_sale_id;
 
     for (const auto& tk : tickets) {
-        // 只处理带 pay_ticket 的票
-        const bool has_pay_ticket = (tk.pay_ticket.amount > 0 && tk.pay_ticket.symbol.is_valid());
-        if (!has_pay_ticket) continue;
 
         next_rush_id += 1;
-        uint64_t rush_upgrade_id = next_rush_id;
+        if (to_lower(tk.ticket_type) == "free") {
+            uint64_t rush_sale_id = next_rush_id;
+            ADDRUSHSALE(GRAB_CONTRACT,
+                        _self,
+                        show_id,
+                        tk.ticket_id,
+                        tk.sale_started_at,
+                        tk.sale_ended_at,
+                        tk.price,
+                        tk.max_grabs_per_user,
+                        tk.win_ratio);
 
-        // ---- 注册 upgrade ----
-        ADDUPGRADE(GRAB_CONTRACT,
-                   _self,
-                   show_id,
-                   tk.ticket_id,
-                   tk.pay_ticket,
-                   tk.sale_started_at,
-                   tk.sale_ended_at,
-                   tk.win_ratio);
+            nasset issue_qty{ tk.total_count, nsymbol(tk.ticket_id) };
+            auto memo = "addrushsale:" + std::to_string(rush_sale_id) + ":" + std::to_string(show_id);
+            ISSUE_TO_GRAB(SHOW_CONTRACT, _self, GRAB_CONTRACT, issue_qty, memo);
+        }
+        else{
+            const bool has_pay_ticket = (tk.pay_ticket.amount > 0 && tk.pay_ticket.symbol.is_valid());
+            if (!has_pay_ticket) continue;
+            uint64_t rush_upgrade_id = next_rush_id;
+            // ---- 注册 upgrade ----
+            ADDUPGRADE(GRAB_CONTRACT,
+                    _self,
+                    show_id,
+                    tk.ticket_id,
+                    tk.pay_ticket,
+                    tk.sale_started_at,
+                    tk.sale_ended_at,
+                    tk.win_ratio);
 
-        // ---- 转 NFT 到 grab ----
-        nasset issue_qty{ tk.total_count, nsymbol(tk.ticket_id) };
-        auto memo = "addrushupgrade:" + std::to_string(rush_upgrade_id) + ":"+ std::to_string(show_id);
-        ISSUE_TO_GRAB(SHOW_CONTRACT, _self, GRAB_CONTRACT, issue_qty, memo);
+            // ---- 转 NFT 到 grab ----
+            nasset issue_qty{ tk.total_count, nsymbol(tk.ticket_id) };
+            auto memo = "addrushupgrade:" + std::to_string(rush_upgrade_id) + ":"+ std::to_string(show_id);
+            ISSUE_TO_GRAB(SHOW_CONTRACT, _self, GRAB_CONTRACT, issue_qty, memo);
+        }
+
+
     }
 }
 

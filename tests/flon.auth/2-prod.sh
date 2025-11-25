@@ -27,3 +27,15 @@ mpush $rolemanage_con grantrole '["'"$admin"'","'"$oracle"'","admin"]' -p $admin
 
 
 mpush $rolemanage_con addroleperm '["'"$admin"'","admin",["artist"],""]'   -p $admin
+
+
+admin=flonian
+mpush $rolemanage_con addroleperm '["'"$admin"'","admin",["rushsaleTicket"],""]'   -p $admin
+
+mpush $rolemanage_con addroleperm '["'"$admin"'","ops",["rushsaleTicket"],""]'   -p $admin
+
+admin=flonian
+rolemanage_con=cisum.auth
+mpush $rolemanage_con addroleperm '["'"$admin"'","admin",["customerMgmt"],""]'   -p $admin
+mpush $rolemanage_con addroleperm '["'"$admin"'","ops",["customerMgmt"],""]'   -p $admin
+

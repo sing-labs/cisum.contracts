@@ -34,7 +34,7 @@ mcli get currency balance $cisum_token flonian MUSIC
 
 #mpush flon.mtoken transfer '["flonian", "n3hwf4utqo5c", "2000.000000 USDT", "airdrop"]' -p flonian
 
-mpush sing.token transfer '["flonian", "cvibbxs4xofc", "100000.00000000 SING", "airdrop"]' -p flonian
+mpush sing.token transfer '["flonian", "cv1anal1acjh", "100000.00000000 SING", "airdrop"]' -p flonian
 
 mpush sing.token transfer '["gahbnbehaskk", "flonian", "2000.00000000 SING", "airdrop"]' -p gahbnbehaskk
 

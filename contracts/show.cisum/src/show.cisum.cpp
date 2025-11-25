@@ -340,7 +340,7 @@ void show::setticket(const name& submitter,
 void show::delshow(const name& submitter, const uint64_t& show_id) {
 
     if (!(has_auth(get_self()) || has_auth(_gstate.admin))) {
-        require_auth(submitter);
+        require_perm(submitter, "delShow");
     }
 
     // ---- 先删除 ticket_t 表（scope = show_id）中所有记录 ----
