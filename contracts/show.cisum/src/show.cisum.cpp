@@ -395,7 +395,7 @@ void show::issue(const name&     submitter,
 
     // === 售卖时间窗口校验（以票档为准） ===
     const auto now = nowtp();
-    check(it->sale_started_at <= now, "ticket not started yet");
+    // check(it->sale_started_at <= now, "ticket not started yet");
     check(now <= it->sale_ended_at,   "ticket already ended");
 
 
