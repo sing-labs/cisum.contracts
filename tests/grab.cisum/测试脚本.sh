@@ -15,7 +15,7 @@ mpush $grab_con init '["flonian"]' -p $grab_con
 
 echo "==== 2) 配置依赖合约 ===="
 mpush $grab_con cfgpoint  '["nestar.token"]'  -p flonian
-mpush $grab_con cfgticket '["cvticket.nft"]' -p flonian
+mpush $grab_con cfgticket '["ticket.cvnft"]' -p flonian
 
 
 echo "==== 3) 创建 rush sale ===="

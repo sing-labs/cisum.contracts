@@ -43,7 +43,7 @@ public:
                     const nsymbol& symbol,
                     const string&  token_uri);
 
-  // === cvticket.nft: 发放（铸造到合约自身，再转出/或直接发放） ===
+  // === ticket.cvnft: 发放（铸造到合约自身，再转出/或直接发放） ===
   [[eosio::action]]
   void issuenft(const name& submitter,
                     const name&   issuer,

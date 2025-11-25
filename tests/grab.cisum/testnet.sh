@@ -34,11 +34,11 @@ mpush $grab_con init '["flonian"]' -p $grab_con
 
 # 4) 业务相关白名单
 mpush $nestar_token  addconsumewl '["grab23.cisum"]' -p $nestar_token
-mpush  cvticket.nft  addwhitelist '["grab23.cisum"]' -p cvticket.nft
+mpush  ticket.cvnft  addwhitelist '["grab23.cisum"]' -p ticket.cvnft
 
 # 5) grab 的配置项：方案A下由具备角色的用户（myadmin）提交（带 submitter）
 mpush grab23.cisum cfgpoint  '["flonian","nest21.token"]' -p myadmin
-mpush grab23.cisum cfgticket '["myadmin","cvticket.nft"]' -p myadmin
+mpush grab23.cisum cfgticket '["myadmin","ticket.cvnft"]' -p myadmin
 
 # 允许的支付币种（该 action 仍是合约自签）
 mpush grab23.cisum settoken '["4,NESTAR","nest21.token"]' -p grab23.cisum

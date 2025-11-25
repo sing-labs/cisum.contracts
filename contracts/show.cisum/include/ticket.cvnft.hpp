@@ -8,7 +8,7 @@ using std::vector;
 
 namespace flon {
 using namespace eosio;
-class [[eosio::contract("cvticket.nft")]] cvticket : public contract {
+class [[eosio::contract("ticket.cvnft")]] cvticket : public contract {
 public:
   using contract::contract;
 

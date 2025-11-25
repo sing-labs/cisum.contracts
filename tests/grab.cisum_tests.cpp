@@ -154,7 +154,7 @@ BOOST_FIXTURE_TEST_CASE( test_init_admin, grab_cisum_tester ) try {
 BOOST_FIXTURE_TEST_CASE(test_grab, grab_cisum_tester) {
     // 1. Instantiate tester and deploy contracts
     auto point_contract = "nestar.token"_n;
-    auto ticket_contract = "cvticket.nft"_n;
+    auto ticket_contract = "ticket.cvnft"_n;
     auto user = "useracc"_n;
     auto nestar_symbol = symbol(4, "NESTAR");
     int64_t initial_supply = 1'0000'0000'0000;
