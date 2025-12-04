@@ -18,7 +18,7 @@ mpush $cisumsummary_con addtoken '["cisum.token", "4,CISUM"]' -p $cisumsummary_c
 # 添加 MUSIC
 mpush $cisumsummary_con addtoken '["sing.token", "8,MUSIC"]' -p $cisumsummary_con
 
-
+mpush $cisumsummary_con addtoken '["flon.token", "8,FLON"]' -p $cisumsummary_con
 
 #   mpush $cisumsummary_con view '["flonian"]' -p $cisumsummary_con
 

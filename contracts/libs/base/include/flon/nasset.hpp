@@ -10,7 +10,7 @@ struct nsymbol {
 
     // consts
     static constexpr uint32_t U1E9  = 10'0000'0000UL;
-    
+
     nsymbol() = default;
 
     explicit nsymbol(uint32_t i, uint32_t p = 0) {

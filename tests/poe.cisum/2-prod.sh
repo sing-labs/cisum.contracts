@@ -117,3 +117,37 @@ mpush $poe_con addrewardact '[
 
 
 mpush  $poe_con addoperator '["cisum.admin"]' -p $poe_con
+
+
+
+
+
+mpush $poe_con addrewardact '[
+  "tiktokfollow",
+  "5.0000 CISUM",
+  "Tiktok user follows Cisumverse artists"
+]' -p $poe_con
+
+mpush $poe_con addrewardact '[
+  "tiktokpost",
+  "15.0000 CISUM",
+  "Tiktok user posts Cisumverse articles"
+]' -p $poe_con
+
+mpush $poe_con addrewardact '[
+  "tiktokrepost",
+  "10.0000 CISUM",
+  "Tiktok user reposts Cisumverse articles"
+]' -p $poe_con
+
+mpush $poe_con addrewardact '[
+  "tiktoklike",
+  "1.0000 CISUM",
+  "Tiktok user likes Cisumverse posts"
+]' -p $poe_con
+
+mpush $poe_con addrewardact '[
+  "tiktokreply",
+  "3.0000 CISUM",
+  "Tiktok user replies Cisumverse posts"
+]' -p $poe_con

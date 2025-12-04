@@ -72,6 +72,6 @@ mpush $rolemanage_con grantrole '["'"$admin"'","testtest","admin"]' -p $admin
 
 
 
-mpush cisum.auth addroleperm '["flonian","admin",["delShow"],"delete show"]'   -p flonian
+mpush cisum.auth addroleperm '["flonian","admin",["rushsaleTicket","customerMgmt"],""]'   -p flonian
 
-
+mpush cisum.auth addroleperm '["flonian","ops",["rushsaleTicket","customerMgmt"],""]'   -p flonian

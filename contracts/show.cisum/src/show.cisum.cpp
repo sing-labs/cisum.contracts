@@ -132,7 +132,7 @@ void show::issuenft(const name& submitter,
     ticket_t::ticketidx tickets(get_self(), show_id);
     auto itr = tickets.find(quantity.symbol.nid);
     check(itr != tickets.end(), "ticket not found in issuenft");
-    uint64_t prev_amount = static_cast<uint64_t>(itr->total_count);
+    uint64_t prev_amount = itr->total_count;
     tickets.modify(itr, same_payer, [&](auto& row){
         row.total_count += quantity.amount;
         row.stock_count += quantity.amount;
@@ -150,6 +150,7 @@ void show::issuenft(const name& submitter,
         issuer,                      // 实际操作者
         memo,                         // 备注
         current_time_point().time_since_epoch().count() / 1'000'000);
+
 
 }
 

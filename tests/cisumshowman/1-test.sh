@@ -108,7 +108,7 @@ mpush $ops_con addupgrades '[
 
 
 
-mpush $ops_con publishshow '[
+mpush cisumshowman publishshow '[
   "flonian",
   {
     "show_id": 1758008184540,
@@ -148,7 +148,7 @@ mpush $ops_con publishshow '[
             "max_grabs_per_user": 1
     }
   ]
-]' -p flonian  -p $ops_con
+]' -p flonian  -p cisumshowman
 
 
 
@@ -164,3 +164,36 @@ mpush $show_con addshowadm '["gahbnbehaskk"]' -p flonian
 
 
 
+
+
+
+
+mpush cisumshowman publishshow '[
+  "flonian",
+  {
+    "show_id": 1764818720074,
+    "category": "concert",
+    "ticket_transferable": false,
+    "ticket_refundable": false,
+    "show_started_at": "2025-12-19T13:55:00",
+    "show_ended_at": "2025-12-19T13:55:00",
+    "show_name": "测试演出三",
+    "show_address": ""
+  },
+  [
+  {
+            "ticket_id": "002101025798798",
+            "token_uri": "https://coral-reasonable-spider-53.mypinata.cloud/ipfs/bafkreigjje3jz6s5xpnajytjbeyc3v64fg6jfxhmp6akljv4gn3anboizq",
+            "ticket_type": "free",
+            "price": "300000.0000 VND",
+            "price_usdt": "12.0000 USDT",
+            "pay_ticket": {"amount": 0,"symbol": { "nid": 0 }},
+            "total_count": "100",
+            "prerequisite_ticket_id": 0,
+            "sale_started_at": "2025-12-04T14:23:54",
+            "sale_ended_at": "2025-12-13T14:23:54",
+            "win_ratio": 0,
+            "max_grabs_per_user": 0
+        }
+  ]
+]' -p   flonian

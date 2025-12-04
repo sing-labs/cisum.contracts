@@ -41,10 +41,10 @@ void cisumshow::publishshow(name creator,
     uint64_t next_rush_id = gstate.last_rush_sale_id;
 
     for (const auto& tk : tickets) {
-        const bool has_pay_ticket = (tk.pay_ticket.amount > 0 && tk.pay_ticket.symbol.is_valid());
-        if (has_pay_ticket) {
-            continue;
-        }
+        // const bool has_pay_ticket = (tk.pay_ticket.amount > 0 && tk.pay_ticket.symbol.is_valid());
+        // if (has_pay_ticket) {
+        //     continue;
+        // }
 
         const nsymbol t_sym{ tk.ticket_id };
         const nsymbol pre_sym{ tk.prerequisite_ticket_id };
@@ -79,25 +79,6 @@ void cisumshow::publishshow(name creator,
                   qty,
                   "issue:" + std::to_string(show.show_id));
 
-        // // ---- 免费票逻辑 ----
-        // if (to_lower(tk.ticket_type) == "free") {
-        //     next_rush_id += 1;
-        //     uint64_t rush_sale_id = next_rush_id;
-
-        //     ADDRUSHSALE(GRAB_CONTRACT,
-        //                 _self,
-        //                 show.show_id,
-        //                 tk.ticket_id,
-        //                 tk.sale_started_at,
-        //                 tk.sale_ended_at,
-        //                 tk.price,
-        //                 tk.max_grabs_per_user,
-        //                 tk.win_ratio);
-
-        //     nasset issue_qty{ tk.total_count, nsymbol(tk.ticket_id) };
-        //     auto memo = "addrushsale:" + std::to_string(rush_sale_id) + ":" + std::to_string(show.show_id);
-        //     ISSUE_TO_GRAB(SHOW_CONTRACT, _self, GRAB_CONTRACT, issue_qty, memo);
-        // }
     }
 }
 
