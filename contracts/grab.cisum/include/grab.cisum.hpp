@@ -62,15 +62,6 @@ public:
                        std::optional<time_point> ended_at);
 
     /**
-     * Clear orders and stats of a rush sale (after end).
-     * 权限：合约自身 / admin / oracle
-     */
-    ACTION clearsale(const name& submitter, const uint64_t& rush_sale_id);
-
-
-    ACTION delrushorder(const name& submitter, const uint64_t& rush_sale_id);
-
-    /**
      * Delete a rush sale (optionally forced).
      * 权限：合约自身 / admin / oracle
      */
@@ -145,7 +136,6 @@ public:
     using init_action         = action_wrapper<"init"_n,         &grab_cisum::init>;
     using addrushsale_action  = action_wrapper<"addrushsale"_n,  &grab_cisum::addrushsale>;
     using setrushsale_action  = action_wrapper<"setrushsale"_n,  &grab_cisum::setrushsale>;
-    using clearsale_action    = action_wrapper<"clearsale"_n,    &grab_cisum::clearsale>;
     using delrushsale_action  = action_wrapper<"delrushsale"_n,  &grab_cisum::delrushsale>;
     using addtoken_action     = action_wrapper<"addtoken"_n,     &grab_cisum::addtoken>;
     using deltoken_action     = action_wrapper<"deltoken"_n,     &grab_cisum::deltoken>;

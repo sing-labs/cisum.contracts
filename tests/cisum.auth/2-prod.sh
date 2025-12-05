@@ -43,14 +43,14 @@ mpush $rolemanage_con revokerole '["flonian","fulgwxvwfw1m","admin"]'   -p floni
 mpush $rolemanage_con revokerole '["flonian","2knqkuxyumyk","ops"]'   -p flonian
 
 
-mpush $rolemanage_con delrole '["flonian","ops"]'   -p flonian
+mpush $rolemanage_con delrole '["flonian","bbb"]'   -p flonian
 mpush $rolemanage_con delrole '["flonian","admin"]'   -p flonian
 
 
 
 
 admin=flonian
-mpush $rolemanage_con addrole '["'"$admin"'","admin","super admin"]'   -p $admin
+mpush $rolemanage_con addrole '["'"$admin"'","bbb",""]'   -p $admin
 mpush $rolemanage_con addroleperm '["'"$admin"'","admin",["banner", "content", "venues", "show", "giveTicket", "ticketCancel", "roleManage", "userManage"],""]'   -p $admin
 
 mpush $rolemanage_con addrole '["'"$admin"'","ops",""]'   -p $admin
@@ -69,9 +69,14 @@ mpush $rolemanage_con grantrole '["'"$admin"'","fulgwxvwfw1m","admin"]' -p $admi
 
 
 mpush $rolemanage_con grantrole '["'"$admin"'","testtest","admin"]' -p $admin
+mpush $rolemanage_con grantrole '["'"$admin"'","testtest","ops"]' -p $admin
+mpush $rolemanage_con revokerole '["flonian","testtest","ops"]'   -p flonian
 
 
 
 mpush cisum.auth addroleperm '["flonian","admin",["rushsaleTicket","customerMgmt"],""]'   -p flonian
 
 mpush cisum.auth addroleperm '["flonian","ops",["rushsaleTicket","customerMgmt"],""]'   -p flonian
+
+
+mpush cisum.auth addroleperm '["flonian","admin",["taskMgmt"],"taskMgmt"]'   -p flonian

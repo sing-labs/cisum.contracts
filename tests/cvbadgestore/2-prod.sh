@@ -119,3 +119,13 @@ mpush badge.cvnft settokenuri '[
 
 
 
+
+
+
+
+
+
+mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"value":"4000000001"}}],"test1"]' -p badgecvstore
+mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"value":"4000000002"}}],"test1"]' -p badgecvstore
+mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"value":"4000000003"}}],"test1"]' -p badgecvstore
+mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"value":"4000000004"}}],"test1"]' -p badgecvstore

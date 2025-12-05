@@ -151,3 +151,19 @@ mpush $poe_con addrewardact '[
   "3.0000 CISUM",
   "Tiktok user replies Cisumverse posts"
 ]' -p $poe_con
+
+
+
+mpush $poe_con addrewardact '[
+  "setnickname",
+  "20.0000 CISUM",
+  "set your nickname 1st time"
+]' -p $poe_con
+
+
+mpush $poe_con addrewardact '[
+  "setavatar",
+  "20.0000 CISUM",
+  "set your avatar 1st time"
+]' -p $poe_con
+

@@ -171,7 +171,7 @@ mpush $show_con addshowadm '["gahbnbehaskk"]' -p flonian
 mpush cisumshowman publishshow '[
   "flonian",
   {
-    "show_id": 1764818720074,
+    "show_id": 1764818720084,
     "category": "concert",
     "ticket_transferable": false,
     "ticket_refundable": false,
@@ -182,8 +182,8 @@ mpush cisumshowman publishshow '[
   },
   [
   {
-            "ticket_id": "002101025798798",
-            "token_uri": "https://coral-reasonable-spider-53.mypinata.cloud/ipfs/bafkreigjje3jz6s5xpnajytjbeyc3v64fg6jfxhmp6akljv4gn3anboizq",
+            "ticket_id": "002101025798898",
+            "token_url: "https://coral-reasonable-spider-53.mypinata.cloud/ipfs/bafkreigjje3jz6s5xpnajytjbeyc3v65fg6jfxhmp6akljv4gn3anboizq",
             "ticket_type": "free",
             "price": "300000.0000 VND",
             "price_usdt": "12.0000 USDT",

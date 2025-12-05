@@ -294,7 +294,8 @@ void grab_cisum::setrushsale(const name& submitter,
     });
 }
 
-void grab_cisum::clearsale(const name& submitter, const uint64_t& rush_sale_id) {
+void grab_cisum::delrushsale(const name& submitter,const uint64_t& rush_sale_id, const bool& forced){
+    // --- 权限校验 ---
     if (!(has_auth(get_self()) || has_auth(_gstate.admin))) {
         check(_gstate.oracles.find(submitter) != _gstate.oracles.end(),
               "requires self, admin, or oracle auth");
@@ -304,61 +305,21 @@ void grab_cisum::clearsale(const name& submitter, const uint64_t& rush_sale_id) 
     auto now = current_time_point();
     rush_sale::idx_t rs_idx(get_self(), get_self().value);
     auto rs_itr = rs_idx.find(rush_sale_id);
-    CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found");
-    CHECKC(now > rs_itr->ended_at, err::STATUS_MISMATCH, "rush sale not ended yet");
 
-    {   // 清理 orders
-        order_t::idx_t orders(get_self(), rush_sale_id);
-        for (auto itr = orders.begin(); itr != orders.end(); )
-            itr = orders.erase(itr);
-    }
-
-    {   // 清理 stats
-        grab_stat_t::idx_t stats(get_self(), rush_sale_id);
-        for (auto itr = stats.begin(); itr != stats.end(); )
-            itr = stats.erase(itr);
-    }
-}
-
-void grab_cisum::delrushorder(const name& submitter, const uint64_t& rush_sale_id) {
-    if (!(has_auth(get_self()) || has_auth(_gstate.admin))) {
-        check(_gstate.oracles.find(submitter) != _gstate.oracles.end(),
-              "requires self, admin, or oracle auth");
-        require_auth(submitter);
-    }
-
-    auto now = current_time_point();
-    rush_sale::idx_t rs_idx(get_self(), get_self().value);
-    auto rs_itr = rs_idx.find(rush_sale_id);
     CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found");
 
-    {   // 清理 orders
-        order_t::idx_t orders(get_self(), rush_sale_id);
-        for (auto itr = orders.begin(); itr != orders.end(); )
-            itr = orders.erase(itr);
-    }
-
-}
-
-void grab_cisum::delrushsale(const name& submitter,
-                             const uint64_t& rush_sale_id,
-                             const bool& forced) {
-    if (!(has_auth(get_self()) || has_auth(_gstate.admin))) {
-        check(_gstate.oracles.find(submitter) != _gstate.oracles.end(),
-              "requires self, admin, or oracle auth");
-        require_auth(submitter);
-    }
-
-    rush_sale::idx_t rs_idx(get_self(), get_self().value);
-    auto rs_itr = rs_idx.find(rush_sale_id);
-    CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found");
-
-    auto now = current_time_point();
     if (!forced) {
-        bool is_grabbing = now >= rs_itr->started_at && now <= rs_itr->ended_at &&
-                           rs_itr->available_tickets.amount > 0;
-        CHECKC(!is_grabbing, err::STATUS_MISMATCH, "rush sale still active, cannot delete");
+        bool is_active = now >= rs_itr->started_at && now <= rs_itr->ended_at;
+        CHECKC(!is_active, err::STATUS_MISMATCH, "rush sale still active, cannot delete");
     }
+
+    order_t::idx_t orders(get_self(), rush_sale_id);
+    for (auto itr = orders.begin(); itr != orders.end(); )
+        itr = orders.erase(itr);
+
+    grab_stat_t::idx_t stats(get_self(), rush_sale_id);
+    for (auto itr = stats.begin(); itr != stats.end(); )
+        itr = stats.erase(itr);
 
     rs_idx.erase(rs_itr);
 }
@@ -461,9 +422,7 @@ void grab_cisum::setupgrade(const name& submitter,
 }
 
 
-void grab_cisum::delupgrade(const name& submitter,
-                             const uint64_t& rush_upgrade_id,
-                             const bool& forced) {
+void grab_cisum::delupgrade(const name& submitter, const uint64_t& rush_upgrade_id, const bool& forced) {
     if (!(has_auth(get_self()) || has_auth(_gstate.admin))) {
         check(_gstate.oracles.find(submitter) != _gstate.oracles.end(),
               "requires self, admin, or oracle auth");
@@ -475,10 +434,17 @@ void grab_cisum::delupgrade(const name& submitter,
     CHECKC(ru_itr != ru_idx.end(), err::RECORD_NO_FOUND, "rush upgrade not found");
 
     auto now = current_time_point();
+
     if (!forced) {
-        bool is_grabbing = now >= ru_itr->started_at && now <= ru_itr->ended_at &&
-                           ru_itr->available_tickets.amount > 0;
-        CHECKC(!is_grabbing, err::STATUS_MISMATCH, "rush upgrade still active, cannot delete");
+        bool is_active = now >= ru_itr->started_at && now <= ru_itr->ended_at;
+        CHECKC(!is_active, err::STATUS_MISMATCH, "rush upgrade still active, cannot delete");
+    }
+
+    {
+        upgrade_log_t::idx_t logs(get_self(), rush_upgrade_id);
+        for (auto itr = logs.begin(); itr != logs.end();) {
+            itr = logs.erase(itr);
+        }
     }
 
     ru_idx.erase(ru_itr);
