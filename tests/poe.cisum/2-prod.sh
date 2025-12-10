@@ -154,16 +154,49 @@ mpush $poe_con addrewardact '[
 
 
 
-mpush $poe_con addrewardact '[
+mpush poe.cisum addrewardact '[
   "setnickname",
   "20.0000 CISUM",
   "set your nickname 1st time"
-]' -p $poe_con
+]' -p poe.cisum
 
 
-mpush $poe_con addrewardact '[
+mpush poe.cisum addrewardact '[
   "setavatar",
   "20.0000 CISUM",
   "set your avatar 1st time"
-]' -p $poe_con
+]' -p poe.cisum
+
+
+
+
+mpush poe.cisum addrewardact '[
+  "xcomfollow",
+  "5.0000 CISUM",
+  "Twitter/X user follows Cisumverse artists"
+]' -p poe.cisum
+
+mpush poe.cisum addrewardact '[
+  "xcompost",
+  "15.0000 CISUM",
+  "Twitter/X user posts Cisumverse articles"
+]' -p poe.cisum
+
+mpush poe.cisum addrewardact '[
+  "xcomrepost",
+  "10.0000 CISUM",
+  "Twitter/X user reposts Cisumverse articles"
+]' -p poe.cisum
+
+mpush poe.cisum addrewardact '[
+  "xcomlike",
+  "1.0000 CISUM",
+  "Twitter/X user likes Cisumverse posts"
+]' -p poe.cisum
+
+mpush poe.cisum addrewardact '[
+  "xcomreply",
+  "3.0000 CISUM",
+  "Twitter/X user replies Cisumverse posts"
+]' -p poe.cisum
 

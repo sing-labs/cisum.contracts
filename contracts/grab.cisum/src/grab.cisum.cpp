@@ -314,13 +314,13 @@ void grab_cisum::delrushsale(const name& submitter,const uint64_t& rush_sale_id,
     }
 
     order_t::idx_t orders(get_self(), rush_sale_id);
-    for (auto itr = orders.begin(); itr != orders.end(); )
+    for (auto itr = orders.begin(); itr != orders.end(); ){
         itr = orders.erase(itr);
-
+    }
     grab_stat_t::idx_t stats(get_self(), rush_sale_id);
-    for (auto itr = stats.begin(); itr != stats.end(); )
+    for (auto itr = stats.begin(); itr != stats.end(); ){
         itr = stats.erase(itr);
-
+    }
     rs_idx.erase(rs_itr);
 }
 
@@ -440,12 +440,8 @@ void grab_cisum::delupgrade(const name& submitter, const uint64_t& rush_upgrade_
         CHECKC(!is_active, err::STATUS_MISMATCH, "rush upgrade still active, cannot delete");
     }
 
-    {
-        upgrade_log_t::idx_t logs(get_self(), rush_upgrade_id);
-        for (auto itr = logs.begin(); itr != logs.end();) {
-            itr = logs.erase(itr);
-        }
-    }
+    upgrade_log_t::idx_t logs(get_self(), rush_upgrade_id);
+    CHECKC(logs.begin() == logs.end(),err::STATUS_MISMATCH,"cannot delete rush upgrade: users have already participated");
 
     ru_idx.erase(ru_itr);
 }
@@ -706,8 +702,7 @@ void grab_cisum::notifyticket(const string& grab_id,
 }
 
 
-void grab_cisum::clearupgrade(const name& submitter, const uint64_t& rush_upgrade_id)
-{
+void grab_cisum::clearupgrade(const name& submitter, const uint64_t& rush_upgrade_id, const bool& forced){
     if (!(has_auth(get_self()) || has_auth(_gstate.admin))) {
         check(_gstate.oracles.find(submitter) != _gstate.oracles.end(),
               "requires self, admin, or oracle auth");
@@ -718,9 +713,10 @@ void grab_cisum::clearupgrade(const name& submitter, const uint64_t& rush_upgrad
     auto upg_it = rush_tbl.find(rush_upgrade_id);
     check(upg_it != rush_tbl.end(), "[clearupg] rush_upgrade not found");
 
-    // 确认活动结束
-    const auto now = current_time_point();
-    check(now > upg_it->ended_at, "[clearupg] upgrade rush not ended yet");
+    if (!forced) {
+        const auto now = current_time_point();
+        check(now > upg_it->ended_at, "[clearupg] upgrade rush not ended yet");
+    }
 
     // 获取日志表（scope = rush_upgrade_id）
     upgrade_log_t::idx_t logs(get_self(), rush_upgrade_id);

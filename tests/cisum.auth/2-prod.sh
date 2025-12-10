@@ -80,3 +80,7 @@ mpush cisum.auth addroleperm '["flonian","ops",["rushsaleTicket","customerMgmt"]
 
 
 mpush cisum.auth addroleperm '["flonian","admin",["taskMgmt"],"taskMgmt"]'   -p flonian
+
+
+
+mpush cisum.auth addroleperm '["flonian","admin",["delShow"],"delete show"]'   -p flonian

@@ -95,7 +95,7 @@ mpush ticket.cvnft transfer '["acctaa1aaa33","grab.cisum",[{"amount":1,"symbol":
 
 
 
-mpush grab.cisum setrushsale '["flonian",23,105,null,"2025-11-21T03:53:51.000"]' -p flonian
+mpush grab.cisum setrushsale '["flonian",80,105,null,"2025-11-21T03:53:51.000"]' -p flonian
 
 
 mpush grab.cisum setupgrade '["flonian",12,10000,"2025-11-01T00:00:00.000","2025-11-21T03:53:51.000"]' -p flonian
@@ -104,4 +104,12 @@ mpush grab.cisum setupgrade '["flonian",12,10000,"2025-11-01T00:00:00.000","2025
 
 mpush grab.cisum setrushsale '["flonian",50,null,null,"2025-11-01T00:00:00.000",null]' -p flonian
 
+
+
+
+
+mpush grab.cisum clearsale '["flonian",5]' -p flonian
+
+
+mpush grab.cisum delrushsale '["flonian",28,false]' -p flonian
 

@@ -65,9 +65,7 @@ public:
      * Delete a rush sale (optionally forced).
      * 权限：合约自身 / admin / oracle
      */
-    ACTION delrushsale(const name& submitter,
-                       const uint64_t& rush_sale_id,
-                       const bool& forced);
+    ACTION delrushsale(const name& submitter,const uint64_t& rush_sale_id,const bool& forced);
 
 
     ACTION addupgrade(const name& submitter,
@@ -83,9 +81,9 @@ public:
                                 std::optional<time_point> started_at,
                              std::optional<time_point> ended_at);
 
-    ACTION delupgrade(const name& submitter,
-                             const uint64_t& rush_upgrade_id,
-                             const bool& forced);
+    ACTION delupgrade(const name& submitter,const uint64_t& rush_upgrade_id,const bool& forced);
+
+    ACTION clearupgrade(const name& submitter, const uint64_t& rush_upgrade_id, const bool& forced);
     /**
      * Add or update allowed token.
      * 权限：合约自身 / admin
@@ -129,8 +127,6 @@ public:
                             const name& to,
                             const vector<nasset>& assets,
                             const std::string& memo);
-
-    ACTION clearupgrade(const name& submitter, const uint64_t& rush_upgrade_id);
 
     // -------- inline wrappers --------
     using init_action         = action_wrapper<"init"_n,         &grab_cisum::init>;
