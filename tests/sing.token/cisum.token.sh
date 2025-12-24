@@ -39,3 +39,6 @@ mpush sing.token transfer '["flonian", "cv1anal1acjh", "100000.00000000 SING", "
 mpush sing.token transfer '["gahbnbehaskk", "flonian", "2000.00000000 SING", "airdrop"]' -p gahbnbehaskk
 
 
+mpush sing.token transfer '["flonian", "mywallet2", "4000.00000000 SING", "airdrop"]' -p flonian
+
+

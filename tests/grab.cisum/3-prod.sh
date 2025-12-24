@@ -76,3 +76,6 @@ oracle=cisumgrabops
 grab_con=grab.cisum
 mpush $grab_con addoracle '["'"$oracle"'"]' -p $grab_con
 
+
+
+mpush cisum.token transfer '["flonian","grab.cisum","100.0000 CISUM","grab:80:a1799ae8e1ea72a20a5f577106442143"]' -p flonian

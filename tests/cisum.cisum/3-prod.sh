@@ -52,3 +52,8 @@ mpush cisum.token transfer '["flonian","gahbnbehaskk", "400.0000 CISUM", "bootst
 
 
 mpush cisum.token transfer '["gahbnbehaskk","grab.cisum", "100.0000 CISUM", "grab:23:a1799ae8e1ea62a20etg5f56710342a235"]' -p gahbnbehaskk
+
+mpush cisum.token transfer '["flonian","mywallet2", "4000.00000000 CISUM", "bootstrap"]' -p flonian
+
+mpush cisum.token transfer '["flonian","cvm22kdqd3k4", "4000.00000000 CISUM", "bootstrap"]' -p flonian
+

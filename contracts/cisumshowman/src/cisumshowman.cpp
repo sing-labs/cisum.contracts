@@ -86,56 +86,74 @@ void cisumshow::publishshow(name creator,
 // ======================================================
 //  激活升级票 — 手动传入 ticket_info 向 grab 注册
 // ======================================================
-void cisumshow::addupgrades(const name& creator,const uint64_t&   show_id,const vector<ticket_info>& tickets)
-{
+void cisumshow::addupgrades(const name& creator,const uint64_t& show_id,const vector<ticket_info>& tickets,const name& activity_type) {
     require_auth(creator);
 
-    // 获取 grab 升级全局状态
-    auto grab_global = global1_singleton(GRAB_CONTRACT, GRAB_CONTRACT.value);
-    auto gstate      = grab_global.get_or_default();
+    // -------- 1. activity_type 校验 --------
+    const bool is_rushsale    = (activity_type == "rushsale"_n);
+    const bool is_rushupgrade = (activity_type == "rushupgrade"_n);
+
+    check(is_rushsale || is_rushupgrade, "invalid activity_type");
+
+    // -------- 2. grab 全局状态 --------
+    global1_singleton grab_global(GRAB_CONTRACT, GRAB_CONTRACT.value);
+    auto gstate = grab_global.get_or_default();
+
     uint64_t next_rush_id = gstate.last_rush_sale_id;
 
+    // -------- 3. 遍历票种 --------
     for (const auto& tk : tickets) {
 
+        // upgrade 必须有 pay_ticket
+        if (is_rushupgrade) {
+            check(tk.pay_ticket.amount > 0 && tk.pay_ticket.symbol.is_valid(),"rushupgrade requires valid pay_ticket");
+        }
+
+        // 统一生成 rush_id
         next_rush_id += 1;
-        if (to_lower(tk.ticket_type) == "free") {
-            uint64_t rush_sale_id = next_rush_id;
-            ADDRUSHSALE(GRAB_CONTRACT,
-                        _self,
-                        show_id,
-                        tk.ticket_id,
-                        tk.sale_started_at,
-                        tk.sale_ended_at,
-                        tk.price,
-                        tk.max_grabs_per_user,
-                        tk.win_ratio);
+        const uint64_t rush_id = next_rush_id;
 
-            nasset issue_qty{ tk.total_count, nsymbol(tk.ticket_id) };
-            auto memo = "addrushsale:" + std::to_string(rush_sale_id) + ":" + std::to_string(show_id);
-            ISSUE_TO_GRAB(SHOW_CONTRACT, _self, GRAB_CONTRACT, issue_qty, memo);
-        }
-        else{
-            const bool has_pay_ticket = (tk.pay_ticket.amount > 0 && tk.pay_ticket.symbol.is_valid());
-            if (!has_pay_ticket) continue;
-            uint64_t rush_upgrade_id = next_rush_id;
-            // ---- 注册 upgrade ----
-            ADDUPGRADE(GRAB_CONTRACT,
-                    _self,
-                    show_id,
-                    tk.ticket_id,
-                    tk.pay_ticket,
-                    tk.sale_started_at,
-                    tk.sale_ended_at,
-                    tk.win_ratio);
+        // -------- 4. 注册活动 --------
+        if (is_rushsale) {
+            ADDRUSHSALE(
+                GRAB_CONTRACT,
+                _self,
+                show_id,
+                tk.ticket_id,
+                tk.sale_started_at,
+                tk.sale_ended_at,
+                tk.price,
+                tk.max_grabs_per_user,
+                tk.win_ratio
+            );
 
-            // ---- 转 NFT 到 grab ----
-            nasset issue_qty{ tk.total_count, nsymbol(tk.ticket_id) };
-            auto memo = "addrushupgrade:" + std::to_string(rush_upgrade_id) + ":"+ std::to_string(show_id);
-            ISSUE_TO_GRAB(SHOW_CONTRACT, _self, GRAB_CONTRACT, issue_qty, memo);
+        } else { // rushupgrade
+            ADDUPGRADE(
+                GRAB_CONTRACT,
+                _self,
+                show_id,
+                tk.ticket_id,
+                tk.pay_ticket,
+                tk.sale_started_at,
+                tk.sale_ended_at,
+                tk.win_ratio
+            );
         }
 
+        // -------- 5. 发行 NFT 到 grab --------
+        nasset issue_qty{ tk.total_count, nsymbol(tk.ticket_id) };
 
+        std::string memo =
+            (is_rushsale ? "addrushsale:" : "addrushupgrade:")
+            + std::to_string(rush_id)
+            + ":" + std::to_string(show_id);
+
+        ISSUE_TO_GRAB(SHOW_CONTRACT,_self,GRAB_CONTRACT,issue_qty,memo);
     }
+
+    // -------- 6. 回写全局状态（必须） --------
+    gstate.last_rush_sale_id = next_rush_id;
+    grab_global.set(gstate, GRAB_CONTRACT);
 }
 
 } // namespace flon
