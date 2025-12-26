@@ -35,11 +35,12 @@ struct ticket_info {
     time_point sale_ended_at;             // 售票结束
     uint32_t   win_ratio;                 // 抢票中奖率（万分比，0-10000）
     uint32_t   max_grabs_per_user;        // 每人最大抢票数
+    name       activity_type;             // 活动类型（rushsale / rushupgrade）
 
     EOSLIB_SERIALIZE(ticket_info,
         (ticket_id)(token_uri)(ticket_type)(price)(price_usdt)(pay_ticket)
         (total_count)(prerequisite_ticket_id)
-        (sale_started_at)(sale_ended_at)(win_ratio)(max_grabs_per_user)
+        (sale_started_at)(sale_ended_at)(win_ratio)(max_grabs_per_user)(activity_type)
     )
 };
 

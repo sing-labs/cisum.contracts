@@ -86,35 +86,32 @@ void cisumshow::publishshow(name creator,
 // ======================================================
 //  激活升级票 — 手动传入 ticket_info 向 grab 注册
 // ======================================================
-void cisumshow::addupgrades(const name& creator,const uint64_t& show_id,const vector<ticket_info>& tickets,const name& activity_type) {
+void cisumshow::addupgrades(const name& creator,const uint64_t& show_id,const vector<ticket_info>& tickets) {
     require_auth(creator);
 
-    // -------- 1. activity_type 校验 --------
-    const bool is_rushsale    = (activity_type == "rushsale"_n);
-    const bool is_rushupgrade = (activity_type == "rushupgrade"_n);
-
-    check(is_rushsale || is_rushupgrade, "invalid activity_type");
-
-    // -------- 2. grab 全局状态 --------
+    // -------- 1. grab 全局状态 --------
     global1_singleton grab_global(GRAB_CONTRACT, GRAB_CONTRACT.value);
     auto gstate = grab_global.get_or_default();
 
     uint64_t next_rush_id = gstate.last_rush_sale_id;
 
-    // -------- 3. 遍历票种 --------
+    // -------- 2. 遍历票种 --------
     for (const auto& tk : tickets) {
 
-        // upgrade 必须有 pay_ticket
-        if (is_rushupgrade) {
-            check(tk.pay_ticket.amount > 0 && tk.pay_ticket.symbol.is_valid(),"rushupgrade requires valid pay_ticket");
-        }
+        // -------- 2.1 activity_type 校验（票级）--------
+        const bool is_rushsale    = (tk.activity_type == "rushsale"_n);
+        const bool is_rushupgrade = (tk.activity_type == "rushupgrade"_n);
 
-        // 统一生成 rush_id
+        check(is_rushsale || is_rushupgrade,"invalid ticket activity_type");
+        check(tk.total_count > 0, "total_count must be > 0");
+        // -------- 2.3 生成 rush_id --------
         next_rush_id += 1;
         const uint64_t rush_id = next_rush_id;
 
-        // -------- 4. 注册活动 --------
+        // -------- 2.4 注册活动 --------
         if (is_rushsale) {
+            check(tk.price.amount > 0,"rushsale requires price.amount > 0");
+
             ADDRUSHSALE(
                 GRAB_CONTRACT,
                 _self,
@@ -124,10 +121,10 @@ void cisumshow::addupgrades(const name& creator,const uint64_t& show_id,const ve
                 tk.sale_ended_at,
                 tk.price,
                 tk.max_grabs_per_user,
-                tk.win_ratio
-            );
+                tk.win_ratio);
 
         } else { // rushupgrade
+            check(tk.pay_ticket.amount > 0 && tk.pay_ticket.symbol.is_valid(),"rushupgrade requires valid pay_ticket");
             ADDUPGRADE(
                 GRAB_CONTRACT,
                 _self,
@@ -136,11 +133,10 @@ void cisumshow::addupgrades(const name& creator,const uint64_t& show_id,const ve
                 tk.pay_ticket,
                 tk.sale_started_at,
                 tk.sale_ended_at,
-                tk.win_ratio
-            );
+                tk.win_ratio);
         }
 
-        // -------- 5. 发行 NFT 到 grab --------
+        // -------- 2.5 发行 NFT 到 grab --------
         nasset issue_qty{ tk.total_count, nsymbol(tk.ticket_id) };
 
         std::string memo =
@@ -151,9 +147,6 @@ void cisumshow::addupgrades(const name& creator,const uint64_t& show_id,const ve
         ISSUE_TO_GRAB(SHOW_CONTRACT,_self,GRAB_CONTRACT,issue_qty,memo);
     }
 
-    // -------- 6. 回写全局状态（必须） --------
-    gstate.last_rush_sale_id = next_rush_id;
-    grab_global.set(gstate, GRAB_CONTRACT);
 }
 
 } // namespace flon

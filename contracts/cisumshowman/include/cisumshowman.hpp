@@ -27,7 +27,7 @@ public:
                    const show_info& show,
                    const std::vector<ticket_info>& tickets);
 
-  ACTION addupgrades(const name& creator,const uint64_t&   show_id,const vector<ticket_info>& tickets,const name& activity_type);
+  ACTION addupgrades(const name& creator,const uint64_t&   show_id,const vector<ticket_info>& tickets);
 
 
   using publishshow_action = eosio::action_wrapper<"publishshow"_n, &cisumshow::publishshow>;

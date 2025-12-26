@@ -87,7 +87,8 @@ mpush $ops_con addupgrades '[
       "sale_started_at": "2025-09-26T08:07:42",
       "sale_ended_at":   "2025-11-30T18:00:00",
       "win_ratio":1000,
-      "max_grabs_per_user":0
+      "max_grabs_per_user":0,
+      "activity_type":'rushupgrade'
     },
     {
       "ticket_id": 2101025921841,
@@ -101,7 +102,8 @@ mpush $ops_con addupgrades '[
       "sale_started_at": "2025-09-26T08:07:42",
       "sale_ended_at":   "2025-11-30T18:00:00",
       "win_ratio":1000,
-      "max_grabs_per_user":4
+      "max_grabs_per_user":4,
+      "activity_type":'rushsale'
     }
   ]
 ]' -p   flonian
