@@ -417,7 +417,7 @@ void show::issue(const name&     submitter,
     tks.modify(it, same_payer, [&](auto& r){
       r.sold_count   += ticket_count;
       check(r.sold_count <= r.total_count, "sold overflow");
-      r.stock_count   = r.total_count - r.sold_count;
+      r.stock_count  -= ticket_count;
       r.issued_count += ticket_count;
       r.updated_at    = t;
     });
