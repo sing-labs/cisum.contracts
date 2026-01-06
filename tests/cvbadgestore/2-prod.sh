@@ -125,7 +125,30 @@ mpush badge.cvnft settokenuri '[
 
 
 
-mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"value":"4000000001"}}],"test1"]' -p badgecvstore
+mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"nid":"4000000001"}}],"test1"]' -p badgecvstore
 mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"value":"4000000002"}}],"test1"]' -p badgecvstore
 mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"value":"4000000003"}}],"test1"]' -p badgecvstore
 mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"value":"4000000004"}}],"test1"]' -p badgecvstore
+
+
+mpush $stor_con addwhitelist '["cisum.admin"]' -p $stor_con
+
+mpush badgecvstore award '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"nid":"5000000001"}}],"test1"]' -p badgecvstore
+
+
+mpush $badge_ntoken create '[
+  "'"${stor_con}"'",
+  10000000000,
+  {"nid":"5000000001"},
+  "https://coral-reasonable-spider-53.mypinata.cloud/ipfs/bafkreiahn5aadigbr6574k27zwjxxpryylysixlpxjrcyrf445scmx56ba",
+  "'"${stor_con}"'"
+]' -p $stor_con
+
+
+mpush $badge_ntoken issue '[
+  "'"${stor_con}"'",
+  {"amount": 100000000, "symbol": {"nid":"5000000001"}},
+  "bootstrap batch"
+]' -p $stor_con
+
+

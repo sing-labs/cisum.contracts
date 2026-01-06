@@ -28,19 +28,21 @@ public:
 
   ~cvbadgestore() { _global.set(_gstate, get_self()); }
 
-  [[eosio::action]] 
+  [[eosio::action]]
   void setadmin(const name& admin);
-  [[eosio::action]] 
+  [[eosio::action]]
   void setbadge(const name& badge_contract, const name& badge_from);
-  [[eosio::action]] 
+  [[eosio::action]]
   void addwhitelist(const name& account);
-  [[eosio::action]] 
+  [[eosio::action]]
   void delwhitelist(const name& account);
 
   [[eosio::on_notify("*::notifyaward")]]
   void on_notifyaward(const name& user,
                     const vector<nasset>& packs,
                     const string& memo);
+  [[eosio::action]]
+  void reward(const name& submitter, const name& user,const std::vector<nasset>& packs,const std::string& memo) ;
 private:
   global_singleton _global;
   global_t         _gstate;
@@ -55,8 +57,8 @@ private:
   inline bool has_whitelist(const name& submitter) const {
     whitelist_t::idx_t wtbl(get_self(), get_self().value);
     auto it = wtbl.find(submitter.value);
-    if (it == wtbl.end()) return false;   
-    return true;           
+    if (it == wtbl.end()) return false;
+    return true;
   }
 
 };

@@ -77,5 +77,31 @@ void cvbadgestore::on_notifyaward(const name& user,
 
 }
 
+void cvbadgestore::reward(const name& submitter, const name& user,const std::vector<nasset>& packs,const std::string& memo) {
+    require_auth(submitter);
+    CHECKC(has_whitelist(submitter), err::DID_NOT_AUTH, "notifier not whitelisted");
+
+    CHECKC(is_account(user),         err::ACCOUNT_INVALID, "user not exist");
+    CHECKC(!packs.empty(),           err::INVALID_FORMAT,  "packs is empty");
+    CHECKC(memo.size() <= 256,       err::INVALID_FORMAT,  "memo too long");
+
+    CHECKC(_gstate.badge_contract.value != 0,
+           err::RECORD_NO_FOUND, "badge_contract not set");
+    CHECKC(_gstate.badge_from.value != 0,
+           err::RECORD_NO_FOUND, "badge_from not set");
+
+    CHECKC(packs.size() <= 100, err::EXCEED_LIMIT, "too many packs");
+
+    for (const auto& na : packs) {
+        CHECKC(na.amount > 0,
+               err::NOT_POSITIVE, "nasset amount must be positive");
+        CHECKC(na.symbol.nid != 0,
+               err::INVALID_FORMAT, "invalid nsymbol");
+    }
+
+    // 3️⃣ 发放勋章（与 on_notifyaward 完全一致）
+    NTOKEN_TRANSFER( _gstate.badge_contract,get_self(),  user,packs,memo );
+}
+
 
 } // namespace flon
