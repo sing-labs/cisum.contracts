@@ -525,6 +525,24 @@ void show::issuetograb(const name&  submitter,const name& to, const nasset& quan
     }.send(get_self(), to, std::vector<nasset>{ quantity }, target_memo );
 }
 
+void show::retire(const uint64_t&  show_id,const nasset& quantity)
+{
+    require_auth(get_self());
+    check(quantity.amount > 0, "quantity must be positive");
+
+    // 更新票档库存
+    ticket_t::ticketidx tickets(get_self(), show_id);
+    auto itr = tickets.find( quantity.symbol.nid );
+    check(itr != tickets.end(), "ticket not found for this symbol");
+
+    tickets.modify(itr, same_payer, [&](auto& row){
+      check(row.stock_count >= static_cast<uint64_t>(quantity.amount), "insufficient stock");
+      row.stock_count -= static_cast<uint64_t>(quantity.amount);
+      row.total_count -= static_cast<uint64_t>(quantity.amount);
+      row.updated_at = current_time_point();
+    });
+}
+
 void show::buyticket(const name&  submitter,
                      const name&          payer,
                      const asset&         pay_amount,

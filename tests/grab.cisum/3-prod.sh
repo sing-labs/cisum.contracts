@@ -79,3 +79,17 @@ mpush $grab_con addoracle '["'"$oracle"'"]' -p $grab_con
 
 
 mpush cisum.token transfer '["flonian","grab.cisum","100.0000 CISUM","grab:80:a1799ae8e1ea72a20a5f577106442143"]' -p flonian
+
+
+
+
+
+
+mpush grab.cisum delrushsale '["cisumverseop",16,true]' -p cisumverseop
+mpush grab.cisum delrushsale '["cisumverseop",14,true]' -p cisumverseop
+mpush grab.cisum delrushsale '["cisumverseop",17,true]' -p cisumverseop
+mpush grab.cisum delrushsale '["cisumverseop",15,true]' -p cisumverseop
+mpush grab.cisum delrushsale '["cisumverseop",13,true]' -p cisumverseop
+
+
+ACTION delrushsale(const name& submitter,const uint64_t& rush_sale_id,const bool& forced);

@@ -35,3 +35,24 @@ mpush ticket.cvnft  settokenuri '[002101025074572,"https://maroon-worried-fly-57
 mpush ticket.cvnft  settokenuri '[002101025210526,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreid54gfebrzq5y3c2k5xjchaavy3z56rg4zo2nphcjqakdiqh7p46y"]'   -p ticket.cvnft
 
 
+mpush ticket.cvnft  transfer '["grab.cisum","show.cisum",[{"amount":12,"symbol":{"nid":2101025560214}}],"initial badge"]' -p grab.cisum
+
+mpush ticket.cvnft  transfer '["grab.cisum","show.cisum",[{"amount":12,"symbol":{"nid":2101025933580}}],"initial badge"]' -p grab.cisum
+
+mpush ticket.cvnft  transfer '["grab.cisum","show.cisum",[{"amount":12,"symbol":{"nid":2101025260182}}],"initial badge"]' -p grab.cisum
+
+mpush ticket.cvnft  transfer '["grab.cisum","show.cisum",[{"amount":12,"symbol":{"nid":2101025969114}}],"initial badge"]' -p grab.cisum
+
+mpush ticket.cvnft  transfer '["grab.cisum","show.cisum",[{"amount":12,"symbol":{"nid":2101025452032}}],"initial badge"]' -p grab.cisum
+
+mpush ticket.cvnft  retire '[{"amount":12,"symbol":{"nid":2101025560214}},"retire"]'  -p show.cisum
+
+mpush ticket.cvnft  retire '[{"amount":12,"symbol":{"nid":2101025933580}},"retire"]'  -p show.cisum
+
+mpush ticket.cvnft  retire '[{"amount":12,"symbol":{"nid":2101025260182}},"retire"]'  -p show.cisum
+
+mpush ticket.cvnft  retire '[{"amount":12,"symbol":{"nid":2101025969114}},"retire"]'  -p show.cisum
+
+mpush ticket.cvnft  retire '[{"amount":12,"symbol":{"nid":2101025452032}},"retire"]'  -p show.cisum
+
+retire( const nasset& quantity, const string& memo )

@@ -151,7 +151,7 @@ public:
 
   ACTION issuetograb(const name&  submitter,const name& to, const nasset& quantity, const string& memo);
 
-
+  ACTION retire(const uint64_t&  show_id,const nasset& quantity);
 
   using createnft_action      = eosio::action_wrapper<"createnft"_n,&show::createnft>;
   using notenftissue_action     = eosio::action_wrapper<"notenftissue"_n,&show::notenftissue>;

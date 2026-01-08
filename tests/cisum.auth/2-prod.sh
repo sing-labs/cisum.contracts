@@ -89,3 +89,11 @@ mpush cisum.auth addroleperm '["flonian","admin",["delShow"],"delete show"]'   -
 mpush cisum.auth addroleperm '["flonian","admin",["pushMgmt"],"pushMgmt"]'   -p flonian
 
 mpush cisum.auth addroleperm '["flonian","admin",["statisticsMgmt"],"statisticsMgmt"]'   -p flonian
+
+
+
+mpush cisum.auth addroleperm '["flonian","admin",["linksMgmt"],"linksMgmt"]'   -p flonian
+
+
+
+
