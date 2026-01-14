@@ -89,7 +89,25 @@ mpush grab.cisum delrushsale '["cisumverseop",16,true]' -p cisumverseop
 mpush grab.cisum delrushsale '["cisumverseop",14,true]' -p cisumverseop
 mpush grab.cisum delrushsale '["cisumverseop",17,true]' -p cisumverseop
 mpush grab.cisum delrushsale '["cisumverseop",15,true]' -p cisumverseop
-mpush grab.cisum delrushsale '["cisumverseop",13,true]' -p cisumverseop
+mpush grab.cisum delrushsale '["cisumverseop",23,true]' -p cisumverseop
 
 
-ACTION delrushsale(const name& submitter,const uint64_t& rush_sale_id,const bool& forced);
+mpush grab.cisum delrushsale '["cisumverseop",23,true]' -p cisumverseop
+
+mpush grab.cisum delupgrade '["cisumverseop",23,true]' -p cisumverseop
+
+
+
+
+
+2026-04-120T21:00:00.000
+
+
+mpush grab.cisum setrushsale '["ful4oe5culzv",18,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
+mpush grab.cisum setrushsale '["ful4oe5culzv",19,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
+mpush grab.cisum setrushsale '["ful4oe5culzv",20,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
+
+
+mpush show.cisum setshow '["ful4oe5culzv",1768217670078,"concert",false,false,"2026-04-12T21:00:00.000","2026-04-12T21:00:00.000","2026 2Z GloryDayz in Brazil",""]' -p ful4oe5culzv
+
+

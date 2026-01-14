@@ -36,12 +36,9 @@ mpush show.cisum setshow '["ful4oe5culzv",1766569727072,"concert",false,false,"2
 
 
 
-setshow(const name& submitter,
-                   const uint64_t&   show_id,
-                   const name&       category,
-                   const bool&       ticket_transferable,
-                   const bool&       ticket_refundable,
-                   const time_point& '2026-01-18T12:00:45.000',
-                   const time_point& '2026-01-18T12:00:45.000',
-                   const string&       '',
-                   const string&       show_address)
+
+
+
+
+
+mpush show.cisum  retire '[20250106,{"amount":5,"symbol":{"nid":21010001000011009}}]'  -p show.cisum
