@@ -82,8 +82,6 @@ public:
                              std::optional<time_point> ended_at);
 
     ACTION delupgrade(const name& submitter,const uint64_t& rush_upgrade_id,const bool& forced);
-
-    ACTION clearupgrade(const name& submitter, const uint64_t& rush_upgrade_id, const bool& forced);
     /**
      * Add or update allowed token.
      * 权限：合约自身 / admin

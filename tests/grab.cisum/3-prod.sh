@@ -92,9 +92,9 @@ mpush grab.cisum delrushsale '["cisumverseop",15,true]' -p cisumverseop
 mpush grab.cisum delrushsale '["cisumverseop",23,true]' -p cisumverseop
 
 
-mpush grab.cisum delrushsale '["cisumverseop",23,true]' -p cisumverseop
+mpush grab.cisum delrushsale '["flonian",23,true]' -p flonian
 
-mpush grab.cisum delupgrade '["cisumverseop",23,true]' -p cisumverseop
+mpush grab.cisum delupgrade '["flonian",23,true]' -p flonian
 
 
 

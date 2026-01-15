@@ -294,7 +294,9 @@ void grab_cisum::setrushsale(const name& submitter,
     });
 }
 
-void grab_cisum::delrushsale(const name& submitter,const uint64_t& rush_sale_id, const bool& forced){
+static constexpr uint32_t MAX_CLEAR = 1000;
+
+void grab_cisum::delrushsale(const name& submitter, const uint64_t& rush_sale_id, const bool& forced){
     // --- 权限校验 ---
     if (!(has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin))) {
         require_perm(submitter, "show");
@@ -303,20 +305,40 @@ void grab_cisum::delrushsale(const name& submitter,const uint64_t& rush_sale_id,
     auto now = current_time_point();
     rush_sale::idx_t rs_idx(get_self(), get_self().value);
     auto rs_itr = rs_idx.find(rush_sale_id);
-
     CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found");
+
     bool is_active = now >= rs_itr->started_at && now <= rs_itr->ended_at;
-    CHECKC(!is_active, err::STATUS_MISMATCH, "rush sale still active, cannot delete");
+    CHECKC(forced || !is_active, err::STATUS_MISMATCH, "rush sale still active, cannot delete");
 
-
+    // 1. 删除 orders（限额）
     order_t::idx_t orders(get_self(), rush_sale_id);
-    for (auto itr = orders.begin(); itr != orders.end(); ){
-        itr = orders.erase(itr);
+    uint32_t cnt = 0;
+    auto oitr = orders.begin();
+    while (oitr != orders.end() && cnt < MAX_CLEAR) {
+        oitr = orders.erase(oitr);
+        cnt++;
     }
+
+    if (oitr != orders.end()) {
+        // orders 还没删完，下次再调
+        return;
+    }
+
+    // 2. 删除 stats（限额）
     grab_stat_t::idx_t stats(get_self(), rush_sale_id);
-    for (auto itr = stats.begin(); itr != stats.end(); ){
-        itr = stats.erase(itr);
+    cnt = 0;
+    auto sitr = stats.begin();
+    while (sitr != stats.end() && cnt < MAX_CLEAR) {
+        sitr = stats.erase(sitr);
+        cnt++;
     }
+
+    if (sitr != stats.end()) {
+        // stats 还没删完，下次再调
+        return;
+    }
+
+    // 3. 删除 rush_sale 本体
     rs_idx.erase(rs_itr);
 }
 
@@ -417,31 +439,7 @@ void grab_cisum::setupgrade(const name& submitter,
     });
 }
 
-
-void grab_cisum::delupgrade(const name& submitter, const uint64_t& rush_upgrade_id, const bool& forced) {
-    if (!(has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin))) {
-        require_perm(submitter, "show");
-    }
-
-    rush_upgrade::idx_t ru_idx(get_self(), get_self().value);
-    auto ru_itr = ru_idx.find(rush_upgrade_id);
-    CHECKC(ru_itr != ru_idx.end(), err::RECORD_NO_FOUND, "rush upgrade not found");
-
-    auto now = current_time_point();
-    bool is_active = now >= ru_itr->started_at && now <= ru_itr->ended_at;
-    CHECKC(!is_active, err::STATUS_MISMATCH, "rush upgrade still active, cannot delete");
-
-    upgrade_log_t::idx_t logs(get_self(), rush_upgrade_id);
-    CHECKC(logs.begin() == logs.end(),err::STATUS_MISMATCH,"cannot delete rush upgrade: users have already participated");
-
-    ru_idx.erase(ru_itr);
-}
-
-
-void grab_cisum::on_transfer_cisum(const name& from,
-                                    const name& to,
-                                    const asset& quantity,
-                                    const string& memo) {
+void grab_cisum::on_transfer_cisum(const name& from, const name& to,const asset& quantity, const string& memo) {
     if (from == get_self() || to != get_self()) return;
 
     // 校验 token
@@ -692,47 +690,42 @@ void grab_cisum::notifyticket(const string& grab_id,
     require_recipient(user);
 }
 
+static constexpr uint32_t MAX_UPGRADE = 100;
 
-void grab_cisum::clearupgrade(const name& submitter, const uint64_t& rush_upgrade_id, const bool& forced){
-    if (!(has_auth(get_self()) || has_auth(_gstate.admin))) {
-        check(_gstate.oracles.find(submitter) != _gstate.oracles.end(),
-              "requires self, admin, or oracle auth");
-        require_auth(submitter);
+void grab_cisum::delupgrade(const name& submitter, const uint64_t& rush_upgrade_id, const bool& forced){
+    if (!(has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin))) {
+        require_perm(submitter, "show");
     }
-    // 查 rush_upgrade 表
+
     rush_upgrade::idx_t rush_tbl(get_self(), get_self().value);
     auto upg_it = rush_tbl.find(rush_upgrade_id);
     check(upg_it != rush_tbl.end(), "[clearupg] rush_upgrade not found");
 
-    if (!forced) {
-        const auto now = current_time_point();
-        check(now > upg_it->ended_at, "[clearupg] upgrade rush not ended yet");
-    }
+    const auto now = current_time_point();
+    check(now > upg_it->ended_at, "[clearupg] upgrade rush not ended yet");
 
-    // 获取日志表（scope = rush_upgrade_id）
+    // ---------- 分页清理 logs ----------
     upgrade_log_t::idx_t logs(get_self(), rush_upgrade_id);
 
-    // 循环处理所有日志
-    for (auto it = logs.begin(); it != logs.end(); ) {
-        const auto& log = *it;
+    uint32_t cnt = 0;
+    auto it = logs.begin();
+
+    while (it != logs.end() && cnt < MAX_UPGRADE) {
+        const auto log = *it;
 
         const nasset from_ticket = log.from;
         const nasset to_ticket   = log.to;
         const name   user        = log.account;
 
         if (to_ticket.amount > 0) {
-            // 中奖：转票给固定账号，用来销毁
-            name reward_account = "oooo"_n;
-
-             TRANSFER_NFT_OUT(
+            name burn_account = "oooo"_n;
+            TRANSFER_NFT_OUT(
                 _gstate.ticket_contract,
-                reward_account,
+                burn_account,
                 std::vector<nasset>{ from_ticket },
-                 "burn used ticket (rushupgrade:" + std::to_string(rush_upgrade_id) + ")"
+                "burn used ticket (rushupgrade:" + std::to_string(rush_upgrade_id) + ")"
             );
-
         } else {
-            // 未中奖：退回 pay_ticket
             TRANSFER_NFT_OUT(
                 _gstate.ticket_contract,
                 user,
@@ -742,8 +735,16 @@ void grab_cisum::clearupgrade(const name& submitter, const uint64_t& rush_upgrad
         }
 
         it = logs.erase(it);
+        cnt++;
     }
 
+    // 还有没处理完的日志，下次再调
+    if (it != logs.end()) {
+        return;
+    }
+
+    // ---------- 所有日志处理完，删除 rush_upgrade ----------
+    rush_tbl.erase(upg_it);
 }
 
 } // namespace flon
