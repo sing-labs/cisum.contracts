@@ -124,7 +124,7 @@ public:
                  const string&              memo);
 
   // ===== 批量赠送 =====
-  ACTION giftbatch(const name&         oper,
+  ACTION batchreward(const name&         oper,
                      const uint64_t&        show_id,
                      const uint64_t&        ticket_id,
                      const uint32_t&        ticket_count,

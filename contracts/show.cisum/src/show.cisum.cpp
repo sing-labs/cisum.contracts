@@ -423,7 +423,7 @@ void show::issue(const name&     submitter,
     });
 }
 
-void show::giftbatch(const name&          oper,
+void show::batchreward(const name&        oper,
                      const uint64_t&      show_id,
                      const uint64_t&      ticket_id,
                      const uint32_t&      ticket_count,
@@ -456,10 +456,10 @@ void show::giftbatch(const name&          oper,
     CHECKC(total_need <= stock_avail, err::INSUFFICIENT_QUANTITY, "insufficient ticket stock");
 
     // 内联 issue
-    // giftissue:$<show_id>:$<ticket_id>:$<md5>:$<oper>
+    // issuegift:$<show_id>:$<ticket_id>:$<md5>:$<oper>
     auto inline_issue = [&](const name& to, uint32_t qty, uint64_t seq) {
         std::string batch_hash = make_batch_hash(oper, seq);
-        std::string full_memo = "giftissue:"
+        std::string full_memo = "issuegift:"
                           + std::to_string(show_id)
                           + ":"
                           + std::to_string(ticket_id)
@@ -467,7 +467,7 @@ void show::giftbatch(const name&          oper,
                           + batch_hash
                            + ":"+oper.to_string()+":"+memo;
         issue_action issue{ get_self(), { get_self(), "active"_n } };
-        issue.send(oper,to, show_id, ticket_id, qty,full_memo);
+        issue.send(oper, to, show_id, ticket_id, qty, full_memo);
     };
 
     // 发票
