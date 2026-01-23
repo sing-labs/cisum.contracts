@@ -21,7 +21,7 @@ mpush $show_con giftbatch '["flonian",
   "batch gift issue"
 ]' -p flonian
 
-mpush show.cisum delshow '["cisum.admin","1762320833776"]' -p cisum.admin
+mpush show.cisum delshow '["cisum.admin","1768217670078"]' -p cisum.admin
 mpush show.cisum delshow '["cisum.admin","1763368670494"]' -p cisum.admin
 mpush show.cisum delshow '["cisum.admin","1764052552218"]' -p cisum.admin
 

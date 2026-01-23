@@ -97,3 +97,8 @@ mpush cisum.auth addroleperm '["flonian","admin",["linksMgmt"],"linksMgmt"]'   -
 mpush cisum.auth addroleperm '["flonian","admin",["inviteMgmt"],"inviteMgmt"]'   -p flonian
 
 mpush cisum.auth addroleperm '["flonian","admin",["fanClubMgmt"],"fanClubMgmt"]'   -p flonian
+
+
+mpush cisum.auth addroleperm '["flonian","admin",["messageBroadcastMgmt"],"messageBroadcastMgmt"]'   -p flonian
+
+mpush cisum.auth addroleperm '["flonian","admin",["uploadCertificateMgmt"],"uploadCertificateMgmt"]'   -p flonian

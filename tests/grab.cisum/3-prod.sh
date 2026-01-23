@@ -92,15 +92,12 @@ mpush grab.cisum delrushsale '["cisumverseop",15,true]' -p cisumverseop
 mpush grab.cisum delrushsale '["cisumverseop",23,true]' -p cisumverseop
 
 
-mpush grab.cisum delrushsale '["flonian",23,true]' -p flonian
+mpush grab.cisum delrushsale '["flonian",3,true]' -p flonian
 
 mpush grab.cisum delupgrade '["flonian",23,true]' -p flonian
 
 
 
-
-
-2026-04-120T21:00:00.000
 
 
 mpush grab.cisum setrushsale '["ful4oe5culzv",18,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
@@ -111,3 +108,18 @@ mpush grab.cisum setrushsale '["ful4oe5culzv",20,null,null,"2026-01-16T15:00:00.
 mpush show.cisum setshow '["ful4oe5culzv",1768217670078,"concert",false,false,"2026-04-12T21:00:00.000","2026-04-12T21:00:00.000","2026 2Z GloryDayz in Brazil",""]' -p ful4oe5culzv
 
 
+
+
+
+mpush grab.cisum setrushsale '["ful4oe5culzv",22,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
+mpush grab.cisum setrushsale '["ful4oe5culzv",23,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
+mpush grab.cisum setrushsale '["ful4oe5culzv",24,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
+mpush show.cisum setshow '["ful4oe5culzv",1768372003091,"concert",false,false,"2026-04-12T21:00:00.000","2026-04-12T21:00:00.000","2026 2Z GloryDayz in Brazil",""]' -p ful4oe5culzv
+
+
+mpush show.cisum setticket '["ful4oe5culzv",1768372003091,2101025045293,"free","0.0000 BRL","0.0000 USDT","2026-01-16T15:00:00","2026-04-12T22:00:00"]' -p ful4oe5culzv
+mpush show.cisum setticket '["ful4oe5culzv",1768372003091,2101025483997,"free","0.0000 BRL","0.0000 USDT","2026-01-16T15:00:00","2026-04-12T22:00:00"]' -p ful4oe5culzv
+mpush show.cisum setticket '["ful4oe5culzv",1768372003091,2101025894255,"free","0.0000 BRL","0.0000 USDT","2026-01-16T15:00:00","2026-04-12T22:00:00"]' -p ful4oe5culzv
+
+
+mpush show.cisum delshow '["ful4oe5culzv","1768217670078"]' -p ful4oe5culzv

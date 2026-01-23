@@ -108,3 +108,38 @@ mpush $ops_con addupgrades '[
     }
   ]
 ]' -p   flonian
+
+
+
+
+
+
+
+
+
+
+
+mpush $ops_con addupgrades '[
+  "flonian",
+  1767768384703,
+  [
+    {
+      "ticket_id": 2101025420434,
+      "token_uri": "",
+      "ticket_type": "free",
+      "price": "100.0000 CISUM",
+      "price_usdt": "0.0000 USDT",
+      "pay_ticket": {
+        "amount": 0,
+        "symbol": { "nid": 0 }
+      },
+      "total_count": 10,
+      "prerequisite_ticket_id": 0,
+      "sale_started_at": "2026-01-07T07:44:33.000",
+      "sale_ended_at": "2026-01-14T07:44:33.000",
+      "win_ratio": 5000,
+      "max_grabs_per_user": 1,
+      "activity_type": "rushsale"
+    }
+  ]
+]' -p   flonian
