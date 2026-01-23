@@ -17,7 +17,7 @@ using std::set;
 #define TBL        struct [[eosio::table, eosio::contract("show.cisum")]]
 #define SNTBL(name) struct [[eosio::table(name), eosio::contract("show.cisum")]]
 
-NTBL("global") global_t {
+SNTBL("global") global_t {
   name        admin;          // 超管
   name        nft_bank;       // 票 NFT 合约账户
 
