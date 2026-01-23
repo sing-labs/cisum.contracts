@@ -104,7 +104,7 @@ mpush $show_con issue '["'$USER1'", '$SHOW_ID_OK', '$TK_VIP', 2, "edge:not-enoug
 
 
 #批量发放
-mpush $show_con giftbatch '["flonian",
+mpush $show_con batchreward '["flonian",
   20250057,
   21010001000010137,
   1,
@@ -182,7 +182,7 @@ mpush $show_con giftbatch '["flonian",
 
 
 #发放超过500账号
-mpush $show_con giftbatch '["flonian",
+mpush $show_con batchreward '["flonian",
   20250057,
   21010001000010137,
   1,
@@ -397,7 +397,7 @@ mpush $show_con giftbatch '["flonian",
 
 
 #无效账号
-mpush $show_con giftbatch '["flonian",
+mpush $show_con batchreward '["flonian",
   20250057,
   21010001000010137,
   200,
@@ -408,7 +408,7 @@ mpush $show_con giftbatch '["flonian",
 
 #未授权操作者
 
-mpush $show_con giftbatch '["gahbnbehaskk",
+mpush $show_con batchreward '["gahbnbehaskk",
   20250057,
   21010001000010137,
   200,
@@ -418,7 +418,7 @@ mpush $show_con giftbatch '["gahbnbehaskk",
 
 #错误的 show/ticket
 
-mpush $show_con giftbatch '["flonian",
+mpush $show_con batchreward '["flonian",
   202500590,
   21010001000010137,
   200,
@@ -430,7 +430,7 @@ mpush $show_con giftbatch '["flonian",
 #过长 memo
 LONG_MEMO=$(head -c 300 < /dev/zero | tr '\0' 'a')
 
-mpush $show_con giftbatch '[
+mpush $show_con batchreward '[
   "'$ADMIN'",
   '$SHOW_ID_OK',
   '$TK_VIP',

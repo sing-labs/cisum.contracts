@@ -81,7 +81,7 @@ mpush $show_con issue '["gahbnbehaskk",1757500247480,2101025469022,1,"send to ga
 
 # 批量赠票：show_id=1, ticket_id=101，memo=批量赠票测试
 
-mpush $show_con giftbatch '["flonian",
+mpush $show_con batchreward '["flonian",
   20250057,
   21010001000010137,
   3,

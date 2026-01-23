@@ -13,7 +13,7 @@ admin=flonian
 mpush $show_con init '["'"$admin"'", "ticket.cvnft"]' -p $show_con
 
 
-mpush $show_con giftbatch '["flonian",
+mpush $show_con batchreward '["flonian",
   1761796803533,
   2101025490959,
   1,
