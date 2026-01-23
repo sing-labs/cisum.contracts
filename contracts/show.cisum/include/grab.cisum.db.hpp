@@ -15,9 +15,9 @@ using namespace eosio;
 namespace flon {
 
 static constexpr uint32_t RATIO_BOOST = 10000;
-#define NTBL(name) struct [[eosio::table(name), eosio::contract("grab.cisum")]]
+#define GNTBL(name) struct [[eosio::table(name), eosio::contract("grab.cisum")]]
 // scope: self
-NTBL("rushsales") rush_sale {
+GNTBL("rushsales") rush_sale {
    uint64_t       id; // auto increment, PK
    uint64_t       show_id;
    uint64_t       ticket_id;
