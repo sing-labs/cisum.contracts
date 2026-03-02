@@ -10,6 +10,10 @@ struct contracts {
    static std::vector<char>    nestar_token_abi()  { return read_abi("${CMAKE_BINARY_DIR}/contracts/nestar.token/nestar.token.abi"); }
    static std::vector<uint8_t> cvticket_nft_wasm() { return read_wasm("${CMAKE_BINARY_DIR}/contracts/ticket.cvnft/ticket.cvnft.wasm"); }
    static std::vector<char>    cvticket_nft_abi()  { return read_abi("${CMAKE_BINARY_DIR}/contracts/ticket.cvnft/ticket.cvnft.abi"); }
+   static std::vector<uint8_t> cisum_token_wasm() { return read_wasm("${CMAKE_BINARY_DIR}/contracts/cisum.token/cisum.token.wasm"); }
+   static std::vector<char>    cisum_token_abi()  { return read_abi("${CMAKE_BINARY_DIR}/contracts/cisum.token/cisum.token.abi"); }
+   static std::vector<uint8_t> ops_cisum_wasm() { return read_wasm("${CMAKE_BINARY_DIR}/contracts/ops.cisum/ops.cisum.wasm"); }
+   static std::vector<char>    ops_cisum_abi()  { return read_abi("${CMAKE_BINARY_DIR}/contracts/ops.cisum/ops.cisum.abi"); }
 };
 
 } // namespace eosio::testing
