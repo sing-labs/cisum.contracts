@@ -47,7 +47,6 @@ private:
   bool             _save_state = true;
 
   void require_admin() const;
-  static uint64_t to_u64(string_view s, string_view err_title);
 };
 
 } // namespace flon

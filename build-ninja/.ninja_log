@@ -1,0 +1,11 @@
+# ninja log v7
+0	95	1772535267174016835	contracts_project-prefix/src/contracts_project-stamp/contracts_project-mkdir	64ed8cc51ba63023
+0	95	1772535267174016835	/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/contracts_project-prefix/src/contracts_project-stamp/contracts_project-mkdir	64ed8cc51ba63023
+96	183	1772535267261831467	contracts_project-prefix/src/contracts_project-stamp/contracts_project-download	a853c40b9425982b
+96	183	1772535267261831467	/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/contracts_project-prefix/src/contracts_project-stamp/contracts_project-download	a853c40b9425982b
+1	190	1772535267081748445	CMakeFiles/update_version	7c28afcf899f66a9
+1	190	1772535267081748445	/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/CMakeFiles/update_version	7c28afcf899f66a9
+183	273	1772535267351614728	contracts_project-prefix/src/contracts_project-stamp/contracts_project-update	b3b0ad9e4fc2fd4b
+183	273	1772535267351614728	/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/contracts_project-prefix/src/contracts_project-stamp/contracts_project-update	b3b0ad9e4fc2fd4b
+273	365	1772535267443039949	contracts_project-prefix/src/contracts_project-stamp/contracts_project-patch	396b624c52666531
+273	365	1772535267443039949	/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/contracts_project-prefix/src/contracts_project-stamp/contracts_project-patch	396b624c52666531

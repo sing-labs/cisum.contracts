@@ -1,0 +1,8 @@
+/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/CMakeFiles/update_version.dir
+/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/CMakeFiles/contracts_project.dir
+/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/CMakeFiles/edit_cache.dir
+/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/CMakeFiles/rebuild_cache.dir
+/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/CMakeFiles/list_install_components.dir
+/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/CMakeFiles/install.dir
+/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/CMakeFiles/install/local.dir
+/Users/aaron/Documents/flon/cisum/cisum.contracts/build-ninja/CMakeFiles/install/strip.dir

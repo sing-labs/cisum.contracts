@@ -18,18 +18,6 @@ using eosio::name;
 using std::string;
 using std::vector;
 
-uint64_t ops_cisum::to_u64(string_view s, string_view err_title) {
-  errno = 0;
-  std::string tmp{s};
-  char* end = nullptr;
-  unsigned long long v = std::strtoull(tmp.c_str(), &end, 10);
-  CHECKC(errno == 0 && end != nullptr && *end == '\0', err::INVALID_FORMAT,
-         string(err_title) + ": invalid uint64");
-  CHECKC(v <= std::numeric_limits<uint64_t>::max(), err::INVALID_FORMAT,
-         string(err_title) + ": overflow");
-  return static_cast<uint64_t>(v);
-}
-
 void ops_cisum::require_admin() const {
   CHECKC(_gstate.admin.value != 0, err::RECORD_NO_FOUND, "admin not set");
   CHECKC(has_auth(get_self()) || has_auth(_gstate.admin), err::DID_NOT_AUTH, "admin/contract only");
@@ -92,8 +80,8 @@ void ops_cisum::ontransfer(const name& from, const name& to, const asset& quanti
 
   if (op == "livepay") {
     CHECKC(parts.size() >= 2, err::INVALID_FORMAT, "livepay memo requires room_id, e.g. livepay:123");
-    const uint64_t room_id = to_u64(parts[1], "room_id");
-    CHECKC(room_id > 0, err::INVALID_FORMAT, "room_id must be > 0");
+    const auto room_id = parts[1];
+    CHECKC(!room_id.empty(), err::INVALID_FORMAT, "room_id must not be empty");
 
     payment_t::idx_t pays(get_self(), get_self().value);
     CHECKC(_gstate.last_pay_id < std::numeric_limits<uint64_t>::max(), err::EXCEED_LIMIT, "pay id overflow");
