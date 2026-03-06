@@ -9,7 +9,7 @@
 #include <string_view>
 #include <vector>
 
-#include "ops.cisum.db.hpp"
+#include "cisum.vault.db.hpp"
 
 using namespace eosio;
 using std::string;
@@ -17,18 +17,18 @@ using std::string_view;
 
 namespace flon {
 
-class [[eosio::contract("ops.cisum")]] ops_cisum : public contract {
+class [[eosio::contract("cisum.vault")]] cisum_vault : public contract {
 public:
   using contract::contract;
 
-  ops_cisum(eosio::name receiver, eosio::name code, datastream<const char*> ds)
+  cisum_vault(eosio::name receiver, eosio::name code, datastream<const char*> ds)
   : contract(receiver, code, ds),
     _global(get_self(), get_self().value)
   {
     _gstate = _global.exists() ? _global.get() : global_t{};
   }
 
-  ~ops_cisum() {
+  ~cisum_vault() {
     if (_save_state) _global.set(_gstate, get_self());
   }
 
