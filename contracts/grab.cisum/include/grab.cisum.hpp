@@ -61,6 +61,11 @@ public:
                       std::optional<time_point> started_at,
                        std::optional<time_point> ended_at);
 
+    ACTION subgrab(const name& submitter,
+                   const name& rush_type,
+                   const uint64_t& rush_id,
+                   const nasset& tickets);
+
     /**
      * Delete a rush sale (optionally forced).
      * 权限：合约自身 / admin / oracle
@@ -80,7 +85,6 @@ public:
                              std::optional<uint32_t> win_ratio,
                                 std::optional<time_point> started_at,
                              std::optional<time_point> ended_at);
-
     ACTION delupgrade(const name& submitter,const uint64_t& rush_upgrade_id,const bool& forced);
     /**
      * Add or update allowed token.
@@ -130,6 +134,7 @@ public:
     using init_action         = action_wrapper<"init"_n,         &grab_cisum::init>;
     using addrushsale_action  = action_wrapper<"addrushsale"_n,  &grab_cisum::addrushsale>;
     using setrushsale_action  = action_wrapper<"setrushsale"_n,  &grab_cisum::setrushsale>;
+    using subgrab_action      = action_wrapper<"subgrab"_n,      &grab_cisum::subgrab>;
     using delrushsale_action  = action_wrapper<"delrushsale"_n,  &grab_cisum::delrushsale>;
     using addtoken_action     = action_wrapper<"addtoken"_n,     &grab_cisum::addtoken>;
     using deltoken_action     = action_wrapper<"deltoken"_n,     &grab_cisum::deltoken>;

@@ -123,3 +123,10 @@ mpush show.cisum setticket '["ful4oe5culzv",1768372003091,2101025894255,"free","
 
 
 mpush show.cisum delshow '["ful4oe5culzv","1768217670078"]' -p ful4oe5culzv
+
+
+
+#从抢票功能中减少票
+mpush grab.cisum subgrab '["flonian","rushsale",30,{"amount":1,"symbol":{"nid":21010001000030810}}]' -p flonian
+
+mpush grab.cisum subgrab '["flonian","rushupgrade",60,{"amount":1,"symbol":{"nid":2101025014097}}]' -p flonian

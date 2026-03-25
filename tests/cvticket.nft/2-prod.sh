@@ -55,4 +55,9 @@ mpush ticket.cvnft  retire '[{"amount":12,"symbol":{"nid":2101025969114}},"retir
 
 mpush ticket.cvnft  retire '[{"amount":12,"symbol":{"nid":2101025452032}},"retire"]'  -p show.cisum
 
-retire( const nasset& quantity, const string& memo )
+
+
+
+mpush ticket.cvnft  settokenuri '[002101025309886,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreici5rgkebf6mbp7vy6mntqqpbcvvlo46ttljyre7oihwcikpng3vi"]'   -p ticket.cvnft
+
+mpush ticket.cvnft  settokenuri '[002101025229576,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreidyqhyqx7nmfozbdxly4ql3nfytmlaorjnr2jmcriru2qp24lyveu"]'   -p ticket.cvnft

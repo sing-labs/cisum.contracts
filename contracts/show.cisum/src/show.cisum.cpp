@@ -58,6 +58,31 @@ void show::require_perm(const name& submitter,
     );
 }
 
+void show::on_transfer_ticket(const name& from, const name& to, const vector<nasset>& assets, const string& memo)
+{
+    if (to != get_self() || from == get_self()) return;
+
+    check(!assets.empty(), "no assets transferred");
+
+    auto parts = split(memo, ":");
+    if (parts.size() != 2 || parts[0] != "backfromgrab") return;
+
+    check(from == GRAB_CONTRACT, "only grab.cisum can return rush tickets");
+
+    uint64_t show_id = std::stoull(std::string(parts[1]));
+    check(show_id > 0, "invalid show_id");
+
+    ticket_t::ticketidx tickets(get_self(), show_id);
+    auto itr = tickets.find(assets[0].symbol.nid);
+    check(itr != tickets.end(), "ticket not found for this symbol");
+
+    tickets.modify(itr, same_payer, [&](auto& row){
+      row.stock_count += static_cast<uint64_t>(assets[0].amount);
+      check(row.stock_count <= row.total_count, "stock overflow");
+      row.updated_at = current_time_point();
+    });
+}
+
 void show::notenftissue(const uint64_t&        show_id,
                       const uint64_t&        ticket_id,
                       const uint64_t&        ticket_count,
@@ -79,11 +104,7 @@ void show::init(const name& admin,const name& nft_bank) {
 }
 
 
-void show::createnft(const name& submitter,
-                    const int64_t& max_supply,
-                    const nsymbol& symbol,
-                    const string&  token_uri)
-{
+void show::createnft(const name& submitter,const int64_t& max_supply,const nsymbol& symbol, const string&  token_uri){
     if (!has_auth(get_self()) &&
         !(has_auth(_gstate.admin) && submitter == _gstate.admin)) {
         require_perm(submitter, "show");
@@ -101,14 +122,8 @@ void show::createnft(const name& submitter,
     }.send(get_self(), max_supply, symbol, token_uri, get_self());
 }
 
-void show::issuenft(const name& submitter,
-                    const name&   issuer,
-                    const nasset& quantity,
-                    const string& memo)
-{
-
-    if (!has_auth(get_self()) &&
-        !(has_auth(_gstate.admin) && submitter == _gstate.admin)) {
+void show::issuenft(const name& submitter, const name&   issuer,const nasset& quantity,const string& memo){
+    if (!has_auth(get_self()) && !(has_auth(_gstate.admin) && submitter == _gstate.admin)) {
         require_perm(submitter, "show");
     }
 

@@ -42,3 +42,25 @@ mpush $ticket_ntoken issue '[
 
 
 
+
+
+
+
+
+
+
+ticket_ntoken=ticket.cvnft
+mpush $ticket_ntoken create '[
+  "'"${ticket_ntoken}"'",
+  10000000000,{"value": 21010001000010016}
+  ,
+  "ipfs://ticket/silver6.json",
+  "'"${ticket_ntoken}"'"
+]' -p $ticket_ntoken
+
+
+mpush $ticket_ntoken issue '[
+  "'"${ticket_ntoken}"'",
+  {"amount": 10000000, "symbol": {"id": 010010, "pid": 0021010001}},
+  "bootstrap batch"
+]' -p $ticket_ntoken

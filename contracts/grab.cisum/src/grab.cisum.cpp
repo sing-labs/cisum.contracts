@@ -294,6 +294,52 @@ void grab_cisum::setrushsale(const name& submitter,
     });
 }
 
+void grab_cisum::subgrab(const name& submitter, const name& rush_type, const uint64_t& rush_id, const nasset& tickets) {
+    if (!(has_auth(get_self()) || has_auth(OPS_CONTRACT) || has_auth(_gstate.admin))) {
+        require_perm(submitter, "show");
+    }
+
+    CHECKC(tickets.amount > 0, err::NOT_POSITIVE, "tickets must be positive");
+
+    uint64_t show_id = 0;
+    auto now = current_time_point();
+
+    if (rush_type == "rushsale"_n) {
+        rush_sale::idx_t rs_idx(get_self(), get_self().value);
+        auto rs_itr = rs_idx.find(rush_id);
+        CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found");
+        CHECKC(tickets.symbol == rs_itr->total_tickets.symbol, err::SYMBOL_MISMATCH, "ticket symbol mismatch");
+        CHECKC(tickets.amount <= rs_itr->available_tickets.amount, err::EXCEED_LIMIT,
+               "reduce tickets exceeds available balance");
+
+        show_id = rs_itr->show_id;
+        rs_idx.modify(rs_itr, same_payer, [&](auto& r) {
+            r.total_tickets -= tickets;
+            r.available_tickets -= tickets;
+            r.updated_at = now;
+        });
+    } else if (rush_type == "rushupgrade"_n) {
+        rush_upgrade::idx_t ru_idx(get_self(), get_self().value);
+        auto ru_itr = ru_idx.find(rush_id);
+        CHECKC(ru_itr != ru_idx.end(), err::RECORD_NO_FOUND, "rush upgrade not found");
+        CHECKC(tickets.symbol == ru_itr->total_tickets.symbol, err::SYMBOL_MISMATCH, "ticket symbol mismatch");
+        CHECKC(tickets.amount <= ru_itr->available_tickets.amount, err::EXCEED_LIMIT,
+               "reduce tickets exceeds available balance");
+
+        show_id = ru_itr->show_id;
+        ru_idx.modify(ru_itr, same_payer, [&](auto& r) {
+            r.total_tickets -= tickets;
+            r.available_tickets -= tickets;
+            r.updated_at = now;
+        });
+    } else {
+        CHECKC(false, err::INVALID_FORMAT, "invalid rush_type");
+    }
+
+    std::vector<nasset> assets = { tickets };
+    TRANSFER_NFT_OUT(_gstate.ticket_contract, SHOW_CONTRACT, assets, "backfromgrab:" + std::to_string(show_id));
+}
+
 static constexpr uint32_t MAX_CLEAR = 1000;
 
 void grab_cisum::delrushsale(const name& submitter, const uint64_t& rush_sale_id, const bool& forced){

@@ -153,6 +153,12 @@ public:
 
   ACTION retire(const uint64_t&  show_id,const nasset& quantity);
 
+  [[eosio::on_notify("ticket.cvnft::transfer")]]
+  void on_transfer_ticket(const name& from,
+                          const name& to,
+                          const vector<nasset>& assets,
+                          const string& memo);
+
   using createnft_action      = eosio::action_wrapper<"createnft"_n,&show::createnft>;
   using notenftissue_action     = eosio::action_wrapper<"notenftissue"_n,&show::notenftissue>;
   using issue_action          = eosio::action_wrapper<"issue"_n,&show::issue>;
