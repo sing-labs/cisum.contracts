@@ -56,9 +56,10 @@ public:
      */
     ACTION setrushsale(const name& submitter,
                        const uint64_t& rush_sale_id,
+                       std::optional<asset> price,
                        std::optional<uint32_t> max_grabs_per_user,
                        std::optional<uint32_t> win_ratio,
-                      std::optional<time_point> started_at,
+                       std::optional<time_point> started_at,
                        std::optional<time_point> ended_at);
 
     ACTION subgrab(const name& submitter,
@@ -81,10 +82,11 @@ public:
                             const time_point& ended_at,
                             const uint32_t& win_ratio);
     ACTION setupgrade(const name& submitter,
-                             const uint64_t& rush_upgrade_id,
-                             std::optional<uint32_t> win_ratio,
-                                std::optional<time_point> started_at,
-                             std::optional<time_point> ended_at);
+                      const uint64_t& rush_upgrade_id,
+                      std::optional<nasset> pay_tickets,
+                      std::optional<uint32_t> win_ratio,
+                      std::optional<time_point> started_at,
+                      std::optional<time_point> ended_at);
     ACTION delupgrade(const name& submitter,const uint64_t& rush_upgrade_id,const bool& forced);
     /**
      * Add or update allowed token.

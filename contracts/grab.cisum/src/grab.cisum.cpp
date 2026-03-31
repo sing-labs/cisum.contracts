@@ -257,6 +257,7 @@ void grab_cisum::addrushsale(const name& submitter,
 
 void grab_cisum::setrushsale(const name& submitter,
                                 const uint64_t& rush_sale_id,
+                                std::optional<asset> price,
                                 std::optional<uint32_t> max_grabs_per_user,
                                 std::optional<uint32_t> win_ratio,
                                 std::optional<time_point> started_at,
@@ -269,23 +270,38 @@ void grab_cisum::setrushsale(const name& submitter,
     auto rs_itr = rs_idx.find(rush_sale_id);
     CHECKC(rs_itr != rs_idx.end(), err::RECORD_NO_FOUND, "rush sale not found");
 
+    if (price) {
+        CHECKC(price->is_valid(), err::INVALID_FORMAT, "invalid price asset");
+        CHECKC(price->amount > 0, err::INVALID_FORMAT, "price must be positive");
+
+        allowed_token_t::idx_t tokens(get_self(), get_self().value);
+        auto bysym = tokens.get_index<"bysymbol"_n>();
+        uint128_t key = ((uint128_t)price->symbol.code().raw() << 64) | price->symbol.precision();
+        auto tok_itr = bysym.find(key);
+        CHECKC(tok_itr != bysym.end(), err::INVALID_FORMAT,
+               "price symbol not allowed: " + price->symbol.code().to_string());
+    }
+
     if (max_grabs_per_user)
         CHECKC(*max_grabs_per_user > 0, err::NOT_POSITIVE, "max_grabs_per_user must be positive");
 
     if (win_ratio)
         CHECKC(*win_ratio <= RATIO_BASE, err::INVALID_FORMAT, "win_ratio exceeds RATIO_BASE");
 
-    if (ended_at && started_at){
+    if (started_at && ended_at){
         CHECKC(*started_at < *ended_at, err::INVALID_TIME, "started_at must < ended_at");
+    } else if (started_at) {
+        CHECKC(*started_at < rs_itr->ended_at, err::INVALID_TIME, "started_at must < ended_at");
     }
     else if (ended_at){
         CHECKC(rs_itr->started_at < *ended_at, err::INVALID_TIME, "ended_at must > started_at");
     }
-    if (!max_grabs_per_user && !win_ratio && !started_at && !ended_at)
+    if (!price && !max_grabs_per_user && !win_ratio && !started_at && !ended_at)
         return;
 
     const auto now = current_time_point();
     rs_idx.modify(rs_itr, same_payer, [&](auto& r) {
+        if (price)              r.price              = *price;
         if (max_grabs_per_user) r.max_grabs_per_user = *max_grabs_per_user;
         if (win_ratio)          r.win_ratio          = *win_ratio;
         if (started_at)         r.started_at         = *started_at;
@@ -453,6 +469,7 @@ void grab_cisum::addupgrade(const name& submitter,
 
 void grab_cisum::setupgrade(const name& submitter,
                                 const uint64_t& rush_upgrade_id,
+                                std::optional<nasset> pay_tickets,
                                 std::optional<uint32_t> win_ratio,
                                 std::optional<time_point> started_at,
                                 std::optional<time_point> ended_at) {
@@ -464,20 +481,38 @@ void grab_cisum::setupgrade(const name& submitter,
     auto ru_itr = ru_idx.find(rush_upgrade_id);
     CHECKC(ru_itr != ru_idx.end(), err::RECORD_NO_FOUND, "rush upgrade not found");
 
+    if (pay_tickets) {
+        CHECKC(pay_tickets->amount > 0, err::INVALID_FORMAT, "pay_tickets must be positive");
+        CHECKC(pay_tickets->is_valid(), err::INVALID_FORMAT, "invalid pay_tickets (symbol/amount)");
+
+        ticket_t::ticketidx tickets(SHOW_CONTRACT, ru_itr->show_id);
+        const uint64_t pay_ticket_id = pay_tickets->symbol.nid;
+
+        CHECKC(pay_ticket_id != ru_itr->target_ticket_id, err::INVALID_FORMAT,
+               "(pay ticket)  must NOT equal target_ticket_id");
+
+        auto pay_itr = tickets.find(pay_ticket_id);
+        CHECKC(pay_itr != tickets.end(), err::RECORD_NO_FOUND,
+               " (pay ticket) not found in show contract");
+    }
+
     if (win_ratio)
         CHECKC(*win_ratio <= RATIO_BASE, err::INVALID_FORMAT, "win_ratio exceeds RATIO_BASE");
 
-    if (ended_at && started_at){
+    if (started_at && ended_at){
         CHECKC(*started_at < *ended_at, err::INVALID_TIME, "started_at must < ended_at");
+    } else if (started_at) {
+        CHECKC(*started_at < ru_itr->ended_at, err::INVALID_TIME, "started_at must < ended_at");
     }
     else if (ended_at){
         CHECKC(ru_itr->started_at < *ended_at, err::INVALID_TIME, "ended_at must > started_at");
     }
-    if (!win_ratio && !started_at && !ended_at)
+    if (!pay_tickets && !win_ratio && !started_at && !ended_at)
         return;
 
     const auto now = current_time_point();
     ru_idx.modify(ru_itr, same_payer, [&](auto& r) {
+        if (pay_tickets) r.pay_tickets = *pay_tickets;
         if (win_ratio)  r.win_ratio  = *win_ratio;
         if (started_at) r.started_at = *started_at;
         if (ended_at)   r.ended_at   = *ended_at;

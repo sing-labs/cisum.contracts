@@ -49,8 +49,11 @@ mpush $show_con issuetograb '["show.cisum","grab.cisum", {"amount":100,"symbol":
 
 mpush grab.cisum delupgrade '["flonian",2,true]' -p flonian
 
-mpush grab.cisum setrushsale '["flonian",28,null,null,"2025-12-01T20:00:00.000"]' -p flonian
-mpush grab.cisum setupgrade '["flonian",28,1000,"2025-10-01T20:00:00.000"]' -p flonian
+
+
+
+mpush grab.cisum setrushsale '["flonian",29,"200.0000 CISUM",null,null,null,null]' -p flonian
+mpush grab.cisum setupgrade '["flonian",28,null,1000,"2025-10-01T20:00:00.000"]' -p flonian
 
 
 
@@ -100,9 +103,9 @@ mpush grab.cisum delupgrade '["flonian",23,true]' -p flonian
 
 
 
-mpush grab.cisum setrushsale '["ful4oe5culzv",18,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
-mpush grab.cisum setrushsale '["ful4oe5culzv",19,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
-mpush grab.cisum setrushsale '["ful4oe5culzv",20,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
+mpush grab.cisum setrushsale '["ful4oe5culzv",18,null,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
+mpush grab.cisum setrushsale '["ful4oe5culzv",19,null,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
+mpush grab.cisum setrushsale '["ful4oe5culzv",20,null,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
 
 
 mpush show.cisum setshow '["ful4oe5culzv",1768217670078,"concert",false,false,"2026-04-12T21:00:00.000","2026-04-12T21:00:00.000","2026 2Z GloryDayz in Brazil",""]' -p ful4oe5culzv
@@ -111,9 +114,9 @@ mpush show.cisum setshow '["ful4oe5culzv",1768217670078,"concert",false,false,"2
 
 
 
-mpush grab.cisum setrushsale '["ful4oe5culzv",22,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
-mpush grab.cisum setrushsale '["ful4oe5culzv",23,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
-mpush grab.cisum setrushsale '["ful4oe5culzv",24,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
+mpush grab.cisum setrushsale '["ful4oe5culzv",22,null,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
+mpush grab.cisum setrushsale '["ful4oe5culzv",23,null,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
+mpush grab.cisum setrushsale '["ful4oe5culzv",24,null,null,null,"2026-01-16T15:00:00.000",null]' -p ful4oe5culzv
 mpush show.cisum setshow '["ful4oe5culzv",1768372003091,"concert",false,false,"2026-04-12T21:00:00.000","2026-04-12T21:00:00.000","2026 2Z GloryDayz in Brazil",""]' -p ful4oe5culzv
 
 

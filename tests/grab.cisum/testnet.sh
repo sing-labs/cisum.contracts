@@ -62,13 +62,13 @@ for i in {1..1000}; do
 done
 
 # 10) 修改 rush_sale（已带 submitter，方案A）
-mpush grab23.cisum setrushsale '["myadmin",10,10,1000,"2025-09-01T20:00:00"]' -p myadmin
+mpush grab23.cisum setrushsale '["myadmin",10,null,10,1000,"2025-09-01T20:00:00"]' -p myadmin
 
 # 11) 结束后清理活动（已带 submitter，方案A）
 mpush grab23.cisum clearsale '["myadmin",10]' -p myadmin
 
 
-mpush grab.cisum setrushsale '["flonian",3,1000,4000,"2025-10-01T20:00:00"]' -p flonian
+mpush grab.cisum setrushsale '["flonian",3,null,1000,4000,"2025-10-01T20:00:00"]' -p flonian
 
 
 mpush nestar.token transfer '["gahbnbehaskk","grab.cisum","20.0000 NESTAR","grab:8:a1799ae8e1ea62a20a5f56710342a115"]' -p gahbnbehaskk
@@ -79,7 +79,7 @@ mpush flon.mtoken transfer '["gahbnbehaskk","grab.cisum","2.000000 USDT","grab:1
 
 
 
-mpush grab.cisum setrushsale '["flonian",22,100,null,null]' -p flonian
+mpush grab.cisum setrushsale '["flonian",22,null,100,null,null]' -p flonian
 
 
 mpush song.token transfer '["flonian","grab.cisum","100.0000 SONG","grab:20:a1799ae8e1ea62a20a5f56710342a540"]' -p flonian
@@ -95,10 +95,10 @@ mpush ticket.cvnft transfer '["acctaa1aaa43","grab.cisum",[{"amount":1,"symbol":
 
 
 
-mpush grab.cisum setrushsale '["flonian",80,105,null,"2025-11-21T03:53:51.000"]' -p flonian
+mpush grab.cisum setrushsale '["flonian",80,null,105,null,"2025-11-21T03:53:51.000"]' -p flonian
 
 
-mpush grab.cisum setupgrade '["flonian",12,10000,"2025-11-01T00:00:00.000","2025-11-21T03:53:51.000"]' -p flonian
+mpush grab.cisum setupgrade '["flonian",12,null,10000,"2025-11-01T00:00:00.000","2025-11-21T03:53:51.000"]' -p flonian
 
 
 
@@ -112,4 +112,3 @@ mpush grab.cisum clearsale '["flonian",5]' -p flonian
 
 
 mpush grab.cisum delrushsale '["flonian",28,false]' -p flonian
-
