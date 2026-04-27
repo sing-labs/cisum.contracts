@@ -149,3 +149,26 @@ mpush $badge_ntoken issue '[
   {"amount": 50000, "symbol": {"nid":"5000000002"}},
   "bootstrap batch"
 ]' -p $stor_con
+
+
+
+
+
+
+stor_con=badgecvstore
+badge_ntoken=badge.cvnft
+mpush $badge_ntoken create '[
+  "'"${stor_con}"'",
+  10000000000,
+  {"nid":"5000000003"},
+  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreibqffnhc6y4nvvsylduiezidzy6l6yum2rals7oq7g7plj7hp7gwm",
+  "'"${stor_con}"'"
+]' -p $stor_con
+
+
+mpush $badge_ntoken issue '[
+  "'"${stor_con}"'",
+  {"amount": 50000, "symbol": {"nid":"5000000003"}},
+  "bootstrap batch"
+]' -p $stor_con
+

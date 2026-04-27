@@ -51,9 +51,8 @@ mpush grab.cisum delupgrade '["flonian",2,true]' -p flonian
 
 
 
-
 mpush grab.cisum setrushsale '["flonian",29,"200.0000 CISUM",null,null,null,null]' -p flonian
-mpush grab.cisum setupgrade '["flonian",28,null,1000,"2025-10-01T20:00:00.000"]' -p flonian
+mpush grab.cisum setupgrade '["flonian",55,{"amount":2,"symbol":{"nid":2101025921822}},null,null,null]' -p flonian
 
 
 

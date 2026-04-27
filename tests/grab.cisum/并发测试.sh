@@ -30,7 +30,7 @@ mpush cisum.token transfer '["flonian","'$con'","10000.0000 CISUM","test"]' -p f
 
 con=acctaa1aaa23
 mreg flon $con FU56FRaRBhUwTHxwiSPpptxaBiFFN7fXn5jaC3fWKdi7dMdedpt8
-mpush cisum.token transfer '["flonian","'$con'","10000.0000 CISUM","test"]' -p flonian
+mpush cisum.token transfer '["acctaa1aaa23","grab.cisum","1.0000 CISUM","grab:136:a1799ae8e1ea72a20a5f577106422176"]' -p acctaa1aaa23
 
 con=acctaa1aaa24
 mreg flon $con FU56FRaRBhUwTHxwiSPpptxaBiFFN7fXn5jaC3fWKdi7dMdedpt8

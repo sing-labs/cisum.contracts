@@ -106,3 +106,7 @@ mpush cisum.auth addroleperm '["flonian","admin",["uploadCertificateMgmt"],"uplo
 mpush cisum.auth addroleperm '["flonian","admin",["liveRoomMgmt"],"liveRoomMgmt"]'   -p flonian
 
 mpush cisum.auth addroleperm '["flonian","admin",["blacklistMgmt"],"blacklistMgmt"]'   -p flonian
+
+mpush cisum.auth addroleperm '["ful4oe5culzv","admin",["dashboard"],"dashboard"]'   -p ful4oe5culzv
+
+

@@ -47,7 +47,15 @@ mpush cisum.token transfer '[
   "livepay:1:1001:ref-2"
 ]' -p gahbnbehaskk
 
-echo "==== 8) memo 不匹配应报错 ===="
+echo "==== 8) CISUM 积分兑换（cisumptxchg）=== "
+mpush cisum.token transfer '[
+  "gahbnbehaskk",
+  "cisum.vault",
+  "1.0000 CISUM",
+  "cisumptxchg:100"
+]' -p gahbnbehaskk
+
+echo "==== 9) memo 不匹配应报错 ===="
 mpush cisum.token transfer '[
   "gahbnbehaskk",
   "'"${ops_con}"'",
@@ -55,7 +63,7 @@ mpush cisum.token transfer '[
   "badmemo"
 ]' -p gahbnbehaskk 　
 
-echo "==== 9) livepay 缺 room_id 应报错 ===="
+echo "==== 10) livepay 缺 room_id 应报错 ===="
 mpush cisum.token transfer '[
   "gahbnbehaskk",
   "'"${ops_con}"'",
@@ -63,7 +71,15 @@ mpush cisum.token transfer '[
   "livepay"
 ]' -p gahbnbehaskk
 
-echo "==== 10) 暂停后应拒绝入金 ===="
+echo "==== 11) cisumptxchg 缺 points 应报错 ===="
+mpush cisum.token transfer '[
+  "gahbnbehaskk",
+  "'"${ops_con}"'",
+  "1.0000 CISUM",
+  "cisumptxchg"
+]' -p gahbnbehaskk
+
+echo "==== 12) 暂停后应拒绝入金 ===="
 mpush $ops_con setpause '[false]' -p $ops_admin
 
 mpush cisum.token transfer '[

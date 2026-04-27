@@ -171,3 +171,9 @@ mpush badge.cvnft settokenuri '[
 
 
 
+
+
+mpush badge.cvnft settokenuri '[
+  5000000003,
+  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreictlvi4oujj2ti26povrrrolv57pdowk2ueugd54qx2b3pyetuuxm"
+]' -p badge.cvnft -p badgecvstore

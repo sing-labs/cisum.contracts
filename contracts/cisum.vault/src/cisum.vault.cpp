@@ -49,6 +49,7 @@ void cisum_vault::ontransfer(const name& from, const name& to, const asset& quan
   // memo formats:
   // 1) points[:uid][:ref]
   // 2) livepay:room_id[:...]
+  // 3) cisumptxchg:points
   auto parts = ::split(string_view(memo), ":");
   CHECKC(!parts.empty(), err::INVALID_FORMAT, "empty memo");
 
@@ -62,6 +63,14 @@ void cisum_vault::ontransfer(const name& from, const name& to, const asset& quan
     CHECKC(parts.size() >= 2, err::INVALID_FORMAT, "livepay memo requires room_id, e.g. livepay:123");
     const auto room_id = parts[1];
     CHECKC(!room_id.empty(), err::INVALID_FORMAT, "room_id must not be empty");
+    return;
+  }
+
+  if (op == "cisumptxchg") {
+    CHECKC(parts.size() >= 2, err::INVALID_FORMAT, "cisumptxchg memo must be cisumptxchg:<points>:.....");
+    const auto points = parts[1];
+    CHECKC(is_numeric(points), err::INVALID_FORMAT, "cisumptxchg points must be numeric");
+    CHECKC(to_uint64(points) > 0, err::NOT_POSITIVE, "cisumptxchg points must be positive");
     return;
   }
 

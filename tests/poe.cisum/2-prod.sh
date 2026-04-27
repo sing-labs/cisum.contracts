@@ -200,3 +200,91 @@ mpush poe.cisum addrewardact '[
   "Twitter/X user replies Cisumverse posts"
 ]' -p poe.cisum
 
+
+
+
+
+
+poe_con=poe.cisum
+# songa - 40 CISUM
+mpush $poe_con addrewardact '[
+  "songa",
+  "40.0000 CISUM",
+  "Create an A grade song  Publish one song with grade A"
+]' -p $poe_con
+
+# songb - 20 CISUM
+mpush $poe_con addrewardact '[
+  "songb",
+  "20.0000 CISUM",
+  "Create a B grade song  Publish one song with grade B or above"
+]' -p $poe_con
+
+
+# tophundred - 50 CISUM
+mpush $poe_con addrewardact '[
+  "tophundred",
+  "50.0000 CISUM",
+  "Enter top 100    Any published song enters the top 100 chart"
+]' -p $poe_con
+
+
+# invite - 200 CISUM
+mpush $poe_con addrewardact '[
+  "invite",
+  "200.0000 CISUM",
+  "nvite a friend    Invite one friend to register"
+]' -p $poe_con
+
+
+# postday - 15 CISUM
+mpush $poe_con addrewardact '[
+  "postday",
+  "15.0000 CISUM",
+  "Publish one post    Publish one song to community"
+]' -p $poe_con
+
+
+# replyday - 3 CISUM
+mpush $poe_con addrewardact '[
+  "replyday",
+  "3.0000 CISUM",
+  "Reply to comments   Reply to comments"
+]' -p $poe_con
+
+
+# likeday - 1 CISUM
+mpush $poe_con addrewardact '[
+  "likeday",
+  "1.0000 CISUM",
+  "Like a post or song   Complete one like action"
+]' -p $poe_con
+
+# shareday - 10 CISUM
+mpush $poe_con addrewardact '[
+  "shareday",
+  "10.0000 CISUM",
+  "Share a post     Share one published song"
+]' -p $poe_con
+
+# listenday - 2 CISUM
+mpush $poe_con addrewardact '[
+  "listenday",
+  "2.0000 CISUM",
+  "Listen for two minutes  Accumulate 120 seconds of listening time"
+]' -p $poe_con
+
+# signday - 5 CISUM
+mpush $poe_con addrewardact '[
+  "signday",
+  "5.0000 CISUM",
+  " Daily sign-in     Complete one sign-in today"
+]' -p $poe_con
+
+
+# weeksignin - 5 CISUM
+mpush $poe_con addrewardact '[
+  "weeksignin",
+  "5.0000 CISUM",
+  "7-day sign-in bonus   Extra reward for every 7 consecutive sign-ins"
+]' -p $poe_con
