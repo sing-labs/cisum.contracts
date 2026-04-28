@@ -50,6 +50,7 @@ void cisum_vault::ontransfer(const name& from, const name& to, const asset& quan
   // 1) points[:uid][:ref]
   // 2) livepay:room_id[:...]
   // 3) cisumptxchg:points
+  // 4) fanclubvote[:...]
   auto parts = ::split(string_view(memo), ":");
   CHECKC(!parts.empty(), err::INVALID_FORMAT, "empty memo");
 
@@ -71,6 +72,10 @@ void cisum_vault::ontransfer(const name& from, const name& to, const asset& quan
     const auto points = parts[1];
     CHECKC(is_numeric(points), err::INVALID_FORMAT, "cisumptxchg points must be numeric");
     CHECKC(to_uint64(points) > 0, err::NOT_POSITIVE, "cisumptxchg points must be positive");
+    return;
+  }
+
+  if (op == "fanclubvote") {
     return;
   }
 

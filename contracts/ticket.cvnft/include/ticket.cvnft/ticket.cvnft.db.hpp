@@ -33,6 +33,19 @@ NTBL("nftglobal") global_t {
 };
 typedef eosio::singleton< "nftglobal"_n, global_t > global_singleton;
 
+// Scope: self
+TBL nft_whitelist_t {
+    uint64_t symbid;
+
+    nft_whitelist_t() {}
+
+    uint64_t primary_key()const { return symbid; }
+
+    EOSLIB_SERIALIZE(nft_whitelist_t, (symbid))
+
+    typedef eosio::multi_index< "nftwhite"_n, nft_whitelist_t > idx_t;
+};
+
 
 //Scope: self
 TBL nstats_t {

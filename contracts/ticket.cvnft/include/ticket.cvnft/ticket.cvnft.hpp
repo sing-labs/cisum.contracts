@@ -93,6 +93,8 @@ class [[eosio::contract("ticket.cvnft")]] cvticket : public contract {
 
    ACTION delwhitelist(const name& acct) ;
 
+   ACTION setnftwhite(const uint64_t& symbid, const bool& to_add);
+
    ACTION settokenuri(const uint64_t& symbid, const string& url);
    /**
     * @brief notary to notarize a NFT asset by its token ID

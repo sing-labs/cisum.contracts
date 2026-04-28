@@ -149,12 +149,8 @@ void cvticket::transfer( const name& from, const name& to, const vector<nasset>&
    check( memo.size() <= 256, "memo has more than 256 bytes" );
 
 
-   if (!_gstate.whitelist.empty()) {
-      check( _gstate.whitelist.count(from) > 0 || has_auth(get_self()) ||  _gstate.whitelist.count(to) > 0,
-            "transfer blocked: neither sender nor receiver in whitelist" );
-   }
-
    auto payer = has_auth( to ) ? to : from;
+   auto nft_whitelist = nft_whitelist_t::idx_t( _self, _self.value );
 
    require_recipient( from );
    require_recipient( to );
@@ -167,6 +163,11 @@ void cvticket::transfer( const name& from, const name& to, const vector<nasset>&
       // check( quantity.is_valid(), "invalid quantity" );
       check( quantity.amount > 0, "must transfer positive quantity" );
       check( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
+
+      if ( nft_whitelist.find(sym.nid) == nft_whitelist.end() ) {
+         check( _gstate.whitelist.count(from) > 0 || has_auth(get_self()) || _gstate.whitelist.count(to) > 0,
+               "transfer blocked: neither nft nor account in whitelist" );
+      }
 
       sub_balance( from, quantity );
       add_balance( to, quantity, payer );
@@ -252,6 +253,27 @@ void cvticket::delwhitelist(const name& acct)
 
     _gstate.whitelist.erase(it);
     _global.set(_gstate, get_self());
+}
+
+void cvticket::setnftwhite(const uint64_t& symbid, const bool& to_add)
+{
+      require_auth( _self );
+
+      auto nft_whitelist = nft_whitelist_t::idx_t( _self, _self.value );
+      if ( to_add ) {
+         auto nstats = nstats_t::idx_t( _self, _self.value );
+         check( nstats.find(symbid) != nstats.end(), "nft not found" );
+         check( nft_whitelist.find(symbid) == nft_whitelist.end(), "nft already in whitelist" );
+
+         nft_whitelist.emplace( _self, [&](auto& row) {
+            row.symbid = symbid;
+         });
+      } else {
+         auto it = nft_whitelist.find(symbid);
+         check( it != nft_whitelist.end(), "nft not in whitelist" );
+
+         nft_whitelist.erase(it);
+      }
 }
 
 
