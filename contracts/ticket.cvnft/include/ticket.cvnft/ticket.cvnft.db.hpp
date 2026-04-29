@@ -23,8 +23,6 @@ using namespace eosio;
 #define TBL struct [[eosio::table, eosio::contract("ticket.cvnft")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("ticket.cvnft")]]
 
-// static constexpr uint32_t U1E9  = 10'0000'0000UL;
-
 NTBL("nftglobal") global_t {
     set<name> creators; //null means open to public
     set<name> notaries;

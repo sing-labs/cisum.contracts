@@ -37,7 +37,7 @@ static inline std::string build_award_memo(const eosio::name& user,
 
     // 紧凑追加：|101x3|102x1 ...
     for (const auto& p : packs) {
-        memo += "|" + std::to_string(p.symbol.id()) + "x" + std::to_string(p.amount);
+        memo += "|" + std::to_string(p.symbol.nid) + "x" + std::to_string(p.amount);
 
         // 留点余量，超长就用总量兜底
         if (memo.size() >= 250) {

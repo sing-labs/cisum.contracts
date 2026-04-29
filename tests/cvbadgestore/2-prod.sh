@@ -26,7 +26,7 @@ mpush $stor_con setbadge '["'"${badge_ntoken}"'","'"${badge_ntoken}"'"]' -p $sto
 mpush $badge_ntoken create '[
   "'"${stor_con}"'",
   10000000000,
-  {"value":"4000000001"},
+  {"nid":"4000000001"},
   "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreihta3lzus36agk5nusdhotodzlgiciup5a4qkkah4eonp6zpxdwee",
   "'"${stor_con}"'"
 ]' -p $stor_con
@@ -35,7 +35,7 @@ mpush $badge_ntoken create '[
 
 mpush $badge_ntoken issue '[
   "'"${stor_con}"'",
-  {"amount": 10000000, "symbol": {"value":"4000000001"} },
+  {"amount": 10000000, "symbol": {"nid":"4000000001"} },
   "bootstrap batch"
 ]' -p $stor_con
 
@@ -43,7 +43,7 @@ mpush $badge_ntoken issue '[
 mpush $badge_ntoken create '[
   "'"${stor_con}"'",
   10000000000,
-  {"value":"4000000002"},
+  {"nid":"4000000002"},
   "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreibymdy43u5mjjinmvsamsdhfptdofbjyqltznxr5gnh5j53f2fxtu",
   "'"${stor_con}"'"
 ]' -p $stor_con
@@ -51,7 +51,7 @@ mpush $badge_ntoken create '[
 
 mpush $badge_ntoken issue '[
   "'"${stor_con}"'",
-  {"amount": 10000000, "symbol": {"value":"4000000002"}},
+  {"amount": 10000000, "symbol": {"nid":"4000000002"}},
   "bootstrap batch"
 ]' -p $stor_con
 
@@ -60,7 +60,7 @@ mpush $badge_ntoken issue '[
 mpush $badge_ntoken create '[
   "'"${stor_con}"'",
   10000000000,
-  {"value":"4000000003"},
+  {"nid":"4000000003"},
   "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiattahrdkqcahtervgqvwq7zatdyxwhhyzzt572ftes7ffupxwws4",
   "'"${stor_con}"'"
 ]' -p $stor_con
@@ -68,7 +68,7 @@ mpush $badge_ntoken create '[
 
 mpush $badge_ntoken issue '[
   "'"${stor_con}"'",
-  {"amount": 10000000, "symbol": {"value":"4000000003"}},
+  {"amount": 10000000, "symbol": {"nid":"4000000003"}},
   "bootstrap batch"
 ]' -p $stor_con
 
@@ -78,7 +78,7 @@ mpush $badge_ntoken issue '[
 mpush $badge_ntoken create '[
   "'"${stor_con}"'",
   10000000000,
-  {"value":"4000000004"},
+  {"nid":"4000000004"},
   "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreibt6mguuph5aotscy4g72huy5numsevbb5dmcuvq3mrlgusgor4qq",
   "'"${stor_con}"'"
 ]' -p $stor_con
@@ -86,7 +86,7 @@ mpush $badge_ntoken create '[
 
 mpush $badge_ntoken issue '[
   "'"${stor_con}"'",
-  {"amount": 10000000, "symbol": {"value":"4000000004"}},
+  {"amount": 10000000, "symbol": {"nid":"4000000004"}},
   "bootstrap batch"
 ]' -p $stor_con
 
@@ -126,9 +126,9 @@ mpush badge.cvnft settokenuri '[
 
 
 mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"nid":"4000000001"}}],"test1"]' -p badgecvstore
-mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"value":"4000000002"}}],"test1"]' -p badgecvstore
-mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"value":"4000000003"}}],"test1"]' -p badgecvstore
-mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"value":"4000000004"}}],"test1"]' -p badgecvstore
+mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"nid":"4000000002"}}],"test1"]' -p badgecvstore
+mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"nid":"4000000003"}}],"test1"]' -p badgecvstore
+mpush badge.cvnft transfer '["badgecvstore","cvsloteuye5z",[{"amount":1,"symbol":{"nid":"4000000004"}}],"test1"]' -p badgecvstore
 
 
 

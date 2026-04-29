@@ -42,7 +42,7 @@ mpush $show_con issue '["'$USER1'", '$SHOW_ID_OK', '$TK_VIP', 1, "unauth"]' -p $
 # 管理员给 VIP 档 +100
 mpush $show_con issuenft '[
   "'$ADMIN'",
-  {"amount":100,"symbol":{"value":'$TK_VIP'}},
+  {"amount":100,"symbol":{"nid":'$TK_VIP'}},
   "issue:'$SHOW_ID_OK'"
 ]' -p $ADMIN
 
@@ -51,7 +51,7 @@ mpush $show_con issuenft '[
 # 非管理员尝试（应失败）
 mpush $show_con issuenft '[
   "'$ADMIN'",
-  {"amount":100,"symbol":{"value":'$TK_VIP'}},
+  {"amount":100,"symbol":{"nid":'$TK_VIP'}},
   "issue:'$SHOW_ID_OK'"
 ]' -p $USER1
 
@@ -65,7 +65,7 @@ mpush $show_con issue '["'$USER2'", '$SHOW_ID_OK', '$TK_VIP', 50, "after-increas
 # 管理员给 FREE 档 +100
 mpush $show_con issuenft '[
   "'$ADMIN'",
-  {"amount":100,"symbol":{"value":'$TK_STD'}},
+  {"amount":100,"symbol":{"nid":'$TK_STD'}},
   "issue:'$SHOW_ID_OK'"
 ]' -p $ADMIN
 
@@ -74,20 +74,20 @@ mpush $show_con issuenft '[
 # 非管理员尝试（应失败）
 mpush $show_con issuenft '[
   "'$ADMIN'",
-  {"amount":100,"symbol":{"value":'$TK_STD'}},
+  {"amount":100,"symbol":{"nid":'$TK_STD'}},
   "issue:'$SHOW_ID_OK'"
 ]' -p $USER1
 
 # 增发后再发放，验证库存生效
 #超过库存数量
-mpush $show_con issuetograb '["'$GRAB_CON'", {"amount":500,"symbol":{"value":'$TK_STD'}}, "add:2:20250057"]' -p $ADMIN
+mpush $show_con issuetograb '["'$GRAB_CON'", {"amount":500,"symbol":{"nid":'$TK_STD'}}, "add:2:20250057"]' -p $ADMIN
 #非管理员尝试
-mpush $show_con issuetograb '["'$GRAB_CON'", {"amount":100,"symbol":{"value":'$TK_STD'}}, "add:2:20250057"]' -p $USER1
+mpush $show_con issuetograb '["'$GRAB_CON'", {"amount":100,"symbol":{"nid":'$TK_STD'}}, "add:2:20250057"]' -p $USER1
 #0发放
-mpush $show_con issuetograb '["'$GRAB_CON'", {"amount":0,"symbol":{"value":'$TK_STD'}}, "add:2:20250057"]' -p $ADMIN
-mpush $show_con issuetograb '["'$GRAB_CON'", {"amount":-100,"symbol":{"value":'$TK_STD'}}, "add:2:20250057"]' -p $ADMIN
+mpush $show_con issuetograb '["'$GRAB_CON'", {"amount":0,"symbol":{"nid":'$TK_STD'}}, "add:2:20250057"]' -p $ADMIN
+mpush $show_con issuetograb '["'$GRAB_CON'", {"amount":-100,"symbol":{"nid":'$TK_STD'}}, "add:2:20250057"]' -p $ADMIN
 #正常发放
-mpush $show_con issuetograb '["'$GRAB_CON'", {"amount":100,"symbol":{"value":'$TK_STD'}}, "add:2:20250057"]' -p $ADMIN
+mpush $show_con issuetograb '["'$GRAB_CON'", {"amount":100,"symbol":{"nid":'$TK_STD'}}, "add:2:20250057"]' -p $ADMIN
 
 
 

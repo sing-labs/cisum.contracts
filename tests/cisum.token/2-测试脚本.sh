@@ -37,10 +37,10 @@ mpush $nestar_token create '["'"${issuer_owner}"'", "10000000000000.0000 NESTAR"
 mpush $nestar_token issue  '["'"${issuer_owner}"'", "1000000000.0000 NESTAR", "bootstrap"]' -p $issuer_owner
 
 # ===== 规则设置 =====
-mpush $nestar_token setbrule '[0, "15000.0000 NESTAR",   {"value":"4299369637478511"}, true]'  -p $nestar_token
-mpush $nestar_token setbrule '[0, "150000.0000 NESTAR",  {"value":"4299369637478512"}, true]'  -p $nestar_token
-mpush $nestar_token setbrule '[0, "1500000.0000 NESTAR", {"value":"4299369637478513"}, true]'  -p $nestar_token
-mpush $nestar_token setbrule '[0, "15000000.0000 NESTAR",{"value":"4299369637478514"}, true]'  -p $nestar_token
+mpush $nestar_token setbrule '[0, "15000.0000 NESTAR",   {"nid":"4299369637478511"}, true]'  -p $nestar_token
+mpush $nestar_token setbrule '[0, "150000.0000 NESTAR",  {"nid":"4299369637478512"}, true]'  -p $nestar_token
+mpush $nestar_token setbrule '[0, "1500000.0000 NESTAR", {"nid":"4299369637478513"}, true]'  -p $nestar_token
+mpush $nestar_token setbrule '[0, "15000000.0000 NESTAR",{"nid":"4299369637478514"}, true]'  -p $nestar_token
 
 mpush $nestar_token delbrule '["0"]' -p $nestar_token
 
@@ -83,11 +83,11 @@ LONG_MEMO=$(python3 -c "print('x'*300)")
 mpush $nestar_token transfer '["'"${issuer_owner}"'", "'"${user_owner}"'", "1.0000 NESTAR", "'"$LONG_MEMO"'"]' -p $issuer_owner
 
 # === setbrule / delbrule 补充 ===
-mpush $nestar_token setbrule '[0, "12345.0000 NESTAR", {"value":"5555555555555555"}, true]' -p $nestar_token  # 应失败 --在badge中不存在
-mpush $nestar_token setbrule '[0, "888.0000 NESTAR", {"value":"5555555555555555"}, true]' -p $nestar_token # 应失败
-mpush $nestar_token setbrule '[0, "77.0000 NESTAR", {"value":"4444444444444444"}, false]' -p $nestar_token
+mpush $nestar_token setbrule '[0, "12345.0000 NESTAR", {"nid":"5555555555555555"}, true]' -p $nestar_token  # 应失败 --在badge中不存在
+mpush $nestar_token setbrule '[0, "888.0000 NESTAR", {"nid":"5555555555555555"}, true]' -p $nestar_token # 应失败
+mpush $nestar_token setbrule '[0, "77.0000 NESTAR", {"nid":"4444444444444444"}, false]' -p $nestar_token
 mpush $nestar_token delbrule '["7"]' -p $nestar_token # 应失败
-mpush $nestar_token setbrule '[0, "1.0000 NESTAR", {"value":"123"}, true]' -p $issuer_owner # 应失败
+mpush $nestar_token setbrule '[0, "1.0000 NESTAR", {"nid":"123"}, true]' -p $issuer_owner # 应失败
 
 # === 艺人与白名单 ===
 mpush $nestar_token transfer '["'"${user_owner}"'", "art14.token", "100.0000 NESTAR", "tip:unlisted"]' -p $user_owner  #应失败 -- nestar是不能转账

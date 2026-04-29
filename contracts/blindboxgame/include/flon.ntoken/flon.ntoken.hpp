@@ -57,7 +57,7 @@ public:
     * @return ACTION
     */
    ACTION notarize(const name& notary, const uint32_t& token_id);
-   ACTION approve( const name& spender, const name& sender, const uint32_t& token_pid, const uint64_t& amount );
+   ACTION approve( const name& spender, const name& sender, const uint64_t& token_nid, const uint64_t& amount );
    ACTION setcreator( const name& creator, const bool& to_add);
 
    ACTION setcheck( const bool& check_creator);

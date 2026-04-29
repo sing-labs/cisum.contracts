@@ -47,7 +47,7 @@ mpush show.cisum issuetograb '[
 #转账的币种不对报错
 mpush show24.cisum issuetograb '[
   "grab23.cisum",
-  { "amount": 1, "symbol": { "value": "21010001000010135" } },
+  { "amount": 1, "symbol": { "nid": "21010001000010135" } },
   "add:'$RUSH_ID':20250056"
 ]' -p flonian
 

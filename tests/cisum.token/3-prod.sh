@@ -26,10 +26,10 @@ mpush $cisum_token issue '["'"${issuer_owner}"'", "1000000000.0000 CISUM", "boot
 mpush $cisum_token transfer '["'"${issuer_owner}"'","poe.cisum", "200000000.0000 CISUM", "bootstrap"]' -p $issuer_owner
 
 # 新增规则（id=0 表示新增）
-mpush $cisum_token  addbrule '[0, "15000.0000 CISUM", {"value":"4299369637478511"}, true]' -p $cisum_token
-mpush $cisum_token  addbrule '[0, "150000.0000 CISUM", {"value":"4299369637478512"}, true]' -p $cisum_token
-mpush $cisum_token  addbrule '[0, "1500000.0000 CISUM", {"value":"4299369637478513"}, true]' -p $cisum_token
-mpush $cisum_token  addbrule '[0, "15000000.0000 CISUM", {"value":"4299369637478514"}, true]' -p $cisum_token
+mpush $cisum_token  addbrule '[0, "15000.0000 CISUM", {"nid":"4299369637478511"}, true]' -p $cisum_token
+mpush $cisum_token  addbrule '[0, "150000.0000 CISUM", {"nid":"4299369637478512"}, true]' -p $cisum_token
+mpush $cisum_token  addbrule '[0, "1500000.0000 CISUM", {"nid":"4299369637478513"}, true]' -p $cisum_token
+mpush $cisum_token  addbrule '[0, "15000000.0000 CISUM", {"nid":"4299369637478514"}, true]' -p $cisum_token
 
 
 

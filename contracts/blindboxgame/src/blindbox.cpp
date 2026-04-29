@@ -200,10 +200,10 @@ void blindbox::_transfer_token( const name& from, const name& to, const asset& q
     for (int i = 0; i < count; i++) {
         nasset nft;
         _one_nft( from, i, booth, nft );
-        if (bought.count( nft.symbol.id ) == 0)
-            bought[nft.symbol.id] = nft;
+        if (bought.count( nft.symbol.nid ) == 0)
+            bought[nft.symbol.nid] = nft;
         else
-            bought[nft.symbol.id] += nft;
+            bought[nft.symbol.nid] += nft;
     }
 
     vector<nasset> nfts = {};

@@ -10,7 +10,7 @@ mpush $ticket_ntoken  addwhitelist '["ticket.cvnft"]'   -p $ticket_ntoken
 #普通票
 mpush $ticket_ntoken create '[
   "'"${ticket_ntoken}"'",
-  10000000000,{"value": 21010001000010016}
+  10000000000,{"nid": 21010001000010016}
   ,
   "ipfs://ticket/silver6.json",
   "'"${ticket_ntoken}"'"
@@ -19,7 +19,7 @@ mpush $ticket_ntoken create '[
 
 mpush $ticket_ntoken issue '[
   "'"${ticket_ntoken}"'",
-  {"amount": 10000000, "symbol": {"id": 010010, "pid": 0021010001}},
+  {"amount": 10000000, "symbol": {"nid": 21010001000010010}},
   "bootstrap batch"
 ]' -p $ticket_ntoken
 
@@ -28,7 +28,7 @@ mpush $ticket_ntoken issue '[
 mpush $ticket_ntoken create '[
   "'"${ticket_ntoken}"'",
   10000000000,
-  {"id": 010011, "pid": 0021010001},
+  {"nid": 21010001000010011},
   "ipfs://ticket/silver1.json",
   "'"${ticket_ntoken}"'"
 ]' -p $ticket_ntoken
@@ -36,7 +36,7 @@ mpush $ticket_ntoken create '[
 
 mpush $ticket_ntoken issue '[
   "'"${ticket_ntoken}"'",
-  {"amount": 10000000, "symbol": {"id": 010011, "pid": 0021010001}},
+  {"amount": 10000000, "symbol": {"nid": 21010001000010011}},
   "bootstrap batch"
 ]' -p $ticket_ntoken
 
@@ -52,7 +52,7 @@ mpush $ticket_ntoken issue '[
 ticket_ntoken=ticket.cvnft
 mpush $ticket_ntoken create '[
   "'"${ticket_ntoken}"'",
-  10000000000,{"value": 21010001000010016}
+  10000000000,{"nid": 21010001000010016}
   ,
   "ipfs://ticket/silver6.json",
   "'"${ticket_ntoken}"'"
@@ -61,6 +61,6 @@ mpush $ticket_ntoken create '[
 
 mpush $ticket_ntoken issue '[
   "'"${ticket_ntoken}"'",
-  {"amount": 10000000, "symbol": {"id": 010010, "pid": 0021010001}},
+  {"amount": 10000000, "symbol": {"nid": 21010001000010010}},
   "bootstrap batch"
 ]' -p $ticket_ntoken

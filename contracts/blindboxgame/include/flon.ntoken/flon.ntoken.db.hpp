@@ -23,26 +23,23 @@ using namespace eosio;
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("flon.ntoken")]]
 
 struct nsymbol {
-    uint32_t id;
-    uint32_t parent_id;
+    uint64_t nid = 0;
 
-    nsymbol() {}
-    nsymbol(const uint32_t& i): id(i),parent_id(0) {}
-    nsymbol(const uint32_t& i, const uint32_t& pid): id(i),parent_id(pid) {}
-    nsymbol(const uint64_t& raw): parent_id(raw >> 32), id(raw) {}
-     bool operator<(const nsymbol& other) const {
-        return raw() < other.raw();
+    nsymbol() = default;
+    explicit nsymbol(const uint64_t& raw): nid(raw) {}
+    bool operator<(const nsymbol& other) const {
+        return nid < other.nid;
     }
 
     friend bool operator==(const nsymbol&, const nsymbol&);
-    bool is_valid()const { return( id > parent_id ); }
-    uint64_t raw()const { return( (uint64_t) parent_id << 32 | id ); } 
+    bool is_valid()const { return nid != 0; }
+    uint64_t raw()const { return nid; }
 
-    EOSLIB_SERIALIZE( nsymbol, (id)(parent_id) )
+    EOSLIB_SERIALIZE( nsymbol, (nid) )
 };
 
-bool operator==(const nsymbol& symb1, const nsymbol& symb2) { 
-    return( symb1.id == symb2.id && symb1.parent_id == symb2.parent_id ); 
+bool operator==(const nsymbol& symb1, const nsymbol& symb2) {
+    return symb1.nid == symb2.nid;
 }
 
 
@@ -51,9 +48,7 @@ struct nasset {
     nsymbol         symbol;
 
     nasset() {}
-    nasset(const uint32_t& id): symbol(id), amount(0) {}
-    nasset(const uint32_t& id, const uint32_t& pid): symbol(id, pid), amount(0) {}
-    nasset(const uint32_t& id, const uint32_t& pid, const int64_t& am): symbol(id, pid), amount(am) {}
+    nasset(const uint64_t& nid): symbol(nid), amount(0) {}
     nasset(const int64_t& amt, const nsymbol& symb): amount(amt), symbol(symb) {}
 
     nasset& operator+=(const nasset& quantity) { 
@@ -83,12 +78,8 @@ TBL nstats_t {
     bool            paused;
 
     nstats_t() {};
-    nstats_t(const uint64_t& id): supply(id) {};
-    nstats_t(const uint64_t& id, const uint64_t& pid): supply(id, pid) {};
-    nstats_t(const uint64_t& id, const uint64_t& pid, const int64_t& am): supply(id, pid, am) {};
     
-    uint64_t primary_key()const     { return supply.symbol.id; } // must use id to keep available_primary_key increase consistenly
-    uint64_t by_parent_id()const    { return supply.symbol.parent_id; }
+    uint64_t primary_key()const     { return supply.symbol.nid; }
     uint64_t by_ipowner()const      { return ipowner.value; }
     uint64_t by_issuer()const       { return issuer.value; }
     uint128_t by_issuer_created()const { return (uint128_t) issuer.value << 64 | (uint128_t) issued_at.sec_since_epoch(); }
@@ -96,7 +87,6 @@ TBL nstats_t {
 
     typedef eosio::multi_index
     < "tokenstats"_n,  nstats_t,
-        indexed_by<"parentidx"_n,       const_mem_fun<nstats_t, uint64_t, &nstats_t::by_parent_id> >,
         indexed_by<"ipowneridx"_n,      const_mem_fun<nstats_t, uint64_t, &nstats_t::by_ipowner> >,
         indexed_by<"issueridx"_n,       const_mem_fun<nstats_t, uint64_t, &nstats_t::by_issuer> >,
         indexed_by<"issuercreate"_n,    const_mem_fun<nstats_t, uint128_t, &nstats_t::by_issuer_created> >,
@@ -125,7 +115,7 @@ TBL account_t {
 ///Scope: owner's account
 TBL allowance_t{
     name                        spender;                     // PK
-    map<uint32_t, uint64_t>     allowances;                 // KV : NFT PID -> amount
+    map<uint64_t, uint64_t>     allowances;                 // KV : NFT nid -> amount
 
     allowance_t() {}
     uint64_t primary_key()const { return spender.value; }

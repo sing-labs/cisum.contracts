@@ -26,7 +26,7 @@ badgestore_contract=badgecvstore
 mpush $badgestore_contract addwhitelist '["pop.cisum"]' -p $badgestore_contract
 
 # 新增规则（id=0 表示新增）
-mpush $pop_con  setbrule '[0, "50.000000 USDT", {"value":"4299369637478511"}, true]' -p $pop_con
-mpush $pop_con  setbrule '[0, "500.000000 USDT", {"value":"4299369637478512"}, true]' -p $pop_con
-mpush $pop_con  setbrule '[0, "5000.000000 USDT", {"value":"4299369637478513"}, true]' -p $pop_con
-mpush $pop_con  setbrule '[0, "50000.000000 USDT", {"value":"4299369637478514"}, true]' -p $pop_con
+mpush $pop_con  setbrule '[0, "50.000000 USDT", {"nid":"4299369637478511"}, true]' -p $pop_con
+mpush $pop_con  setbrule '[0, "500.000000 USDT", {"nid":"4299369637478512"}, true]' -p $pop_con
+mpush $pop_con  setbrule '[0, "5000.000000 USDT", {"nid":"4299369637478513"}, true]' -p $pop_con
+mpush $pop_con  setbrule '[0, "50000.000000 USDT", {"nid":"4299369637478514"}, true]' -p $pop_con

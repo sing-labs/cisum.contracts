@@ -27,25 +27,25 @@ mpush $show_con addshowadm '["flontest"]' -p flonian
 
 #普通票
 mpush $show_con createnft '[
-  10000000000,{"value": 21010001000010021},
+  10000000000,{"nid": 21010001000010021},
   "ipfs://ticket/silver11.json"
 ]' -p flonian
 
 
 mpush $show_con issuenft '[
-  {"amount": 2000, "symbol": {"value": 21010001000010021} },
+  {"amount": 2000, "symbol": {"nid": 21010001000010021} },
   "bootstrap batch"
 ]' -p flonian
 
 
 #合影票
 mpush $show_con createnft '[
-  10000000000,{"value": 21010001000010022},
+  10000000000,{"nid": 21010001000010022},
   "ipfs://ticket/silver12.json"
 ]' -p flonian
 
 
-mpush $show_con issuenft '["flonian",{"amount": 11, "symbol": {"value": 21010001000010241} },"issue:20250064"]' -p flonian
+mpush $show_con issuenft '["flonian",{"amount": 11, "symbol": {"nid": 21010001000010241} },"issue:20250064"]' -p flonian
 
 
 mpush $show_con newshow '[41258,"concert", true, true, "2025-09-01T00:00:00", "2025-09-10T23:59:59","test" ,"gasgsgg gq gg sa gdf jhfd j" , "onshelf"]' -p flonian
@@ -66,13 +66,13 @@ mpush $show_con addchecker '[1757382785471,"cvohdzu2awu4"]'   -p flonian
 
 
 
-mpush $show_con newticket '[41258, {"value": 21010001000010021}, {"value": 0}, "普通票", "100.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
-mpush $show_con newticket '[41258, {"value": 21010001000010022}, {"value": 21010001000010021}, "VIP", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
-mpush $show_con newticket '[41258, {"value": 21010001000010023}, {"value": 21010001000010022}, "VIP1", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
-mpush $show_con newticket '[41258, {"value": 21010001000010024}, {"value": 21010001000010022}, "VIP2", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
-mpush $show_con newticket '[41258, {"value": 21010001000010025}, {"value": 21010001000010022}, "VIP3", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
-mpush $show_con newticket '[41258, {"value": 21010001000010026}, {"value": 21010001000010022}, "VIP4", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
-mpush $show_con newticket '[41258, {"value": 21010001000010027}, {"value": 21010001000010022}, "VIP5", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
+mpush $show_con newticket '[41258, {"nid": 21010001000010021}, {"nid": 0}, "普通票", "100.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
+mpush $show_con newticket '[41258, {"nid": 21010001000010022}, {"nid": 21010001000010021}, "VIP", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
+mpush $show_con newticket '[41258, {"nid": 21010001000010023}, {"nid": 21010001000010022}, "VIP1", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
+mpush $show_con newticket '[41258, {"nid": 21010001000010024}, {"nid": 21010001000010022}, "VIP2", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
+mpush $show_con newticket '[41258, {"nid": 21010001000010025}, {"nid": 21010001000010022}, "VIP3", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
+mpush $show_con newticket '[41258, {"nid": 21010001000010026}, {"nid": 21010001000010022}, "VIP4", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
+mpush $show_con newticket '[41258, {"nid": 21010001000010027}, {"nid": 21010001000010022}, "VIP5", "200.00 USDT", 100, "running", "2025-08-01T00:00:00", "2025-09-10T23:59:59"]' -p flonian
 
 
 mpush $show_con issue '["gahbnbehaskk",1757500247480,2101025469022,1,"send to gahbnbehaskk 1 ticket NFT"]' -p flonian
@@ -113,13 +113,13 @@ mpush show.cisum setticket '["flonian",1758870677786,2101025906313,"afterparty",
 
 mpush show.cisum setshow '["flonian",1758870677786,"concert",false,false,"2025-11-30T18:00:00","2025-11-30T23:00:00","Vũ Thanh Vân Concert Việt Nam",""]' -p flonian
 
-mpush show.cisum nftissue '["flonian","show.cisum",{"amount":100,"symbol":{"value":2101025468200}},"issue:1758870677786"]' -p show.cisum
+mpush show.cisum nftissue '["flonian","show.cisum",{"amount":100,"symbol":{"nid":2101025468200}},"issue:1758870677786"]' -p show.cisum
 
 
-mpush show.cisum nftissue '["flonian","flonian",{"amount":100,"symbol":{"value":2101025468200}},"issue:1758870677786"]' -p flonian
+mpush show.cisum nftissue '["flonian","flonian",{"amount":100,"symbol":{"nid":2101025468200}},"issue:1758870677786"]' -p flonian
 
 mpush show.cisum nftissue \
-'["flonian","flonian",{"amount":100,"symbol":{"value":2101025468200}},"issue:1758870677786"]' \
+'["flonian","flonian",{"amount":100,"symbol":{"nid":2101025468200}},"issue:1758870677786"]' \
 -p flonian
 
 
@@ -127,13 +127,13 @@ mpush show.cisum nftissue \
 
 
 
- mpush $show_con nftissue '["show.cisum","show.cisum",{"amount": 11, "symbol": {"value": 2101025468200} },"issue:1758870677786"]' -p show.cisum
+ mpush $show_con nftissue '["show.cisum","show.cisum",{"amount": 11, "symbol": {"nid": 2101025468200} },"issue:1758870677786"]' -p show.cisum
 
 
  mpush $show_con issuetograb '[
    "show.cisum",
    "grab.cisum",
-   {"amount": 100, "symbol": {"value": 2101025468200} },
+   {"amount": 100, "symbol": {"nid": 2101025468200} },
    "addrushsale:23:1758870677786"]' -p show.cisum
 
 

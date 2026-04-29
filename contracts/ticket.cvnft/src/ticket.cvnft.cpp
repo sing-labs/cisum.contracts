@@ -23,12 +23,6 @@ void cvticket::create( const name& issuer, const int64_t& maximum_supply, const 
    // check( lower_itr == idx.end() || lower_itr == upper_itr, "token with token_uri already exists" );
    check( idx.find(token_uri_hash) == idx.end(), "token with token_uri already exists" );
    check( nstats.find(nsymb.nid) == nstats.end(), "token of nsymbol: " + to_string(nsymb.nid) + " alreay exists" );
-   check( nsymb.pid() != 0, "parent id shall not be equal to 0" );
-   check( nsymb.id() != 0, "id shall not be equal to 0" );
-   // if (nsymb.id != 0)
-      // check( nsymb.id != nsymb.pid, "parent id shall not be equal to id" );
-   // else
-   //    nsymb.id         = nstats.available_primary_key();
 
    nstats.emplace( issuer, [&]( auto& s ) {
       s.supply.symbol   = nsymb;

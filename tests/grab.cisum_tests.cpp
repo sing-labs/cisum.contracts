@@ -16,16 +16,7 @@ using mvo = fc::mutable_variant_object;
 struct nsymbol {
     uint64_t value = 0;
 
-    static constexpr uint32_t U1E9  = 10'0000'0000UL;
     nsymbol() = default;
-
-    static uint64_t to_raw_value(uint32_t i, uint32_t p) {
-        EOS_ASSERT( p < U1E9, symbol_type_exception, "pid must be below 10**9" );
-        EOS_ASSERT( i < U1E9, symbol_type_exception, "id must be below 10**9" );
-        return (uint64_t)p * U1E9 + i;
-    }
-
-    explicit nsymbol(uint32_t i, uint32_t p): value(to_raw_value(i, p)) {}
 
     explicit nsymbol(uint64_t raw): value(raw) {}
 
@@ -33,13 +24,6 @@ struct nsymbol {
         return( a.value == b.value );
     }
 
-    inline uint32_t id() const {
-        return value % U1E9;
-    }
-
-    inline uint32_t pid() const {
-        return value / U1E9;
-    }
 };
 
 FC_REFLECT( nsymbol, (value) )
@@ -48,8 +32,7 @@ struct nasset {
     nsymbol         symbol;
 
     nasset() = default;
-    explicit nasset(uint32_t id): amount(0), symbol(id) {}
-    explicit nasset(uint32_t id, uint32_t pid, int64_t amount = 0): amount(amount), symbol(id, pid) {}
+    explicit nasset(uint64_t nid): amount(0), symbol(nid) {}
     explicit nasset(int64_t amount, const nsymbol& symb): amount(amount), symbol(symb) {}
 
     nasset& operator+=(const nasset& quantity) {
@@ -162,7 +145,7 @@ BOOST_FIXTURE_TEST_CASE(test_grab, grab_cisum_tester) {
     uint64_t show_id = 1;
 
     int64_t total_tickets = 10000;
-    nsymbol ticket_id = nsymbol(1, 1);
+    nsymbol ticket_id = nsymbol(1000000001);
     auto ticket_issuer = ticket_contract;
     auto point_issuer = point_contract;
 
