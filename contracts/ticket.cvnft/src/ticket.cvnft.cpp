@@ -1,4 +1,5 @@
 #include <ticket.cvnft/ticket.cvnft.hpp>
+#include <flon/consts.hpp>
 
 namespace flon {
 
@@ -48,7 +49,7 @@ void cvticket::setipowner(const uint64_t& symbid, const name& ip_owner) {
 }
 
 void cvticket::settokenuri(const uint64_t& symbid, const string& url) {
-   check(has_auth(_self), "non authorized" );
+   check(has_auth(_self) || has_auth(CVBADGESTORE_CONTRACT), "non authorized" );
 
    auto nstats          = nstats_t::idx_t( _self, _self.value );
    auto itr             = nstats.find(symbid);
