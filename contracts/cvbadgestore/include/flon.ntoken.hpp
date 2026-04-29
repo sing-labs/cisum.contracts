@@ -25,8 +25,15 @@ class [[eosio::contract("flon.ntoken")]] ntoken : public contract {
    public:
       using contract::contract;
 
-
+   ACTION create( const name& issuer,
+                  const int64_t& maximum_supply,
+                  const nsymbol& symbol,
+                  const string& token_uri,
+                  const name& ipowner );
+   ACTION issue( const name& to, const nasset& quantity, const string& memo );
    ACTION transfer( const name& from, const name& to, const vector<nasset>& assets, const string& memo );
+   using create_action = action_wrapper< "create"_n, &ntoken::create >;
+   using issue_action = action_wrapper< "issue"_n, &ntoken::issue >;
    using transfer_action = action_wrapper< "transfer"_n, &ntoken::transfer >;
 
 };

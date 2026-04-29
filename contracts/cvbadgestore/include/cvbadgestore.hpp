@@ -36,6 +36,13 @@ public:
   void addwhitelist(const name& account);
   [[eosio::action]]
   void delwhitelist(const name& account);
+  [[eosio::action]]
+  void createbadge(const name& submitter,
+                   const int64_t& max_supply,
+                   const nsymbol& symbol,
+                   const string& token_uri,
+                   const int64_t& issue_amount,
+                   const string& memo);
 
   [[eosio::on_notify("*::notifyaward")]]
   void on_notifyaward(const name& user,
@@ -60,6 +67,7 @@ private:
     if (it == wtbl.end()) return false;
     return true;
   }
+  void require_perm(const name& submitter, const string& perm) const;
 
 };
 

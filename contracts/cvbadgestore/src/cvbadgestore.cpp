@@ -7,11 +7,21 @@
 #include "cvbadgestore.hpp"
 #include "cvbadgestore.db.hpp"
 #include "flon.ntoken.hpp"
+#include <flon.auth/flon.auth.hpp>
+#include <flon/consts.hpp>
 
 using std::string;
 using std::vector;
 
 namespace flon {
+
+void cvbadgestore::require_perm(const name& submitter, const std::string& perm) const {
+  require_auth(submitter);
+  flonauth::checkrole_action(
+    CISUMAUTH_CONTRACT,
+    { get_self(), "active"_n }
+  ).send(get_self(), submitter, perm);
+}
 
 void cvbadgestore::setadmin(const name& admin) {
   require_auth(get_self());
@@ -47,6 +57,36 @@ void cvbadgestore::delwhitelist(const name& account) {
   auto it = wtbl.find(account.value);
   CHECKC(it != wtbl.end(), err::RECORD_NO_FOUND, "not in whitelist");
   wtbl.erase(it);
+}
+
+void cvbadgestore::createbadge(const name& submitter,
+                               const int64_t& max_supply,
+                               const nsymbol& symbol,
+                               const string& token_uri,
+                               const int64_t& issue_amount,
+                               const string& memo) {
+  require_perm(submitter, "show");
+
+  const name badge_contract = _gstate.badge_contract.value == 0
+                             ? CVBADGE_CONTRACT
+                             : _gstate.badge_contract;
+  CHECKC(is_account(badge_contract), err::ACCOUNT_INVALID, "badge_contract not exist");
+  CHECKC(max_supply > 0, err::NOT_POSITIVE, "max_supply must be positive");
+  CHECKC(issue_amount > 0, err::NOT_POSITIVE, "issue_amount must be positive");
+  CHECKC(issue_amount <= max_supply, err::INVALID_FORMAT, "issue_amount exceeds max_supply");
+  CHECKC(symbol.nid != 0, err::INVALID_FORMAT, "invalid nsymbol");
+  CHECKC(token_uri.size() <= 512, err::INVALID_FORMAT, "token_uri too long");
+  CHECKC(memo.size() <= 256, err::INVALID_FORMAT, "memo too long");
+
+  ntoken::create_action{
+    badge_contract,
+    { permission_level{ get_self(), "active"_n } }
+  }.send(get_self(), max_supply, symbol, token_uri, get_self());
+
+  ntoken::issue_action{
+    badge_contract,
+    { permission_level{ get_self(), "active"_n } }
+  }.send(get_self(), nasset{ issue_amount, symbol }, memo);
 }
 
 void cvbadgestore::on_notifyaward(const name& user,
