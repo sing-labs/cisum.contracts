@@ -90,3 +90,14 @@ mpush cisum.token transfer '[
 ]' -p gahbnbehaskk
 
 mpush $ops_con setpause '[false]' -p $ops_admin
+
+
+
+
+
+mpush cisum.token transfer '[
+  "gahbnbehaskk",
+  "cisum.vault",
+  "1.0000 CISUM",
+  "fanclubvote:100:gahbnbehaskk:1"
+]' -p gahbnbehaskk
