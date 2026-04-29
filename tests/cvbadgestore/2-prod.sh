@@ -99,23 +99,12 @@ mpush $badge_ntoken issue '[
 
 
 
-mpush badge.cvnft settokenuri '[4000000001,
-"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreigjp2lys54xk2dwfpwmhbgsdymjxzyamqg4wqrv35adfhhgdoljgi"
-]' -p badge.cvnft -p badgecvstore
+mpush badgecvstore settokenuri '["flonian",4000000001,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreigjp2lys54xk2dwfpwmhbgsdymjxzyamqg4wqrv35adfhhgdoljgi"]' -p flonian
 
-mpush badge.cvnft settokenuri '[
-  4000000002,
-  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreifb2vphs3zxmf25tz5dxcleu44qfnyrf5paqaytxxaxm3flzh6bdu"
-]' -p badge.cvnft -p badgecvstore
-mpush badge.cvnft settokenuri '[
-  4000000003,
-  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiaiqcmpqzvauuq5mrvh4i5caeu52egsqdsmk4uzovjg75a535q3se"
-]' -p badge.cvnft -p badgecvstore
+mpush badgecvstore settokenuri '["flonian",4000000002,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreifb2vphs3zxmf25tz5dxcleu44qfnyrf5paqaytxxaxm3flzh6bdu"]' -p flonian
+mpush badgecvstore settokenuri '["flonian",4000000003,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiaiqcmpqzvauuq5mrvh4i5caeu52egsqdsmk4uzovjg75a535q3se"]' -p flonian
 
-mpush badge.cvnft settokenuri '[
-  4000000004,
-  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiaxrowvsczmuuir44f2s6xvumb5qi7wjc3sv2ulu4nngan47ilqdm"
-]' -p badge.cvnft -p badgecvstore
+mpush badgecvstore settokenuri '["flonian",4000000004,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiaxrowvsczmuuir44f2s6xvumb5qi7wjc3sv2ulu4nngan47ilqdm"]' -p flonian
 
 
 
@@ -163,17 +152,11 @@ mpush $stor_con addwhitelist '["cisum.admin"]' -p $stor_con
 
 
 
-mpush badge.cvnft settokenuri '[
-  5000000001,
-  "https://coral-reasonable-spider-53.mypinata.cloud/ipfs/bafkreiahn5aadigbr6574k27zwjxxpryylysixlpxjrcyrf445scmx56ba"
-]' -p badge.cvnft -p badgecvstore
+mpush badgecvstore settokenuri '["flonian",5000000001,"https://coral-reasonable-spider-53.mypinata.cloud/ipfs/bafkreiahn5aadigbr6574k27zwjxxpryylysixlpxjrcyrf445scmx56ba"]' -p flonian
 
 
 
 
 
 
-mpush badge.cvnft settokenuri '[
-  5000000003,
-  "https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreictlvi4oujj2ti26povrrrolv57pdowk2ueugd54qx2b3pyetuuxm"
-]' -p badge.cvnft -p badgecvstore
+mpush badgecvstore settokenuri '["flonian",5000000003,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreictlvi4oujj2ti26povrrrolv57pdowk2ueugd54qx2b3pyetuuxm"]' -p flonian

@@ -89,6 +89,24 @@ void cvbadgestore::createbadge(const name& submitter,
   }.send(get_self(), nasset{ issue_amount, symbol }, memo);
 }
 
+void cvbadgestore::settokenuri(const name& submitter,
+                               const uint64_t& symbid,
+                               const string& token_uri) {
+  require_perm(submitter, "show");
+
+  const name badge_contract = _gstate.badge_contract.value == 0
+                             ? CVBADGE_CONTRACT
+                             : _gstate.badge_contract;
+  CHECKC(is_account(badge_contract), err::ACCOUNT_INVALID, "badge_contract not exist");
+  CHECKC(symbid != 0, err::INVALID_FORMAT, "invalid symbid");
+  CHECKC(token_uri.size() <= 512, err::INVALID_FORMAT, "token_uri too long");
+
+  ntoken::settokenuri_action{
+    badge_contract,
+    { permission_level{ get_self(), "active"_n } }
+  }.send(symbid, token_uri);
+}
+
 void cvbadgestore::on_notifyaward(const name& user,
                                 const std::vector<nasset>& packs,
                                 const std::string& memo)

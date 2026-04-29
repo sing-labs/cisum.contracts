@@ -43,6 +43,10 @@ public:
                    const string& token_uri,
                    const int64_t& issue_amount,
                    const string& memo);
+  [[eosio::action]]
+  void settokenuri(const name& submitter,
+                   const uint64_t& symbid,
+                   const string& token_uri);
 
   [[eosio::on_notify("*::notifyaward")]]
   void on_notifyaward(const name& user,

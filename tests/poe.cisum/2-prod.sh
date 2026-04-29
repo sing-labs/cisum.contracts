@@ -288,3 +288,13 @@ mpush $poe_con addrewardact '[
   "5.0000 CISUM",
   "7-day sign-in bonus   Extra reward for every 7 consecutive sign-ins"
 ]' -p $poe_con
+
+
+# clubsairdrop - 1000 CISUM
+mpush $poe_con addrewardact '[
+  "clubsairdrop",
+  "1000.0000 CISUM",
+  "Club airdrop    Reward for club members"
+]' -p $poe_con
+
+
