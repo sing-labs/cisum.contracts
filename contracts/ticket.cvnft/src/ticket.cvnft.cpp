@@ -252,7 +252,7 @@ void cvticket::delwhitelist(const name& acct)
 
 void cvticket::setnftwhite(const uint64_t& symbid, const bool& to_add)
 {
-      require_auth( _self );
+      check(has_auth(_self) || has_auth(OPS_CONTRACT), "non authorized");
 
       auto nft_whitelist = nft_whitelist_t::idx_t( _self, _self.value );
       if ( to_add ) {

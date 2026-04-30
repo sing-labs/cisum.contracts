@@ -60,6 +60,10 @@ void cisumshow::publishshow(name creator,
         // ---- 创建 NFT ----
         CREATE_NFT(SHOW_CONTRACT, _self, tk.total_count * 10, t_sym, tk.token_uri);
 
+        if (show.ticket_transferable) {
+            SET_NFT_WHITE(CVTICKET_CONTRACT, _self, tk.ticket_id, true);
+        }
+
         // ---- 创建票档 ----
         NEW_TICKET(SHOW_CONTRACT,
                    _self,

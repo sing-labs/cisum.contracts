@@ -30,6 +30,19 @@ using flon::nsymbol;
     { flon::show::issuetograb_action act{ bank, { permission_level{ submitter, "active"_n } } };\
       act.send(submitter, to, quantity, memo); }
 
+#define SET_NFT_WHITE(bank, submitter, symbid, to_add) \
+    { flon::cvticket::setnftwhite_action act{ bank, { permission_level{ submitter, "active"_n } } };\
+      act.send(symbid, to_add); }
+
+class [[eosio::contract("ticket.cvnft")]] cvticket : public contract {
+public:
+  using contract::contract;
+
+  ACTION setnftwhite(const uint64_t& symbid, const bool& to_add);
+
+  using setnftwhite_action = eosio::action_wrapper<"setnftwhite"_n, &cvticket::setnftwhite>;
+};
+
 
 
 class [[eosio::contract("show.cisum")]] show : public contract {

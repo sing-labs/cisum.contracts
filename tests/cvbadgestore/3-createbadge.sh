@@ -12,6 +12,7 @@ badge_nid=${2:-5000000004}
 token_uri=${3:-"https://coral-reasonable-spider-53.mypinata.cloud/ipfs/bafkreibqffnhc6y4nvvsylduiezidzy6l6yum2rals7oq7g7plj7hp7gwm"}
 max_supply=${4:-10000000000}
 issue_amount=${5:-50000}
+updated_token_uri=${6:-"https://coral-reasonable-spider-53.mypinata.cloud/ipfs/bafkreiahn5aadigbr6574k27zwjxxpryylysixlpxjrcyrf445scmx56ba"}
 
 
 
@@ -22,4 +23,10 @@ mpush $stor_con createbadge '[
   "'"${token_uri}"'",
   '"${issue_amount}"',
   "create badge through cvbadgestore"
+]' -p $submitter
+
+mpush $stor_con settokenuri '[
+  "'"${submitter}"'",
+  '"${badge_nid}"',
+  "'"${updated_token_uri}"'"
 ]' -p $submitter
