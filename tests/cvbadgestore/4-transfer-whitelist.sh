@@ -8,7 +8,9 @@ badge_ntoken=${BADGE_NTOKEN:-badge.cvnft}
 admin=${ADMIN:-flonian}
 from_user=${FROM_USER:-flonian}
 to_user=${TO_USER:-gahbnbehaskk}
-badge_nid= 2101025684899
+
+
+
 
 
 
@@ -32,16 +34,21 @@ mpush $badge_ntoken transfer '[
 
 
 
+from_user=${FROM_USER:-flonian}
+to_user=${TO_USER:-gahbnbehaskk}
 
-mpush $badge_ntoken setnftwhite '[
-  '"${badge_nid}"',
+ticket_ntoken=ticket.cvnft
+ticket_nid=21010001000011001
+
+mpush $ticket_ntoken setnftwhite '[
+  '"${ticket_nid}"',
   true
-]' -p $badge_ntoken
+]' -p $ticket_ntoken
 
-mpush $badge_ntoken transfer '[
+mpush $ticket_ntoken transfer '[
   "'"${from_user}"'",
   "'"${to_user}"'",
-  [{"amount":1,"symbol":{"nid":"'"${badge_nid}"'"}}],
+  [{"amount":1,"symbol":{"nid":"'"${ticket_nid}"'"}}],
   "allowed by nft whitelist"
 ]' -p $from_user
 
