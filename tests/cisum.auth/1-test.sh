@@ -143,3 +143,9 @@ mpush $rolemanage_con addroleperm '["flonian","admin",["banner", "content", "ven
 
 
 mpush $rolemanage_con delroleperm '["flonian","admin",["create", "delete", "view"]]'   -p flonian
+
+
+
+mpush cisum.auth addroleperm '["flonian","admin",["vlogStatisticsMgmt"],"vlogStatisticsMgmt"]'   -p flonian
+
+mpush cisum.auth addroleperm '["flonian","admin",["appStatisticsMgmt"],"appStatisticsMgmt"]'   -p flonian

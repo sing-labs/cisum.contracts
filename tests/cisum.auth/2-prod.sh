@@ -110,3 +110,15 @@ mpush cisum.auth addroleperm '["flonian","admin",["blacklistMgmt"],"blacklistMgm
 mpush cisum.auth addroleperm '["ful4oe5culzv","admin",["dashboard"],"dashboard"]'   -p ful4oe5culzv
 
 
+
+
+mpush cisum.auth addroleperm '["flonian","admin",["shareLinkMgmt"],"shareLinkMgmt"]'   -p flonian
+
+#生产还未加
+mpush cisum.auth addroleperm '["ful4oe5culzv","admin",["shareLinkMgmt"],"shareLinkMgmt"]'   -p ful4oe5culzv
+
+mpush cisum.auth addroleperm '["ful4oe5culzv","admin",["vlogStatisticsMgmt"],"vlogStatisticsMgmt"]'   -p ful4oe5culzv
+
+mpush cisum.auth addroleperm '["ful4oe5culzv","admin",["appStatisticsMgmt"],"appStatisticsMgmt"]'   -p ful4oe5culzv
+
+

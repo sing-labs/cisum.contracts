@@ -298,3 +298,26 @@ mpush $poe_con addrewardact '[
 ]' -p $poe_con
 
 
+
+
+poe_con=poe.cisum
+# shareclk - 2 CISUM
+mpush $poe_con addrewardact '[
+  "shareclk",
+  "2.0000 CISUM",
+  "Reward for clicking the shared link"
+]' -p $poe_con
+
+# shareurl - 20 CISUM
+mpush $poe_con addrewardact '[
+  "shareurl",
+  "20.0000 CISUM",
+  "Reward for passing shared link verification after URL submission"
+]' -p $poe_con
+
+# sharest - 10 CISUM
+mpush $poe_con addrewardact '[
+  "sharest",
+  "10.0000 CISUM",
+  "Reward for initiating a share"
+]' -p $poe_con

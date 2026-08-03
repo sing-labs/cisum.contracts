@@ -53,3 +53,7 @@ mpush $ticket_ntoken transfer '[
 ]' -p $from_user
 
 
+mset ticket.cvnft ticket.cvnft
+mset badge.cvnft ticket.cvnft
+mset show.cisum show.cisum
+

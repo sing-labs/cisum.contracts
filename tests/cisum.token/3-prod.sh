@@ -59,3 +59,7 @@ mpush cisum.token transfer '["flonian","cvm22kdqd3k4", "4000.00000000 CISUM", "b
 
 mpush cisum.token transfer '["flonian","cvyqzwdhzvrq", "200.00000000 CISUM", "bootstrap"]' -p flonian
 
+
+
+mpush sing.token transfer '["flonian","cvctt2kakgxf", "20000.00000000 SING", "bootstrap"]' -p flonian
+

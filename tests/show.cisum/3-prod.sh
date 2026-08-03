@@ -32,12 +32,23 @@ mpush show.cisum setshow '["ful4oe5culzv",1766570744436,"concert",false,false,"2
 
 
 
+setshow(const name& submitter,
+                   const uint64_t&   show_id,
+                   const name&       category,
+                   const bool&       ticket_transferable,
+                   const bool&       ticket_refundable,
+                   const time_point& show_started_at,
+                   const time_point& show_ended_at,
+                   const string&       show_name,
+                   const string&       show_address)
+
 mpush show.cisum setshow '["ful4oe5culzv",1766569727072,"concert",false,false,"2026-01-17T12:00:44.000","2026-01-17T12:00:44.000","1/17 VŨ THANH VÂN Solo Concert VIP Benefit",""]' -p ful4oe5culzv
 
 
+mpush show.cisum setshow '["ful4oe5culzv",1779207665398,"concert",false,false,"2026-05-30T13:00:00.000","2026-05-30T23:00:00.000","H3F Rumblin'\'' with Asia Tour 2026: Bandung - Tickets",""]' -p ful4oe5culzv
 
 
-
+mpush show.cisum setshow '["ful4oe5culzv",1779208507777,"concert",false,false,"2026-05-31T10:30:00.000","2026-05-31T20:30:00.000","H3F Rumblin'\'' with Asia Tour 2026: Jakarta - Tickets",""]' -p ful4oe5culzv
 
 
 
