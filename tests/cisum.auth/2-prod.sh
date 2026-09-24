@@ -122,3 +122,5 @@ mpush cisum.auth addroleperm '["ful4oe5culzv","admin",["vlogStatisticsMgmt"],"vl
 mpush cisum.auth addroleperm '["ful4oe5culzv","admin",["appStatisticsMgmt"],"appStatisticsMgmt"]'   -p ful4oe5culzv
 
 
+mpush cisum.auth addroleperm '["ful4oe5culzv","admin",["productMgmt"],"productMgmt"]'   -p ful4oe5culzv
+

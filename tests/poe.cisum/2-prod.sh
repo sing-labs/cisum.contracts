@@ -321,3 +321,71 @@ mpush $poe_con addrewardact '[
   "10.0000 CISUM",
   "Reward for initiating a share"
 ]' -p $poe_con
+
+
+
+poe_con=poe.cisum
+# shareclk - 15 CISUM
+mpush $poe_con addrewardact '[
+  "shareclk",
+  "15.0000 CISUM",
+  "Reward for clicking the shared link"
+]' -p $poe_con
+
+# shareurl - 10 CISUM
+mpush $poe_con addrewardact '[
+  "shareurl",
+  "10.0000 CISUM",
+  "Reward for passing shared link verification after URL submission"
+]' -p $poe_con
+
+# sharest - 5 CISUM
+mpush $poe_con addrewardact '[
+  "sharest",
+  "5.0000 CISUM",
+  "Reward for initiating a share"
+]' -p $poe_con
+
+
+-- 生产还没有部署
+
+poe_con=poe.cisum
+# vlogvote - 30 CISUM
+mpush $poe_con addrewardact '[
+  "vlogvote",
+  "30.0000 CISUM",
+  "Vlog vote"
+]' -p $poe_con
+
+# vloglike - 5 CISUM
+mpush $poe_con addrewardact '[
+  "vloglike",
+  "5.0000 CISUM",
+  "Vlog like"
+]' -p $poe_con
+
+# vlogshare - 10 CISUM
+mpush $poe_con addrewardact '[
+  "vlogshare",
+  "10.0000 CISUM",
+  "Vlog share"
+]' -p $poe_con
+
+
+# vlogcomment - 20 CISUM
+mpush $poe_con addrewardact '[
+  "vlogcomment",
+  "20.0000 CISUM",
+  "Vlog comment"
+]' -p $poe_con
+
+
+-- 生产还没有部署
+
+poe_con=poe.cisum
+# artistquiz - 5 CISUM
+mpush $poe_con addrewardact '[
+  "artistquiz",
+  "5.0000 CISUM",
+  "Artist quiz"
+]' -p $poe_con
