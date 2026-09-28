@@ -108,6 +108,11 @@ mpush badgecvstore settokenuri '["flonian",4000000004,"https://maroon-worried-fl
 
 
 
+mpush badgecvstore settokenuri '["flonian",4000000004,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiaxrowvsczmuuir44f2s6xvumb5qi7wjc3sv2ulu4nngan47ilqdm"]' -p flonian
+
+
+
+
 
 
 
@@ -160,3 +165,7 @@ mpush badgecvstore settokenuri '["flonian",5000000001,"https://coral-reasonable-
 
 
 mpush badgecvstore settokenuri '["flonian",5000000003,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreictlvi4oujj2ti26povrrrolv57pdowk2ueugd54qx2b3pyetuuxm"]' -p flonian
+
+
+
+mpush badgecvstore settokenuri '["flonian",5000000007,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreibp6v2lewdbmv7a7omavrr5kxcauyhtk2hxmbsojyhmrq3id6apt4"]' -p flonian

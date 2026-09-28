@@ -389,3 +389,54 @@ mpush $poe_con addrewardact '[
   "5.0000 CISUM",
   "Artist quiz"
 ]' -p $poe_con
+
+
+poe_con=poe.cisum
+# myrepost - 5 CISUM
+mpush $poe_con addrewardact '[
+  "myrepost",
+  "5.0000 CISUM",
+  "My repost"
+]' -p $poe_con
+
+# mylike - 5 CISUM
+mpush $poe_con addrewardact '[
+  "mylike",
+  "5.0000 CISUM",
+  "My like"
+]' -p $poe_con
+
+# myshare - 5 CISUM
+mpush $poe_con addrewardact '[
+  "myshare",
+  "5.0000 CISUM",
+  "My share"
+]' -p $poe_con
+
+# mystavatar - 20 CISUM
+mpush $poe_con addrewardact '[
+  "mystavatar",
+  "20.0000 CISUM",
+  "My avatar"
+]' -p $poe_con
+
+# mystnickname - 20 CISUM
+mpush $poe_con addrewardact '[
+  "mystnickname",
+  "20.0000 CISUM",
+  "My nickname"
+]' -p $poe_con
+
+# mysigindaily - 5 CISUM
+mpush $poe_con addrewardact '[
+  "mysigindaily",
+  "5.0000 CISUM",
+  "My daily sign-in"
+]' -p $poe_con
+
+# mysiginaweek - 10 CISUM
+mpush $poe_con addrewardact '[
+  "mysiginaweek",
+  "10.0000 CISUM",
+  "My weekly sign-in"
+]' -p $poe_con
