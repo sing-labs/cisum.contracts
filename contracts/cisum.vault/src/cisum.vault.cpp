@@ -52,6 +52,7 @@ void cisum_vault::ontransfer(const name& from, const name& to, const asset& quan
   // 3) cisumptxchg:points
   // 4) artistvote[:...]
   // 5) minivlog[:...]
+  // 6) mallpay[:...]
   auto parts = ::split(string_view(memo), ":");
   CHECKC(!parts.empty(), err::INVALID_FORMAT, "empty memo");
 
@@ -81,6 +82,10 @@ void cisum_vault::ontransfer(const name& from, const name& to, const asset& quan
   }
 
   if (op == "minivlog") {
+    return;
+  }
+
+  if (op == "mallpay") {
     return;
   }
 
