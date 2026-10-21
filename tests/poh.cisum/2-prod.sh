@@ -31,3 +31,8 @@ mpush poh.cisum setfundtime '["flonian","8,SING","sing.token",1763350138,null]' 
 mpush poh.cisum redeemfund '["gahbnbehaskk","flonian"]' -p gahbnbehaskk
 
 mpush poh.cisum redeemfund '["flonian","flonian"]' -p flonian
+
+
+
+
+mpush poh.cisum addoperator '["cisumcisum"]' -p poh.cisum

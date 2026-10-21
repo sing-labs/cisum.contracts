@@ -13,6 +13,14 @@ cisum_token=cisum.token
 # 将合约加入白名单（允许转账 CISUM）
 mpush $cisum_token addwhitelist '["'"${poe_con}"'"]' -p $cisum_token
 
+mpush $cisum_token addwhitelist '["cisumairdrop"]' -p $cisum_token
+
+## 将合约加入消费白名单（允许转账 CISUM）
+mpush $cisum_token addconsumewl '["cisumvault11"]' -p $cisum_token
+
+
+
+
 
 # 投票 - 50 CISUM
 mpush $poe_con addrewardact '[
