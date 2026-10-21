@@ -59,6 +59,61 @@ void poh_cisum::setregistrar(name registrar) {
     _global.set(_gstate, get_self());
 }
 
+void poh_cisum::addoperator(const name& account) {
+    require_auth(get_self());
+    CHECKC(account.value != 0 && is_account(account), err::ACCOUNT_INVALID, "invalid operator account");
+    operators_singleton operators(get_self(), get_self().value);
+    auto state = operators.get_or_default();
+    state.accounts.insert(account);
+    operators.set(state, get_self());
+}
+
+void poh_cisum::deloperator(const name& account) {
+    require_auth(get_self());
+    CHECKC(account.value != 0, err::ACCOUNT_INVALID, "operator account cannot be empty");
+    operators_singleton operators(get_self(), get_self().value);
+    auto state = operators.get_or_default();
+    state.accounts.erase(account);
+    operators.set(state, get_self());
+}
+
+void poh_cisum::batchairdrop(const name& oper, const std::vector<airdrop_s>& drops, const string& memo) {
+    require_auth(oper);
+    operators_singleton operators(get_self(), get_self().value);
+    const auto state = operators.get_or_default();
+    CHECKC(state.accounts.count(oper) > 0, err::DID_NOT_AUTH, "oper not in operators whitelist");
+    CHECKC(!drops.empty(), err::INVALID_FORMAT, "empty airdrop list");
+    CHECKC(drops.size() <= 1000, err::EXCEED_LIMIT, "too many airdrops (max 1000)");
+
+    CHECKC(memo.size() <= 256, err::INVALID_FORMAT, "memo too long");
+
+    // 转账前校验整批数据；asset 加法同时检查累计金额是否超出合法范围。
+    asset total(0, CISUM_SYM);
+    for (const auto& drop : drops) {
+        CHECKC(is_account(drop.beneficiary) && drop.beneficiary != get_self(),
+               err::ACCOUNT_INVALID, "beneficiary must exist and cannot be self");
+        CHECKC(drop.quantity.is_valid() && drop.quantity.symbol == CISUM_SYM,
+               err::SYMBOL_MISMATCH, "quantity must be valid CISUM with precision 4");
+        CHECKC(drop.quantity.amount > 0, err::NOT_POSITIVE, "quantity must be positive");
+        CHECKC(drop.quantity.amount < 100000, err::EXCEED_LIMIT, "quantity must be less than 100000 raw units");
+        total += drop.quantity;
+    }
+
+    // 所有空投均由本次增发提供资金，不消耗原有余额；仍受 token 的 max_supply 限制。
+    _gstate.cisum_issued += total;
+    ISSUE(CISUM_BANK, get_self(), total, memo);
+    const auto created_at = current_time_point().time_since_epoch().count() / 1'000'000;
+    for (const auto& drop : drops) {
+        TRANSFER(CISUM_BANK, drop.beneficiary, drop.quantity, memo);
+        notifyreward_action{
+            get_self(), { permission_level{get_self(), "active"_n} }
+        }.send(CISUM_BANK, drop.beneficiary, drop.quantity, memo,
+               "airdrop"_n, "", created_at);
+    }
+    // 任一内联增发/转账失败，整笔交易（包括累计发放量）一起回滚。
+    // 不做业务去重：重复提交同一批数据会再次增发并发放。
+}
+
 void poh_cisum::on_transfer(const name& from,const name& to,const asset& quantity,const string& memo)
 {
     if (from == get_self() || to != get_self()) return;

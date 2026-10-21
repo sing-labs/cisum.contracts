@@ -85,6 +85,9 @@ void cisum_vault::ontransfer(const name& from, const name& to, const asset& quan
     return;
   }
 
+  if (op == "shopping") {
+    return;
+  }
   if (op == "mallpay") {
     return;
   }
