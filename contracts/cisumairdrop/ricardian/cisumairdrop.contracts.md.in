@@ -1,0 +1,24 @@
+<h1 class="contract">init</h1>
+Initialize the contract once with an existing administrator account. Requires contract authorization.
+
+<h1 class="contract">setadmin</h1>
+Change the administrator. Requires current administrator or contract authorization.
+
+<h1 class="contract">setpause</h1>
+Pause or resume batch distributions. Requires administrator or contract authorization.
+
+<h1 class="contract">batchdrop</h1>
+Transfer a prefunded fungible token from the specified token contract to between one and two hundred distinct accounts atomically.
+Each recipient supplies a positive decimal quantity string without a symbol.
+The batch symbol determines the token and precision for every recipient. Excess decimal places and overflow are rejected without rounding; each batch distributes one token.
+Requires administrator or contract authorization. A successful batch identifier cannot be reused across any token contracts or symbols.
+The contract pays RAM for batch records and any recipient balance rows created by transfers.
+
+<h1 class="contract">getbatch</h1>
+Return the record for a positive, successfully processed batch identifier.
+This read-only action requires no authorization and fails if the batch does not exist.
+The record includes the token contract; legacy records without this extension refer to cisum.token.
+
+<h1 class="contract">lastbatch</h1>
+Return the largest successfully processed batch identifier, or zero if there are no batches.
+This read-only action requires no authorization. The result is ordered by identifier, not execution time.

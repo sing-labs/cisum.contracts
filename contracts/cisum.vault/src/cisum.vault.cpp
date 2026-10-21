@@ -84,6 +84,10 @@ void cisum_vault::ontransfer(const name& from, const name& to, const asset& quan
     return;
   }
 
+  if (op == "shopping") {
+    return;
+  }
+
   CHECKC(false, err::INVALID_FORMAT, string("unknown memo op: ") + string(op));
 }
 
