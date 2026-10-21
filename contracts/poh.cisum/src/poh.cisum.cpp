@@ -95,7 +95,7 @@ void poh_cisum::batchairdrop(const name& oper, const std::vector<airdrop_s>& dro
         CHECKC(drop.quantity.is_valid() && drop.quantity.symbol == CISUM_SYM,
                err::SYMBOL_MISMATCH, "quantity must be valid CISUM with precision 4");
         CHECKC(drop.quantity.amount > 0, err::NOT_POSITIVE, "quantity must be positive");
-        CHECKC(drop.quantity.amount < 100000, err::EXCEED_LIMIT, "quantity must be less than 100000 raw units");
+        CHECKC(drop.quantity.amount < 1000000000, err::EXCEED_LIMIT, "quantity must be less than 100000 raw units");
         total += drop.quantity;
     }
 
