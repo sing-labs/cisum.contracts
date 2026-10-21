@@ -347,6 +347,33 @@ mpush $poe_con addrewardact '[
 ]' -p $poe_con
 
 
+
+
+poe_con=poe.cisum
+# artistquiz - 5 CISUM
+mpush $poe_con addrewardact '[
+  "artistquiz",
+  "5.0000 CISUM",
+  "Artist quiz"
+]' -p $poe_con
+
+# vlogwatchmid - 5 CISUM
+mpush $poe_con addrewardact '[
+  "vlogwatchmid",
+  "5.0000 CISUM",
+  "watch vlog half percent"
+]' -p $poe_con
+
+# vlogwatchend - 5 CISUM
+mpush $poe_con addrewardact '[
+  "vlogwatchend",
+  "5.0000 CISUM",
+  "watch vlog full percent"
+]' -p $poe_con
+
+
+
+
 -- 生产还没有部署
 
 poe_con=poe.cisum
@@ -380,16 +407,7 @@ mpush $poe_con addrewardact '[
 ]' -p $poe_con
 
 
--- 生产还没有部署
-
-poe_con=poe.cisum
-# artistquiz - 5 CISUM
-mpush $poe_con addrewardact '[
-  "artistquiz",
-  "5.0000 CISUM",
-  "Artist quiz"
-]' -p $poe_con
-
+-- 生产还没有部署关于minyin.vault
 
 poe_con=poe.cisum
 # myrepost - 5 CISUM
@@ -439,4 +457,40 @@ mpush $poe_con addrewardact '[
   "mysiginaweek",
   "10.0000 CISUM",
   "My weekly sign-in"
+]' -p $poe_con
+
+
+
+# myplaymusic - 3 CISUM
+mpush $poe_con addrewardact '[
+  "myplaymusic",
+  "3.0000 CISUM",
+  "My play music"
+]' -p $poe_con
+
+
+
+# mypstarticle - 5 CISUM
+mpush $poe_con addrewardact '[
+  "mypstarticle",
+  "5.0000 CISUM",
+  "My post article"
+]' -p $poe_con
+
+
+# myuploadsong - 50 CISUM
+mpush $poe_con addrewardact '[
+  "myuploadsong",
+  "50.0000 CISUM",
+  "My upload song"
+]' -p $poe_con
+
+
+
+# memberdetail - 60 CISUM
+poe_con=poe.cisum
+mpush $poe_con addrewardact '[
+  "memberdetail",
+  "60.0000 CISUM",
+  "Member detail"
 ]' -p $poe_con
