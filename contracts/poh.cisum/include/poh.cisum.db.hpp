@@ -4,8 +4,6 @@
 #include <eosio/time.hpp>
 #include <eosio/singleton.hpp>
 #include <string>
-#include <set>
-#include <vector>
 #include <flon/consts.hpp>
 
 using namespace eosio;
@@ -75,20 +73,6 @@ struct [[eosio::table, eosio::contract("poh.cisum")]] global_t {
     (max_issued)(sing_issued)(cisum_issued))
 };
 using global_singleton = eosio::singleton<"global"_n, global_t>;
-
-// 独立保存空投操作员，升级时无需改变已有 global 表的序列化格式。
-struct [[eosio::table, eosio::contract("poh.cisum")]] operators_t {
-  std::set<name> accounts;
-  EOSLIB_SERIALIZE(operators_t, (accounts))
-};
-using operators_singleton = eosio::singleton<"operators"_n, operators_t>;
-
-// 每条空投独立指定收款人和金额，备注由整批共用；金额必须为正数且使用 4 位 CISUM。
-struct airdrop_s {
-  name beneficiary;
-  asset quantity;
-  EOSLIB_SERIALIZE(airdrop_s, (beneficiary)(quantity))
-};
 
 struct fund_balance_s {
     string            reward_title;             //E.g. "POAP Reward" | "Inviters Airdrop"

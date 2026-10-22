@@ -3,6 +3,7 @@
 #include <eosio/asset.hpp>
 #include <eosio/time.hpp>
 #include <string>
+#include <vector>
 
 #include "poe.cisum.db.hpp"
 
@@ -37,6 +38,9 @@ public:
                         const uint64_t& uid,
                         const std::vector<claim_s>& claims ) ;
 
+    // 操作员签名调用，使用已有奖励池余额，不增发 CISUM。
+    ACTION batchairdrop(const name& oper, const std::vector<airdrop_s>& drops, const string& memo);
+
     // ACTION deluids(const name& submitter) {
     //   require_auth(submitter);
 
@@ -67,6 +71,7 @@ public:
     using addrewardact_action     = eosio::action_wrapper<"addrewardact"_n,     &poe_cisum::addrewardact>;
     using delrewardact_action     = eosio::action_wrapper<"delrewardact"_n,     &poe_cisum::delrewardact>;
     using batchclaim_action       = eosio::action_wrapper<"batchclaim"_n,       &poe_cisum::batchclaim>;
+    using batchairdrop_action = eosio::action_wrapper<"batchairdrop"_n, &poe_cisum::batchairdrop>;
     using notifyreward_action      = eosio::action_wrapper<"notifyreward"_n,      &poe_cisum::notifyreward>;
 private:
     global_singleton _global;

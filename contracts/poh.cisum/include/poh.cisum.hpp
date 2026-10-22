@@ -34,13 +34,6 @@ public:
   ACTION setplatform(name platform);
   ACTION setregistrar(name registrar);
 
-  // 只有合约账户可维护空投操作员；不改变 registrar 的注册奖励权限。
-  ACTION addoperator(const name& account);
-  ACTION deloperator(const name& account);
-
-  // 操作员签名调用，每批 1～1000 条，共用 memo；先增发总额，再逐条转账。
-  ACTION batchairdrop(const name& oper, const std::vector<airdrop_s>& drops, const string& memo);
-
   ACTION registreward(const name& submitter,
                               const name& inviter,    // 可为空：inviter.value==0 表示无邀请人
                               const name& invitee     // 被邀请人（拿主奖励）
