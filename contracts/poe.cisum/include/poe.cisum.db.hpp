@@ -81,6 +81,13 @@ struct [[eosio::table, eosio::contract("poe.cisum")]] rewardact_t {
 };
 
 
+// 空投金额由操作员逐条指定，不依赖 rewardacts 配置；整批共用一个 memo。
+struct airdrop_s {
+    name beneficiary;
+    asset quantity;
+    EOSLIB_SERIALIZE(airdrop_s, (beneficiary)(quantity))
+};
+
 struct  claim_s {
     name reward_code;
     name beneficiary;
