@@ -10,6 +10,7 @@ mcli set account permission $pop_con active --add-code
 
 
 #向pop_con 转入sing
+# 执行前需填写充值金额 transfer，使用 8 位精度 SING，例如 "1000.00000000 SING"。
 transfer=        #"1000.00000000 SING"
 
 mpush sing.token transfer '[
@@ -26,7 +27,7 @@ badgestore_contract=badgecvstore
 mpush $badgestore_contract addwhitelist '["pop.cisum"]' -p $badgestore_contract
 
 # 新增规则（id=0 表示新增）
-mpush $pop_con  setbrule '[0, "50.000000 USDT", {"nid":"4299369637478511"}, true]' -p $pop_con
-mpush $pop_con  setbrule '[0, "500.000000 USDT", {"nid":"4299369637478512"}, true]' -p $pop_con
-mpush $pop_con  setbrule '[0, "5000.000000 USDT", {"nid":"4299369637478513"}, true]' -p $pop_con
-mpush $pop_con  setbrule '[0, "50000.000000 USDT", {"nid":"4299369637478514"}, true]' -p $pop_con
+mpush $pop_con  setrule '[0, "50.000000 USDT", {"nid":"4299369637478511"}, true]' -p $pop_con
+mpush $pop_con  setrule '[0, "500.000000 USDT", {"nid":"4299369637478512"}, true]' -p $pop_con
+mpush $pop_con  setrule '[0, "5000.000000 USDT", {"nid":"4299369637478513"}, true]' -p $pop_con
+mpush $pop_con  setrule '[0, "50000.000000 USDT", {"nid":"4299369637478514"}, true]' -p $pop_con

@@ -57,6 +57,7 @@ mpush poe.cisum addrewardact '[
   "Concert Promotion Rewards"
 ]' -p poe.cisum
 
+# 执行前需填写已创建的操作员账户 operator，再执行下方 addoperator。
 operator=
 mpush $poe_con addoperator '[
   "'"${operator}"'"

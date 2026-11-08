@@ -53,3 +53,13 @@ mpush show.cisum setshow '["ful4oe5culzv",1779208507777,"concert",false,false,"2
 
 
 mpush show.cisum  retire '[20250106,{"amount":5,"symbol":{"nid":21010001000011009}}]'  -p show.cisum
+
+
+
+
+
+
+mpush show.cisum setshow '["ful4oe5culzv",1792664526196,"concert",false,false,"2026-11-22T11:00:00.000","2026-11-22T11:00:00.000","IVAN - VANTASY Lucky Draw: Polaroid",""]' -p ful4oe5culzv
+mpush show.cisum setshow '["ful4oe5culzv",1792569140698,"concert",false,false,"2026-11-21T11:00:00.000","2026-11-21T11:00:00.000","IVAN - VANTASY Lucky Draw: Polaroid",""]' -p ful4oe5culzv
+mpush show.cisum setshow '["ful4oe5culzv",1792663955591,"concert",false,false,"2026-11-22T11:00:00.000","2026-11-22T11:00:00.000","IVAN - VANTASY Lucky Draw: Polaroid",""]' -p ful4oe5culzv
+

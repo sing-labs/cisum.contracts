@@ -13,6 +13,7 @@ mcli set account permission $pos_con active --add-code
 mreg flon share.cisum flonian
 
 
+# 仅首次部署时初始化；升级或已有业务数据时跳过，重复执行会清零 last_save_id、share_pool_id。
 mpush $pos_con  init '[{"sym":"8,SING","contract":"sing.token"},"100.00000000 SING"    ]' -p $pos_con
 
 #将合约加入到nestar白名单

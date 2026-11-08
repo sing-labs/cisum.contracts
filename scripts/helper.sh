@@ -28,7 +28,7 @@ function default-flon-directories() {
   REGEX='^[0-9]+([.][0-9]+)?$'
   ALL_FLON_SUBDIRS=()
   if [[ -d ${HOME}/flon ]]; then
-    ALL_FLON_SUBDIRS=($(ls ${HOME}/FLON | sort -V))
+    ALL_FLON_SUBDIRS=($(ls "${HOME}/flon" | sort -V))
   fi
   for ITEM in "${ALL_FLON_SUBDIRS[@]}"; do
     if [[ "$ITEM" =~ $REGEX ]]; then
@@ -113,7 +113,10 @@ function cdt-directory-prompt() {
 
 # Ensures FLON is installed and compatible via version listed in tests/CMakeLists.txt.
 function flon-version-check() {
-  INSTALLED_VERSION=$(echo $($FLON_INSTALL_DIR/bin/amnod --version))
+  INSTALLED_VERSION=$("$FLON_INSTALL_DIR/bin/funod" --version) || {
+    echo "Could not determine FLON version. Exiting..." >&2
+    exit 1
+  }
   INSTALLED_VERSION_MAJOR=$(echo $INSTALLED_VERSION | cut -f1 -d '.' | sed 's/v//g')
   INSTALLED_VERSION_MINOR=$(echo $INSTALLED_VERSION | cut -f2 -d '.' | sed 's/v//g')
 
