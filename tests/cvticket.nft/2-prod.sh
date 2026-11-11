@@ -16,6 +16,9 @@ mpush $ticket_ntoken  addwhitelist '["grab.cisum"]'   -p $ticket_ntoken
 
 
 
+
+mpush ticket.cvnft  setcreator '["nftcreator11",true]'   -p ticket.cvnft
+
 mpush ticket.cvnft  settokenuri '[002101025919476,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreihqfvgozm2fyxk4kioip6m5g6rupvgtos2cwdf3e24ags4zft4f4q"]'   -p ticket.cvnft
 
 mpush ticket.cvnft  settokenuri '[002101025898095,"https://maroon-worried-fly-573.mypinata.cloud/ipfs/bafkreiafrvryf2znsscnd6bqmccdemqdwx24af3ddwx3ynpp57hqkb2nma"]'   -p ticket.cvnft
