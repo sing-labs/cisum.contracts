@@ -1,0 +1,5 @@
+add_contract(mall.nft mall.nft ${CMAKE_CURRENT_SOURCE_DIR}/src/mall.nft.cpp)
+target_include_directories(mall.nft PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(mall.nft flon_base)
+target_compile_options(mall.nft PUBLIC -R${CMAKE_CURRENT_SOURCE_DIR}/ricardian)
+set_target_properties(mall.nft PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
