@@ -1,10 +1,10 @@
 <h1 class="contract">init</h1>
 
-The contract account assigns operational roles without resetting existing accounting.
+The contract account sets the super-admin without resetting accounting. Other operators are authorized through cisum.auth permissions productMgmt, mallTreasury, mallAirdrop and mallPause.
 
 <h1 class="contract">addbank</h1>
 
-The contract account registers an audited asset contract and, for fungible tokens, its exact symbol.
+An operator authorized for productMgmt, the super-admin or the contract account registers an audited asset contract and, for fungible tokens, its exact symbol.
 
 <h1 class="contract">advancenft</h1>
 
@@ -57,11 +57,3 @@ The guardian pauses or resumes purchasing and airdrop execution independently.
 <h1 class="contract">notifybuy</h1>
 
 The contract emits the successfully settled purchase details; external callers cannot authorize this action.
-
-<h1 class="contract">addrole</h1>
-
-The contract account adds an existing account to one operational role, preserving other roles and accounting. Each role permits at most 50 members.
-
-<h1 class="contract">delrole</h1>
-
-The contract account removes a member from one operational role. The last member cannot be removed. Changes and their operation identifiers are recorded atomically.

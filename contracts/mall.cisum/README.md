@@ -25,9 +25,8 @@ python3 tests/mall.nft/integration.py
 1. 准备兼容的 NFT 合约，例如原版 ticket.cvnft 或 mall.nft。
 2. 部署商城，为其 active 权限配置自身 `eosio.code` 执行权限；实际网络的权限名称
    以 `fucli set account permission ... --add-code` 生成结果为准。
-3. `init(manager, treasurer, distributor, guardian)` 的四个参数均为账户数组，每组 1–50 个不重复的已存在账户。同组任一账户签名即可操作；重复 init 替换全部名单。
-   仅商城账户可调用 init/addbank；再次 init 只更新角色，不重置计数或暂停状态。
-4. `addbank(bank, nft, sym)` 登记经过验证的合约。普通代币逐个登记完整 symbol，
+3. init(admin) 由合约自身指定超级管理员，其他业务账户通过 cisum.auth 的角色权限管理。
+4. `addbank(submitter, bank, nft, sym)` 由具有 productMgmt 权限的账户登记经过验证的合约。普通代币逐个登记完整 symbol，
    如 `4,CISUM`；NFT 的 sym 参数忽略。一个地址不能同时登记两种资产类型。
 5. 根据底层配置给予商城创建许可、必要的 DID 以及支付代币的转账许可。
 6. 按底层 NFT 合约的规则独立配置转出权限；createnft 不做权限处理。
@@ -40,7 +39,7 @@ RAM/CPU 预算及目标链 ABI，并完成独立安全审查。本仓库不会�
 
 createnft 自动从 6000000001 开始递增分配 NFT ID，跳过目标合约已占用 ID；每次最多扫描
 100 个。超过时失败，由管理员核对后用 advancenft 向前推进。失败创建不消耗编号。
-createnft 另接收必填字符串 product_id（1–256 字节），用于业务关联，不要求唯一。products.id 仍是数字主键，购买 memo 及其他方法的数字 product_id 参数不变。regstock 的字符串业务编号为空。
+createnft 另接收必填字符串 product_code（1–256 字节），用于业务关联，不要求唯一。products.id 仍是数字主键，购买 memo 及其他方法的数字 product_id 参数不变。regstock 的字符串业务编号为空。
 regstock 保留已有 ID。同一资产用 `(nft_contract, nft_id)` 唯一识别，支付使用本地 product_id。
 本版 nsymbol 完整字段为 nid，不隐含额外 precision。
 
@@ -59,8 +58,7 @@ sale_terms 包含 price、starts（UTC 时间）、per_purchase、per_account。
 ## 转账协议
 
 购买：`mall:v1:<product_id>:<expected_quantity>:<request_id>`。
-request_id 为 1–64 位 ASCII 字母、数字、连字符或下划线。买家与 request_id 全局去重，
-不按商品划分。重试应先查询 receipts；换 request_id 视为新购买。
+request_id 为 1–64 位 ASCII 字母、数字、连字符或下划线。request_id 仅用于业务关联，不再去重；重付前请先核对原交易是否成功。
 金额必须是单价整数倍，计算数量须与预期一致，不自动找零。最小单位整数计算。
 
 充值空投预算：`mallfund:v1`。
@@ -89,10 +87,10 @@ airdrop 需要 distributor，仅扣 drops；单批 1–50 条同币种转账，�
 
 管理动作携带非零 op_id 和 1–256 字节 reason，operations 全局防重复并保存操作人、时间和
 变更前后序列化快照。后端查询操作号确认成功后不要重发。notifybuy 是仅合约可调用的
-结构化成交 action，可与 receipts 联合索引；等待链上最终性后核销订单。
+结构化成交 action，可结合付款和 NFT 发放交易索引；等待链上最终性后核销订单。
 
 下架状态可用 withdrawnft 取回库存模式未被 quota 占用的 NFT；仍受底层白名单限制。
-商品与 receipts 不清理，以保留限购和幂等性，运营需持续预算 RAM。
+商品与 purchases 累计记录保留以维持限购，运营需持续预算 RAM。
 
 ## 创建与权限配置分离
 
@@ -102,8 +100,12 @@ createnft 只执行模板创建、商城商品登记及商城销售配额，不�
 setnftcaps 和 setxferwl 已从商城删除，原 nftcaps 数据不再使用。scripts/nft-capabilities.py 仅输出只读接口检查结果，不再生成管理调用参数。
 创建只要求兼容的 create 和 tokenstats。商城的创建、配额调整及发行上限调整均不调用 setreserve；配额由商城自身记录。
 
-升级兼容：新增商品字段及 config.roles 使用尾部 binary_extension。旧商品允许缺少业务编号，旧配置继续按原单账户授权；重新 init 时传入四组数组。客户端需更新 createnft/init 的 ABI。详情及示例见 API.md。
+统一授权：init(admin) 由商城自身调用。商品管理检查 productMgmt，资金划拨检查 mallTreasury，空投检查 mallAirdrop，暂停检查 mallPause。各业务方法新增首参数 submitter，要求该账户签名并通过 cisum.auth::checkrole；超级管理员和合约自身可直接授权。本地 addrole/delrole 已移除，授予、撤销角色使用 cisum.auth 的 grantrole/revokerole。
 
-旧数据升级回归：构建新版前，将上一版 mall.cisum.wasm/.abi 保存为 build/mall-verified/legacy.mall.cisum.wasm/.abi，再运行 python3 tests/mall.cisum/integration.py --upgrade-fixture。测试先部署旧版并创建商品，然后升级，验证旧商品、旧权限、购买流程以及新的多账户配置。
+升级：保留旧 config 二进制布局，但原单账户和数组不再授权。新增 authconfig 保存明确指定的 admin，部署后须调用 init(admin)，不会清空商品或成交数据。完整权限配置示例见 API.md。
 
-权限成员管理：商城账户可调用 addrole(role, account, op_id, reason) / delrole(role, account, op_id, reason)，role 为 manager、treasurer、distributor 或 guardian。每组保持 1–50 人，禁止重复添加、删除非成员或删除最后一人。两接口支持旧单账户配置，变更即时生效并记录 operations；只有合约账户可授权或撤权。
+升级测试：构建新版前保存上一版 WASM/ABI 为 build/mall-verified/roles.mall.cisum.wasm/.abi，运行 python3 tests/mall.cisum/integration.py --roles-fixture。更早单账户版 fixture 使用 legacy.mall.cisum 文件名和 --upgrade-fixture。
+
+业务编号：products 的字符串 product_id 已更名为 product_code，createnft 参数同步更名。purchases 在尾部追加 product_code（string$），保存业务编号；数字 product_id 保持原意。旧商品字符串值无需迁移；旧购买累计行仍可读取。再次购买时累计行会补齐业务编号。无业务编号的旧商品及库存商品记录空字符串。
+
+回执表已移除：不再写入 receipts，也不按 request_id 去重。相同请求编号再次付款会按新购买处理，仍受限购和配额检查；request_id 保留格式校验及通知用途。后端应根据交易 ID 和实际成交轨迹确认结果，避免盲目重付。升级不会自动删除历史 receipts 行或返还其 RAM，本次节省的是后续回执及索引写入资源。

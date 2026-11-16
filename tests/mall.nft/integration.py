@@ -180,8 +180,7 @@ def main():
                 ('ticket.cvnft','ticket.cvnft','tokenstats'),
                 ('ticket.cvnft','mall.cisum','accounts'),('ticket.cvnft','alice','accounts'),
                 ('cisum.token','alice','accounts'),('cisum.token','mall.cisum','accounts'),
-                ('mall.cisum','mall.cisum','products'),('mall.cisum','mall.cisum','receipts'),
-                ('mall.cisum','alice','purchases'),('mall.cisum','cisum.token','funds')]]
+                ('mall.cisum','mall.cisum','products'),('mall.cisum','alice','purchases'),('mall.cisum','cisum.token','funds')]]
         before=plain_state()
         act('cisum.token','transfer',['alice','mall.cisum','10.0000 CISUM','mall:v1:2:1:plain'],'alice','transfer blocked')
         assert plain_state()==before

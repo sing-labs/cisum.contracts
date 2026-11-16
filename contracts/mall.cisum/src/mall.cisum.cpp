@@ -2,27 +2,12 @@
 #include <ticket.cvnft/ticket.cvnft.db.hpp>
 #include "nft.policy.hpp"
 #include <limits>
-#include <algorithm>
+#include <flon.auth/flon.auth.hpp>
+#include <flon/consts.hpp>
 #include <tuple>
 
 namespace mall {
 namespace {
-void roles_ok(const vector<name>& accounts) {
-    check(!accounts.empty() && accounts.size() <= 50, "MALL_CONFIG: role needs 1 to 50 accounts");
-    for (size_t i = 0; i < accounts.size(); ++i) {
-        check(is_account(accounts[i]), "MALL_CONFIG: invalid role account");
-        for (size_t j = 0; j < i; ++j)
-            check(accounts[i] != accounts[j], "MALL_CONFIG: duplicate role account");
-    }
-}
-name role_auth(const config_row& c, vector<name> role_accounts::*members, name legacy) {
-    if (!c.roles.has_value()) { require_auth(legacy); return legacy; }
-    for (auto account : c.roles.value().*members) {
-        if (has_auth(account)) { require_auth(account); return account; }
-    }
-    check(false, "MALL_AUTH: missing required authority for role");
-    return name{};
-}
 uint64_t number(const string& s) {
     check(!s.empty() && s.size() <= 20, "MALL_MEMO: invalid integer");
     uint64_t n = 0;
@@ -58,7 +43,16 @@ config_row mall_contract::config() const {
     check(table.exists(), "MALL_CONFIG: not initialized");
     return table.get();
 }
-name mall_contract::manage() const { auto c = config(); return role_auth(c, &role_accounts::manager, c.manager); }
+name mall_contract::require_perm(name submitter, const string& perm) const {
+    if (has_auth(get_self())) return get_self();
+    auth_table auth(get_self(), get_self().value);
+    check(auth.exists(), "MALL_AUTH: initialize unified authorization first");
+    if (submitter == auth.get().admin && has_auth(submitter)) return submitter;
+    require_auth(submitter);
+    flon::flonauth::checkrole_action(flon::CISUMAUTH_CONTRACT,
+        {get_self(), "active"_n}).send(get_self(), submitter, perm);
+    return submitter;
+}
 void mall_contract::bank_ok(name bank, bool nft) const {
     banks table(get_self(), get_self().value);
     const auto& b = table.get(bank.value, "MALL_BANK: unsupported contract");
@@ -101,52 +95,15 @@ void mall_contract::log(uint64_t id, name actor, name action_name, const string&
         r.before=before; r.after=after; r.at=time_point_sec(current_time_point());
     });
 }
-void mall_contract::init(vector<name> manager, vector<name> treasurer, vector<name> distributor, vector<name> guardian) {
+void mall_contract::init(name admin) {
     require_auth(get_self());
-    roles_ok(manager); roles_ok(treasurer); roles_ok(distributor); roles_ok(guardian);
+    check(is_account(admin), "MALL_CONFIG: admin does not exist");
     config_table table(get_self(), get_self().value);
-    auto c = table.get_or_default();
-    c.manager=manager.front(); c.treasurer=treasurer.front(); c.distributor=distributor.front(); c.guardian=guardian.front();
-    c.roles = role_accounts{manager, treasurer, distributor, guardian};
-    table.set(c, get_self());
+    table.set(table.get_or_default(), get_self());
+    auth_table(get_self(), get_self().value).set(auth_config{admin}, get_self());
 }
-void mall_contract::addrole(name role, name account, uint64_t op_id, string reason) {
-    changerole(role, account, true, op_id, reason);
-}
-void mall_contract::delrole(name role, name account, uint64_t op_id, string reason) {
-    changerole(role, account, false, op_id, reason);
-}
-void mall_contract::changerole(name role, name account, bool adding, uint64_t op_id, const string& reason) {
-    require_auth(get_self());
-    auto c = config();
-    auto before = pack(c);
-    auto roles = c.roles.has_value() ? c.roles.value() :
-        role_accounts{{c.manager}, {c.treasurer}, {c.distributor}, {c.guardian}};
-    vector<name>* members = nullptr;
-    if (role == "manager"_n) members = &roles.manager;
-    else if (role == "treasurer"_n) members = &roles.treasurer;
-    else if (role == "distributor"_n) members = &roles.distributor;
-    else if (role == "guardian"_n) members = &roles.guardian;
-    check(members != nullptr, "MALL_ROLE: unknown role");
-    auto it = std::find(members->begin(), members->end(), account);
-    if (adding) {
-        check(is_account(account), "MALL_ROLE: account does not exist");
-        check(it == members->end(), "MALL_ROLE: account already assigned");
-        check(members->size() < 50, "MALL_ROLE: maximum 50 accounts");
-        members->push_back(account);
-    } else {
-        check(it != members->end(), "MALL_ROLE: account not assigned");
-        check(members->size() > 1, "MALL_ROLE: cannot remove last account");
-        members->erase(it);
-    }
-    c.manager=roles.manager.front(); c.treasurer=roles.treasurer.front();
-    c.distributor=roles.distributor.front(); c.guardian=roles.guardian.front();
-    c.roles=roles;
-    log(op_id, get_self(), adding ? "addrole"_n : "delrole"_n, reason, before, pack(c));
-    config_table(get_self(), get_self().value).set(c, get_self());
-}
-void mall_contract::addbank(name bank, bool nft, symbol sym) {
-    require_auth(get_self());
+void mall_contract::addbank(name submitter, name bank, bool nft, symbol sym) {
+    require_perm(submitter, "productMgmt");
     check(is_account(bank) && bank != get_self(), "MALL_BANK: invalid contract");
     banks table(get_self(), get_self().value);
     auto it=table.find(bank.value);
@@ -159,17 +116,17 @@ void mall_contract::addbank(name bank, bool nft, symbol sym) {
         f.emplace(get_self(), [&](auto& r){r.sym=sym;});
     }
 }
-void mall_contract::advancenft(uint64_t next_id, uint64_t op_id, string reason) {
-    auto actor=manage(); auto c=config(); auto before=pack(c);
+void mall_contract::advancenft(name submitter, uint64_t next_id, uint64_t op_id, string reason) {
+    auto actor=require_perm(submitter, "productMgmt"); auto c=config(); auto before=pack(c);
     check(next_id > c.next_nft && next_id < std::numeric_limits<uint64_t>::max(), "MALL_ID: must advance");
     c.next_nft=next_id;
     log(op_id, actor, "advancenft"_n, reason, before, pack(c));
     config_table(get_self(), get_self().value).set(c,get_self());
 }
-void mall_contract::createnft(name bank, string uri, name ipowner, int64_t maximum, int64_t quota,
-                             name paybank, sale_terms terms, uint64_t op_id, string reason, string product_id) {
-    auto actor=manage(); bank_ok(bank,true); terms_ok(paybank,terms);
-    check(!product_id.empty() && product_id.size() <= 256, "MALL_PRODUCT: product_id requires 1 to 256 bytes");
+void mall_contract::createnft(name submitter, name bank, string uri, name ipowner, int64_t maximum, int64_t quota,
+                             name paybank, sale_terms terms, uint64_t op_id, string reason, string product_code) {
+    auto actor=require_perm(submitter, "productMgmt"); bank_ok(bank,true); terms_ok(paybank,terms);
+    check(!product_code.empty() && product_code.size() <= 256, "MALL_PRODUCT: product_code requires 1 to 256 bytes");
     amount_ok(maximum); amount_ok(quota);
     check(maximum > 0 && quota <= maximum, "MALL_SUPPLY: invalid maximum/quota");
     auto c=config();
@@ -182,7 +139,7 @@ void mall_contract::createnft(name bank, string uri, name ipowner, int64_t maxim
     check(scanned<100 && c.next_nft<std::numeric_limits<uint64_t>::max(), "MALL_ID: scan exhausted; audit and advance cursor");
     products table(get_self(),get_self().value);
     product p; p.id=table.available_primary_key(); if(p.id==0)p.id=1;
-    p.product_id=product_id;
+    p.product_code=product_code;
     p.nft_contract=bank; p.nft_id=c.next_nft++; p.mint=true; p.pay_contract=paybank; p.terms=terms; p.quota=quota;
     log(op_id,actor,"createnft"_n,reason,{},pack(p));
     config_table(get_self(),get_self().value).set(c,get_self());
@@ -191,32 +148,32 @@ void mall_contract::createnft(name bank, string uri, name ipowner, int64_t maxim
            std::make_tuple(get_self(),maximum,flon::nsymbol(p.nft_id),uri,ipowner)).send();
     // Only create the NFT; policies, whitelists and external reservations are not changed.
 }
-void mall_contract::regstock(name bank, uint64_t nft_id, int64_t quota, name paybank,
+void mall_contract::regstock(name submitter, name bank, uint64_t nft_id, int64_t quota, name paybank,
                             sale_terms terms, uint64_t op_id, string reason) {
-    auto actor=manage(); bank_ok(bank,true); terms_ok(paybank,terms);
+    auto actor=require_perm(submitter, "productMgmt"); bank_ok(bank,true); terms_ok(paybank,terms);
     flon::nstats_t::idx_t stats(bank,bank.value); stats.get(nft_id,"MALL_NFT: unknown NFT");
     products table(get_self(),get_self().value); auto idx=table.get_index<"byasset"_n>();
     check(idx.find((uint128_t(bank.value)<<64)|nft_id)==idx.end(),"MALL_NFT: already registered");
     product p; p.id=table.available_primary_key(); if(p.id==0)p.id=1;
-    p.product_id=string{};
+    p.product_code=string{};
     p.nft_contract=bank; p.nft_id=nft_id; p.mint=false; p.pay_contract=paybank; p.terms=terms; p.quota=quota;
     bank_ok(p.nft_contract,true); quota_ok(p,quota);
     log(op_id,actor,"regstock"_n,reason,{},pack(p));
     table.emplace(get_self(),[&](auto& r){r=p;});
 }
-void mall_contract::setsale(uint64_t product_id, sale_terms terms, uint64_t op_id, string reason) {
-    auto actor=manage(); products table(get_self(),get_self().value); auto p=table.get(product_id);
+void mall_contract::setsale(name submitter, uint64_t product_id, sale_terms terms, uint64_t op_id, string reason) {
+    auto actor=require_perm(submitter, "productMgmt"); products table(get_self(),get_self().value); auto p=table.get(product_id);
     check(p.status==0,"MALL_STATUS: must be offline"); terms_ok(p.pay_contract,terms);
     auto before=pack(p); p.terms=terms;
     log(op_id,actor,"setsale"_n,reason,before,pack(p)); table.modify(table.get(product_id),same_payer,[&](auto& r){r=p;});
 }
-void mall_contract::setquota(uint64_t product_id, int64_t quota, uint64_t op_id, string reason) {
-    auto actor=manage(); products table(get_self(),get_self().value); auto p=table.get(product_id);
+void mall_contract::setquota(name submitter, uint64_t product_id, int64_t quota, uint64_t op_id, string reason) {
+    auto actor=require_perm(submitter, "productMgmt"); products table(get_self(),get_self().value); auto p=table.get(product_id);
     check(p.status!=2,"MALL_STATUS: archived"); quota_ok(p,quota); auto before=pack(p); p.quota=quota;
     log(op_id,actor,"setquota"_n,reason,before,pack(p)); table.modify(table.get(product_id),same_payer,[&](auto& r){r=p;});
 }
-void mall_contract::setsupply(uint64_t product_id, int64_t maximum, int64_t quota, uint64_t op_id, string reason) {
-    auto actor=manage(); products table(get_self(),get_self().value); auto p=table.get(product_id);
+void mall_contract::setsupply(name submitter, uint64_t product_id, int64_t maximum, int64_t quota, uint64_t op_id, string reason) {
+    auto actor=require_perm(submitter, "productMgmt"); products table(get_self(),get_self().value); auto p=table.get(product_id);
     check(p.status==0,"MALL_STATUS: must be offline"); amount_ok(maximum); amount_ok(quota);
     flon::nstats_t::idx_t stats(p.nft_contract,p.nft_contract.value); const auto& st=stats.get(p.nft_id);
     check(st.issuer==get_self(),"MALL_SUPPLY: mall must be issuer");
@@ -229,16 +186,16 @@ void mall_contract::setsupply(uint64_t product_id, int64_t maximum, int64_t quot
     table.modify(table.get(product_id),same_payer,[&](auto& r){r=p;});
     action(permission_level{get_self(),"active"_n},p.nft_contract,"setmaxsup"_n,std::make_tuple(p.nft_id,maximum)).send();
 }
-void mall_contract::setmeta(uint64_t product_id, string uri, uint64_t op_id, string reason) {
-    auto actor=manage(); products table(get_self(),get_self().value); const auto& p=table.get(product_id);
+void mall_contract::setmeta(name submitter, uint64_t product_id, string uri, uint64_t op_id, string reason) {
+    auto actor=require_perm(submitter, "productMgmt"); products table(get_self(),get_self().value); const auto& p=table.get(product_id);
     check(p.status==0,"MALL_STATUS: must be offline");
     flon::nstats_t::idx_t stats(p.nft_contract,p.nft_contract.value); const auto& st=stats.get(p.nft_id);
     check(st.issuer==get_self(),"MALL_META: mall must be issuer");
     log(op_id,actor,"setmeta"_n,reason,pack(std::make_tuple(product_id,st.token_uri)),pack(std::make_tuple(product_id,uri)));
     action(permission_level{get_self(),"active"_n},p.nft_contract,"settokenuri"_n,std::make_tuple(p.nft_id,uri)).send();
 }
-void mall_contract::setstatus(uint64_t product_id, uint8_t status, uint64_t op_id, string reason) {
-    auto actor=manage(); products table(get_self(),get_self().value); auto p=table.get(product_id);
+void mall_contract::setstatus(name submitter, uint64_t product_id, uint8_t status, uint64_t op_id, string reason) {
+    auto actor=require_perm(submitter, "productMgmt"); products table(get_self(),get_self().value); auto p=table.get(product_id);
     check(status<=2 && p.status!=2,"MALL_STATUS: invalid transition");
     if(status==1){bank_ok(p.nft_contract,true);quota_ok(p,p.quota);}
     if(status==2) check(p.quota==p.sold,"MALL_STATUS: release quota before archival");
@@ -249,15 +206,15 @@ void mall_contract::sendnft(const product& p, name to, int64_t amount, const str
     action(permission_level{get_self(),"active"_n},p.nft_contract,"transfer"_n,
            std::make_tuple(get_self(),to,vector<nasset>{nasset(amount,flon::nsymbol(p.nft_id))},memo)).send();
 }
-void mall_contract::withdrawnft(uint64_t product_id, name to, int64_t quantity, uint64_t op_id, string reason) {
-    auto actor=manage();products table(get_self(),get_self().value);const auto& p=table.get(product_id);
+void mall_contract::withdrawnft(name submitter, uint64_t product_id, name to, int64_t quantity, uint64_t op_id, string reason) {
+    auto actor=require_perm(submitter, "productMgmt");products table(get_self(),get_self().value);const auto& p=table.get(product_id);
     check(p.status==0 && !p.mint,"MALL_STOCK: offline inventory product required");
     check(quantity>0 && quantity<=balance(p)-(p.quota-p.sold),"MALL_STOCK: inventory reserved");bank_ok(p.nft_contract,true);
     log(op_id,actor,"withdrawnft"_n,reason,pack(std::make_tuple(product_id,balance(p))),pack(std::make_tuple(product_id,to,quantity)));
     sendnft(p,to,quantity,"mall inventory withdrawal");
 }
-void mall_contract::allocfund(name bank, asset quantity, uint64_t op_id, string reason) {
-    auto c=config();auto actor=role_auth(c, &role_accounts::treasurer, c.treasurer);bank_ok(bank,false);
+void mall_contract::allocfund(name submitter, name bank, asset quantity, uint64_t op_id, string reason) {
+    auto c=config();auto actor=require_perm(submitter, "mallTreasury");bank_ok(bank,false);
     check(quantity.is_valid() && quantity.amount>0,"MALL_AMOUNT: invalid allocation");
     funds table(get_self(),bank.value);auto f=table.get(quantity.symbol.raw());auto before=pack(std::make_tuple(bank,f));
     check(quantity.amount<=f.sales && quantity.amount<=asset::max_amount-f.drops,"MALL_FUNDS: insufficient sales/overflow");
@@ -265,8 +222,8 @@ void mall_contract::allocfund(name bank, asset quantity, uint64_t op_id, string 
     log(op_id,actor,"allocfund"_n,reason,before,pack(std::make_tuple(bank,f)));
     table.modify(table.get(quantity.symbol.raw()),same_payer,[&](auto& r){r=f;});
 }
-void mall_contract::airdrop(uint64_t batch_id, name bank, vector<payment> entries) {
-    auto c=config();role_auth(c, &role_accounts::distributor, c.distributor);check(!c.drop_paused,"MALL_PAUSED: airdrops");bank_ok(bank,false);
+void mall_contract::airdrop(name submitter, uint64_t batch_id, name bank, vector<payment> entries) {
+    auto c=config();require_perm(submitter, "mallAirdrop");check(!c.drop_paused,"MALL_PAUSED: airdrops");bank_ok(bank,false);
     check(batch_id>0 && !entries.empty() && entries.size()<=50,"MALL_BATCH: invalid size/id");
     batches table(get_self(),get_self().value);check(table.find(batch_id)==table.end(),"MALL_BATCH: duplicate");
     asset total(0,entries.front().quantity.symbol);
@@ -283,8 +240,8 @@ void mall_contract::airdrop(uint64_t batch_id, name bank, vector<payment> entrie
     for(const auto& e:entries) action(permission_level{get_self(),"active"_n},bank,"transfer"_n,
         std::make_tuple(get_self(),e.to,e.quantity,string("mall airdrop:")+std::to_string(batch_id))).send();
 }
-void mall_contract::pause(bool buying, bool dropping, uint64_t op_id, string reason) {
-    auto c=config();auto actor=role_auth(c, &role_accounts::guardian, c.guardian);auto before=pack(c);c.buy_paused=buying;c.drop_paused=dropping;
+void mall_contract::pause(name submitter, bool buying, bool dropping, uint64_t op_id, string reason) {
+    auto c=config();auto actor=require_perm(submitter, "mallPause");auto before=pack(c);c.buy_paused=buying;c.drop_paused=dropping;
     log(op_id,actor,"pause"_n,reason,before,pack(c));config_table(get_self(),get_self().value).set(c,get_self());
 }
 void mall_contract::notifybuy(name buyer, string request_id, uint64_t product_id, name bank,
@@ -335,11 +292,9 @@ void mall_contract::receivepay(name from, name to, asset quantity, string memo) 
     purchases bought(get_self(),from.value);auto b=bought.find(product_id);int64_t used=b==bought.end()?0:b->quantity;
     check(used<=p.terms.per_account && count<=p.terms.per_account-used,"MALL_LIMIT: per account");
     check(count<=p.quota-p.sold,"MALL_QUOTA: sold out");bank_ok(p.nft_contract,true);quota_ok(p,p.quota);
-    receipts orders(get_self(),from.value);auto byreq=orders.get_index<"byrequest"_n>();auto digest=sha256(parts[4].data(),parts[4].size());
-    check(byreq.find(digest)==byreq.end(),"MALL_REQUEST: duplicate");
-    orders.emplace(get_self(),[&](auto& r){r.id=orders.available_primary_key();r.request_id=parts[4];r.digest=digest;r.product_id=p.id;r.quantity=count;r.paid=quantity;r.at=time_point_sec(current_time_point());});
-    if(b==bought.end())bought.emplace(get_self(),[&](auto& r){r.product_id=p.id;r.quantity=count;});
-    else bought.modify(b,same_payer,[&](auto& r){r.quantity+=count;});
+    const string code = p.product_code.has_value() ? p.product_code.value() : string{};
+    if(b==bought.end())bought.emplace(get_self(),[&](auto& r){r.product_id=p.id;r.quantity=count;r.product_code=code;});
+    else bought.modify(b,same_payer,[&](auto& r){r.quantity+=count;r.product_code=code;});
     table.modify(table.get(p.id),same_payer,[&](auto& r){r.sold+=count;});
     check(quantity.amount<=asset::max_amount-budget.sales,"MALL_FUNDS: overflow");
     f.modify(budget,same_payer,[&](auto& r){r.sales+=quantity.amount;});

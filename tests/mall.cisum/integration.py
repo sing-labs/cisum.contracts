@@ -16,7 +16,8 @@ CONTAINER = 'mall-test-' + uuid.uuid4().hex[:10]
 PUB = 'FU6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV'
 DEV_KEY = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3'
 OP = 0
-LEGACY = "--upgrade-fixture" in sys.argv
+OLD_ARRAY = "--roles-fixture" in sys.argv
+LEGACY = "--upgrade-fixture" in sys.argv or OLD_ARRAY
 
 
 def run(*args, fail=None):
@@ -36,9 +37,14 @@ def cli(*args, fail=None):
 def act(bank, action, data, actor, fail=None):
     # Preserve existing scenarios while supplying the new action arguments.
     if not LEGACY and bank == 'mall.cisum' and action == 'init' and isinstance(data, list):
-        data = [[x] if isinstance(x, str) else x for x in data]
-    if not LEGACY and bank == 'mall.cisum' and action == 'createnft' and isinstance(data, list) and len(data) == 9:
+        data = [data[0]]
+    if (not LEGACY or OLD_ARRAY) and bank == 'mall.cisum' and action == 'createnft' and isinstance(data, list) and len(data) == 9:
         data = [*data, 'business-' + str(data[7])]
+    if LEGACY and OLD_ARRAY and bank == 'mall.cisum' and action == 'init':
+        data = [[x] for x in data]
+    business={'addbank','advancenft','createnft','regstock','setsale','setquota','setsupply','setmeta','setstatus','withdrawnft','allocfund','airdrop','pause'}
+    if not LEGACY and bank == 'mall.cisum' and action in business and isinstance(data,list):
+        data = [actor, *data]
     return cli('push', 'action', bank, action, json.dumps(data, ensure_ascii=False), '-p', actor, fail=fail)
 
 
@@ -67,13 +73,11 @@ def terms(start='2020-01-01T00:00:00', single=2, account=3):
 def snapshot():
     return {f'{b}/{s}/{t}': rows(b, s, t) for b, s, t in [
         ('mall.cisum', 'mall.cisum', 'products'), ('mall.cisum', 'cisum.token', 'funds'),
-        ('mall.cisum', 'alice', 'purchases'), ('mall.cisum', 'alice', 'receipts'),
-        ('mall.nft', 'mall.nft', 'tokenstats'), ('mall.nft', 'mall.nft', 'issuance'),
+        ('mall.cisum', 'alice', 'purchases'), ('mall.nft', 'mall.nft', 'tokenstats'), ('mall.nft', 'mall.nft', 'issuance'),
         ('mall.nft', 'alice', 'accounts'), ('mall.nft', 'mall.cisum', 'accounts'),
         ('cisum.token', 'alice', 'accounts'), ('cisum.token', 'mall.cisum', 'accounts'),
         ('cisum.token', 'bob', 'accounts'), ('mall.nft', 'bob', 'accounts'),
-        ('mall.cisum', 'bob', 'purchases'), ('mall.cisum', 'bob', 'receipts'),
-        ('mall.cisum', 'mall.cisum', 'batches')]}
+        ('mall.cisum', 'bob', 'purchases'), ('mall.cisum', 'mall.cisum', 'batches')]}
 
 
 def rejected(amount, memo, error):
@@ -86,9 +90,10 @@ def main():
     global LEGACY
     abi=json.loads((ROOT/'build/mall-verified/mall.cisum.abi').read_text())
     actions={a['name'] for a in abi['actions']}
-    assert {'addrole','delrole'} <= actions
-    assert not {'setnftcaps','setxferwl'} & actions
-    for name, required in [('mall.cisum', {'products', 'funds', 'receipts', 'purchases'}),
+    assert 'receipts' not in {t['name'] for t in abi['tables']}
+    assert 'init' in actions
+    assert not {'setnftcaps','setxferwl','addrole','delrole'} & actions
+    for name, required in [('mall.cisum', {'products', 'funds', 'purchases'}),
                            ('mall.nft', {'issuance', 'xferpolicy', 'xferwhite'})]:
         abi = json.loads((ROOT / 'build/mall-verified' / (name + '.abi')).read_text())
         assert required <= {t['name'] for t in abi['tables']}, 'missing ABI tables'
@@ -123,7 +128,7 @@ def main():
         for name in ['mall.cisum', 'mall.nft', 'cisum.token', 'manager', 'treasurer', 'distributor', 'guardian', 'alice', 'bob']:
             cli('create', 'account', 'flon', name, PUB, PUB)
         for name in ['mall.cisum', 'mall.nft', 'cisum.token']:
-            artifact = 'legacy.mall.cisum' if name == 'mall.cisum' and LEGACY else name
+            artifact = ('roles.mall.cisum' if OLD_ARRAY else 'legacy.mall.cisum') if name == 'mall.cisum' and LEGACY else name
             cli('set', 'contract', name, '/artifacts', artifact+'.wasm', artifact+'.abi', '-p', name)
         act('mall.nft','setcreator',['mall.cisum',True],'mall.nft')
         act('mall.nft','setcreator',['manager',True],'mall.nft')
@@ -144,10 +149,20 @@ def main():
             cli('set','contract','mall.cisum','/artifacts','mall.cisum.wasm','mall.cisum.abi','-p','mall.cisum')
             LEGACY=False
             assert rows('mall.cisum','mall.cisum','config')[0]==before
-            assert not rows('mall.cisum','mall.cisum','products')[0].get('product_id')
-        act('mall.cisum','addrole',['manager','bob',100001,'add after upgrade'],'mall.cisum')
-        assert rows('mall.cisum','mall.cisum','config')[0]['roles']['manager']==['manager','bob']
-        act('mall.cisum','delrole',['manager','bob',100002,'restore manager'],'mall.cisum')
+        # Upgrade requires explicit super-admin initialization; legacy arrays grant nothing.
+        if '--upgrade-fixture' in sys.argv or OLD_ARRAY:
+            act('mall.cisum','setstatus',[1,1,100001,'before init'],'manager','initialize unified')
+            if not OLD_ARRAY:
+                assert not rows('mall.cisum','mall.cisum','products')[0].get('product_code')
+        act('mall.cisum','init',['manager'],'mall.cisum')
+        cli('create','account','flon','cisum.auth',PUB,PUB)
+        cli('set','contract','cisum.auth','/artifacts','flon.auth.wasm','flon.auth.abi','-p','cisum.auth')
+        act('cisum.auth','init',['manager'],'cisum.auth')
+        cli('set','account','permission','cisum.auth','active','--add-code','-p','cisum.auth')
+        for role,perm,user in [('treasury','mallTreasury','treasurer'),('drops','mallAirdrop','distributor'),('pause','mallPause','guardian')]:
+            act('cisum.auth','addrole',['manager',role,role],'manager')
+            act('cisum.auth','addroleperm',['manager',role,[perm],perm],'manager')
+            act('cisum.auth','grantrole',['manager',user,role],'manager')
         assert int(rows('mall.cisum', 'mall.cisum', 'products')[0]['nft_id']) == 6000000001
         # Creation does not invoke NFT policy actions.
         assert rows('mall.nft','mall.nft','xferpolicy') == []
@@ -160,9 +175,11 @@ def main():
         admin('setstatus', [1, 0]); admin('setsale', [1, terms()]); admin('setstatus', [1, 1])
         pay('20.0000 CISUM', 'mall:v1:1:2:first')
         assert int(rows('mall.nft', 'alice', 'accounts')[0]['balance']['amount']) == 2
+        expected_code=rows('mall.cisum','mall.cisum','products')[0].get('product_code','')
+        assert rows('mall.cisum','alice','purchases')[0]['product_code']==expected_code
+
         assert int(rows('mall.cisum', 'cisum.token', 'funds')[0]['sales']) == 200000
         rejected('20.0000 CISUM', 'mall:v1:1:2:first', 'MALL_LIMIT')
-        rejected('10.0000 CISUM', 'mall:v1:1:1:first', 'MALL_REQUEST')
         rejected('30.0000 CISUM', 'mall:v1:1:3:large', 'MALL_LIMIT')
         rejected('11.0000 CISUM', 'mall:v1:1:1:odd', 'MALL_PAYMENT')
         rejected('10.0000 CISUM', 'mall:v1:1:2:wrong', 'MALL_PAYMENT')
@@ -173,8 +190,10 @@ def main():
         act('mall.nft', 'transfer', ['alice', 'bob', [nft(1)], 'test'], 'alice', 'sender not in NFT')
         act('mall.nft','setxferwl',[6000000001,'alice',True],'mall.cisum')
         act('mall.nft', 'transfer', ['alice', 'bob', [nft(1)], 'test'], 'alice')
-        pay('10.0000 CISUM', 'mall:v1:1:1:last')
+        pay('10.0000 CISUM', 'mall:v1:1:1:first')  # Reused request IDs are now accepted.
         rejected('10.0000 CISUM', 'mall:v1:1:1:overcap', 'MALL_LIMIT')
+        assert rows('mall.cisum','alice','purchases')[0]['product_code']==expected_code
+
         act('mall.nft','setxferwl',[6000000001,'mall.cisum',False],'mall.cisum')
         before = snapshot()
         pay('10.0000 CISUM', 'mall:v1:1:1:blocked', who='bob', fail='sender not in NFT')
@@ -226,7 +245,7 @@ def main():
         assert int(rows('mall.cisum','mall.cisum','products')[-1]['nft_id']) == 6000000002
         # Reusing an operation id cannot apply a second update.
         act('mall.cisum','setquota',[3,4,OP,'duplicate operation'],'manager','duplicate operation')
-        admin('setquota',[3,4],actor='alice',fail='authority')
+        admin('setquota',[3,4],actor='alice',fail='does not have required permission')
         admin('pause',[True,False],actor='guardian')
         rejected('10.0000 CISUM','mall:v1:1:1:paused','MALL_PAUSED')
         admin('pause',[False,False],actor='guardian')
@@ -286,56 +305,50 @@ def main():
         admin('createnft',['mall.nft','ipfs://no-policy','manager',10,5,'cisum.token',terms()])
         assert rows('mall.nft','mall.nft','xferpolicy')==policies_before
         admin('setstatus',[5,1])
-        # All four roles accept any listed signer, without granting other roles.
-        groups=[['manager','alice'],['manager','bob'],['manager','alice'],['manager','bob']]
-        act('mall.cisum','init',groups,'alice','authority')
-        for bad in [[],['manager','manager'],['missingacct'],['manager']*51]:
-            act('mall.cisum','init',[bad,*groups[1:]],'mall.cisum','MALL_CONFIG')
-        config_before=rows('mall.cisum','mall.cisum','config')[0]
-        act('mall.cisum','init',[['manager']]*4,'mall.cisum')
-        role_names=['manager','treasurer','distributor','guardian']
-        for i, role in enumerate(role_names):
-            data=[role,groups[i][1],101000+i,'add second member']
-            act('mall.cisum','addrole',data,'manager','authority')
-            act('mall.cisum','addrole',data,'mall.cisum')
-            act('mall.cisum','addrole',[role,groups[i][1],102000+i,'duplicate'],'mall.cisum','already assigned')
-            act('mall.cisum','delrole',[role,groups[i][1],103000+i,'unauthorized'],'manager','authority')
-        for action in ['addrole','delrole']:
-            act('mall.cisum',action,['invalid','alice',104000,'bad role'],'mall.cisum','unknown role')
-        act('mall.cisum','addrole',['manager','missingacct',104000,'missing'],'mall.cisum','does not exist')
-        act('mall.cisum','delrole',['manager','bob',104000,'not member'],'mall.cisum','not assigned')
-        # Duplicate operation IDs roll back the role change.
-        act('mall.cisum','addrole',['manager','bob',101000,'reused op'],'mall.cisum','duplicate operation')
-        assert rows('mall.cisum','mall.cisum','config')[0]['roles']['manager']==groups[0]
-        configured=rows('mall.cisum','mall.cisum','config')[0]
-        assert list(configured['roles'].values())==groups
-        for field in ['next_nft','buy_paused','drop_paused']:
-            assert configured[field]==config_before[field]
+        # Unified role checks, no local whitelist fallback, and revocation.
+        act('cisum.auth','addrole',['manager','merchants','mall managers'],'manager')
+        act('cisum.auth','addroleperm',['manager','merchants',['productMgmt'],'manage goods'],'manager')
+        act('cisum.auth','grantrole',['manager','alice','merchants'],'manager')
         admin('setstatus',[5,0],actor='alice')
-        assert next(r for r in rows('mall.cisum','mall.cisum','operations') if int(r['id'])==OP)['actor']=='alice'
-        admin('setstatus',[5,0],actor='bob',fail='MALL_AUTH')
-        admin('allocfund',['cisum.token','0.0001 CISUM'],actor='bob')
-        assert next(r for r in rows('mall.cisum','mall.cisum','operations') if int(r['id'])==OP)['actor']=='bob'
-        admin('allocfund',['cisum.token','0.0001 CISUM'],actor='alice',fail='MALL_AUTH')
-        act('mall.cisum','airdrop',[9999,'cisum.token',[{'to':'bob','quantity':'0.0001 CISUM'}]],'alice')
-        act('mall.cisum','airdrop',[10000,'cisum.token',[{'to':'bob','quantity':'0.0001 CISUM'}]],'bob','MALL_AUTH')
-        admin('pause',[True,False],actor='bob')
-        admin('pause',[False,False],actor='alice',fail='MALL_AUTH')
-        admin('pause',[False,False],actor='bob')
-        # Explicit business ID is persisted; validation failures cannot consume a template ID.
-        data=['mall.nft','ipfs://business-id','manager',10,5,'cisum.token',terms(),9900,'business ID']
-        for invalid in ['', 'x'*257]:
-            act('mall.cisum','createnft',[*data,invalid],'alice','MALL_PRODUCT')
-        act('mall.cisum','createnft',[*data,'商品-SKU-001'],'alice')
-        assert rows('mall.cisum','mall.cisum','products')[-1]['product_id']=='商品-SKU-001', rows('mall.cisum','mall.cisum','products')[-1]
-        for i, role in enumerate(role_names):
-            act('mall.cisum','delrole',[role,groups[i][1],105000+i,'remove second member'],'mall.cisum')
-            act('mall.cisum','delrole',[role,'manager',106000+i,'last member'],'mall.cisum','last account')
-        admin('setstatus',[6,0],actor='alice',fail='MALL_AUTH')
-        admin('pause',[False,False],actor='bob',fail='MALL_AUTH')
-        admin('allocfund',['cisum.token','0.0001 CISUM'],actor='bob',fail='MALL_AUTH')
-        act('mall.cisum','airdrop',[10000,'cisum.token',[{'to':'bob','quantity':'0.0001 CISUM'}]],'alice','MALL_AUTH')
-        print('PASS: purchase, rollback, limits, issuance, stock, airdrops, business IDs, multi-account roles and optional legacy upgrade')
+        act('mall.cisum','addbank',['cisum.token',False,'4,EXTRA'],'alice')
+        assert any(r['sym']=='4,EXTRA' for r in rows('mall.cisum','cisum.token','funds'))
+        before_banks=rows('mall.cisum','mall.cisum','banks')
+        act('mall.cisum','addbank',['manager',True,'4,CISUM'],'bob','does not have required permission')
+        assert rows('mall.cisum','mall.cisum','banks')==before_banks
+        cli('push','action','mall.cisum','addbank',json.dumps(['alice','manager',True,'4,CISUM']),'-p','bob',fail='authority')
+
+        admin('allocfund',['cisum.token','0.0001 CISUM'],actor='alice',fail='does not have required permission')
+        act('cisum.auth','addallowlist',['bob'],'manager')
+        admin('setstatus',[5,0],actor='bob',fail='does not have required permission')
+        # A signed transaction cannot impersonate another authorized submitter.
+        cli('push','action','mall.cisum','setstatus',json.dumps(['alice',5,0,109001,'spoof']),'-p','bob',fail='authority')
+        act('cisum.auth','grantrole',['manager','bob','merchants'],'manager')
+        admin('setstatus',[5,0],actor='bob')
+        act('cisum.auth','revokerole',['manager','alice','merchants'],'manager')
+        before_funds=rows('mall.cisum','cisum.token','funds')
+        act('mall.cisum','addbank',['cisum.token',False,'4,REVOKED'],'alice','does not have required permission')
+        assert rows('mall.cisum','cisum.token','funds')==before_funds
+
+        before=snapshot()
+        admin('setstatus',[5,1],actor='alice',fail='does not have required permission')
+        assert snapshot()==before
+        # External permissions may be removed without changing the mall.
+        act('cisum.auth','delroleperm',['manager','merchants',['productMgmt']],'manager')
+        admin('setstatus',[5,1],actor='bob',fail='does not have required permission')
+        admin('pause',[False,False],actor='manager')  # super-admin bypass
+        admin('setstatus',[5,0],actor='mall.cisum')  # contract bypass
+        assert next(r for r in rows('mall.cisum','mall.cisum','operations') if int(r['id'])==OP)['actor']=='mall.cisum'
+        # Atomic rollback even though checkrole is an inline action.
+        act('cisum.auth','revokerole',['manager','distributor','drops'],'manager')
+        before=snapshot()
+        act('mall.cisum','airdrop',[109002,'cisum.token',[{'to':'bob','quantity':'0.0001 CISUM'}]],'distributor','does not have required permission')
+        assert snapshot()==before
+        act('mall.cisum','init',['alice'],'manager','authority')
+        act('mall.cisum','init',['missingacct'],'mall.cisum','admin does not exist')
+        act('mall.cisum','init',['alice'],'mall.cisum')
+        admin('setstatus',[5,0],actor='manager',fail='does not have required permission')
+        admin('setstatus',[5,0],actor='alice')
+        print('PASS: purchase, rollback, limits, issuance, stock, airdrops, business IDs, unified roles, revocation and optional legacy upgrade')
     finally:
         run('docker', 'rm', '-f', CONTAINER)
 
