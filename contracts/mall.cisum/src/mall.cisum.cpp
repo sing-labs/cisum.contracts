@@ -36,6 +36,11 @@ void request_ok(const string& s) {
         check((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
               (c >= '0' && c <= '9') || c == '-' || c == '_', "MALL_REQUEST: invalid character");
 }
+void code_ok(const string& code) {
+    check(!code.empty() && code.size() <= 160, "MALL_PRODUCT: product_code requires 1 to 160 bytes");
+    for (unsigned char c : code)
+        check(c > 32 && c != ':' && c != 127, "MALL_PRODUCT: invalid product_code character");
+}
 void amount_ok(int64_t n) { check(n >= 0 && n <= nasset::max_amount, "MALL_AMOUNT: out of range"); }
 }
 config_row mall_contract::config() const {
@@ -95,6 +100,52 @@ void mall_contract::log(uint64_t id, name actor, name action_name, const string&
         r.before=before; r.after=after; r.at=time_point_sec(current_time_point());
     });
 }
+void mall_contract::unique_code(const string& code, uint64_t except_id) const {
+    code_ok(code);
+    products table(get_self(), get_self().value);
+    // Scan primary rows too: old deployments have no bycode entries.
+    for (const auto& p : table)
+        check(p.id == except_id || !p.product_code.has_value() || p.product_code.value() != code,
+              "MALL_PRODUCT: product_code already exists");
+}
+product mall_contract::find_code(const string& code) const {
+    code_ok(code);
+    products table(get_self(), get_self().value);
+    product result;
+    bool found = false;
+    for (const auto& p : table) {
+        if (p.product_code.has_value() && p.product_code.value() == code) {
+            check(!found, "MALL_PRODUCT: ambiguous legacy product_code");
+            result = p;
+            found = true;
+        }
+    }
+    check(found, "MALL_PRODUCT: product_code not found");
+    return result;
+}
+void mall_contract::getproduct(string product_code) {
+    auto p = find_code(product_code);
+    print_f("product_id: %", p.id);
+}
+void mall_contract::getpurchase(name buyer, string product_code) {
+    check(is_account(buyer), "MALL_QUERY: buyer does not exist");
+    auto p = find_code(product_code);
+    purchases bought(get_self(), buyer.value);
+    auto row = bought.find(p.id);
+    print_f("product_id: %, quantity: %", p.id, row == bought.end() ? int64_t(0) : row->quantity);
+}
+void mall_contract::setcode(name submitter, uint64_t product_id, string product_code,
+                           uint64_t op_id, string reason) {
+    auto actor = require_perm(submitter, "productMgmt");
+    products table(get_self(), get_self().value);
+    auto p = table.get(product_id);
+    check(p.status == 0, "MALL_STATUS: must be offline");
+    unique_code(product_code, product_id);
+    auto before = pack(p);
+    p.product_code = product_code;
+    log(op_id, actor, "setcode"_n, reason, before, pack(p));
+    table.modify(table.get(product_id), same_payer, [&](auto& row){ row = p; });
+}
 void mall_contract::init(name admin) {
     require_auth(get_self());
     check(is_account(admin), "MALL_CONFIG: admin does not exist");
@@ -126,7 +177,7 @@ void mall_contract::advancenft(name submitter, uint64_t next_id, uint64_t op_id,
 void mall_contract::createnft(name submitter, name bank, string uri, name ipowner, int64_t maximum, int64_t quota,
                              name paybank, sale_terms terms, uint64_t op_id, string reason, string product_code) {
     auto actor=require_perm(submitter, "productMgmt"); bank_ok(bank,true); terms_ok(paybank,terms);
-    check(!product_code.empty() && product_code.size() <= 256, "MALL_PRODUCT: product_code requires 1 to 256 bytes");
+    unique_code(product_code);
     amount_ok(maximum); amount_ok(quota);
     check(maximum > 0 && quota <= maximum, "MALL_SUPPLY: invalid maximum/quota");
     auto c=config();
@@ -149,13 +200,14 @@ void mall_contract::createnft(name submitter, name bank, string uri, name ipowne
     // Only create the NFT; policies, whitelists and external reservations are not changed.
 }
 void mall_contract::regstock(name submitter, name bank, uint64_t nft_id, int64_t quota, name paybank,
-                            sale_terms terms, uint64_t op_id, string reason) {
+                            sale_terms terms, uint64_t op_id, string reason, string product_code) {
+    unique_code(product_code);
     auto actor=require_perm(submitter, "productMgmt"); bank_ok(bank,true); terms_ok(paybank,terms);
     flon::nstats_t::idx_t stats(bank,bank.value); stats.get(nft_id,"MALL_NFT: unknown NFT");
     products table(get_self(),get_self().value); auto idx=table.get_index<"byasset"_n>();
     check(idx.find((uint128_t(bank.value)<<64)|nft_id)==idx.end(),"MALL_NFT: already registered");
     product p; p.id=table.available_primary_key(); if(p.id==0)p.id=1;
-    p.product_code=string{};
+    p.product_code=product_code;
     p.nft_contract=bank; p.nft_id=nft_id; p.mint=false; p.pay_contract=paybank; p.terms=terms; p.quota=quota;
     bank_ok(p.nft_contract,true); quota_ok(p,quota);
     log(op_id,actor,"regstock"_n,reason,{},pack(p));
@@ -280,8 +332,9 @@ void mall_contract::receivepay(name from, name to, asset quantity, string memo) 
     }
     auto c=config();check(!c.buy_paused,"MALL_PAUSED: purchases");
     auto parts=split(memo);check(parts.size()==5 && parts[0]=="mall" && parts[1]=="v1","MALL_MEMO: expected mall:v1:product:quantity:request");
-    auto product_id=number(parts[2]);auto expected=number(parts[3]);request_ok(parts[4]);
-    products table(get_self(),get_self().value);auto p=table.get(product_id,"MALL_NFT: product not found");
+    auto expected=number(parts[3]);request_ok(parts[4]);
+    products table(get_self(),get_self().value);auto p=find_code(parts[2]);
+    auto product_id=p.id;
     check(p.status==1,"MALL_STATUS: not on sale");
     check(time_point_sec(current_time_point())>=p.terms.starts,"MALL_TIME: not started");
     check(p.pay_contract==get_first_receiver() && p.terms.price.symbol==quantity.symbol,"MALL_PAYMENT: wrong contract/symbol");

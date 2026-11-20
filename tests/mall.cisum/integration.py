@@ -42,7 +42,16 @@ def act(bank, action, data, actor, fail=None):
         data = [*data, 'business-' + str(data[7])]
     if LEGACY and OLD_ARRAY and bank == 'mall.cisum' and action == 'init':
         data = [[x] for x in data]
-    business={'addbank','advancenft','createnft','regstock','setsale','setquota','setsupply','setmeta','setstatus','withdrawnft','allocfund','airdrop','pause'}
+    if not LEGACY and bank == 'mall.cisum' and action == 'regstock' and len(data)==7:
+        data=[*data,'stock-'+str(data[1])]
+    if not LEGACY and action == 'transfer' and len(data)==4 and isinstance(data[3],str) and data[3].startswith('mall:v1:'):
+        parts=data[3].split(':')
+        if parts[2].isdigit():
+            matched=next((r for r in rows('mall.cisum','mall.cisum','products') if int(r['id'])==int(parts[2])),None)
+            if matched:
+                parts[2]=matched.get('product_code','')
+                data=[*data[:3],':'.join(parts)]
+    business={'setcode','addbank','advancenft','createnft','regstock','setsale','setquota','setsupply','setmeta','setstatus','withdrawnft','allocfund','airdrop','pause'}
     if not LEGACY and bank == 'mall.cisum' and action in business and isinstance(data,list):
         data = [actor, *data]
     return cli('push', 'action', bank, action, json.dumps(data, ensure_ascii=False), '-p', actor, fail=fail)
@@ -155,6 +164,8 @@ def main():
             if not OLD_ARRAY:
                 assert not rows('mall.cisum','mall.cisum','products')[0].get('product_code')
         act('mall.cisum','init',['manager'],'mall.cisum')
+        if not rows('mall.cisum','mall.cisum','products')[0].get('product_code'):
+            act('mall.cisum','setcode',[1,'legacy-first',100003,'assign legacy code'],'manager')
         cli('create','account','flon','cisum.auth',PUB,PUB)
         cli('set','contract','cisum.auth','/artifacts','flon.auth.wasm','flon.auth.abi','-p','cisum.auth')
         act('cisum.auth','init',['manager'],'cisum.auth')
@@ -176,6 +187,21 @@ def main():
         pay('20.0000 CISUM', 'mall:v1:1:2:first')
         assert int(rows('mall.nft', 'alice', 'accounts')[0]['balance']['amount']) == 2
         expected_code=rows('mall.cisum','mall.cisum','products')[0].get('product_code','')
+        result=act('mall.cisum','getproduct',[expected_code],'alice')
+        act('mall.cisum','getpurchase',['alice',expected_code],'alice')
+        act('mall.cisum','getpurchase',['bob',expected_code],'alice')
+        act('mall.cisum','getpurchase',['alice','absent-code'],'alice','not found')
+        act('mall.cisum','getpurchase',['missingacct',expected_code],'alice','buyer does not exist')
+        act('mall.cisum','getproduct',['absent-code'],'alice','not found')
+        before=snapshot()
+        cli('push','action','cisum.token','transfer',json.dumps(['alice','mall.cisum','10.0000 CISUM','mall:v1:1:1:oldmemo']),'-p','alice',fail='product_code not found')
+        assert snapshot()==before
+        duplicate=['mall.nft','ipfs://unique-code-rejected','manager',10,5,'cisum.token',terms(),100004,'duplicate',expected_code]
+        act('mall.cisum','createnft',duplicate,'manager','already exists')
+        assert snapshot()==before
+        for invalid in ['bad:code','bad code','x'*161]:
+            act('mall.cisum','createnft',[*duplicate[:-1],invalid],'manager','MALL_PRODUCT')
+
         assert rows('mall.cisum','alice','purchases')[0]['product_code']==expected_code
 
         assert int(rows('mall.cisum', 'cisum.token', 'funds')[0]['sales']) == 200000
@@ -183,7 +209,7 @@ def main():
         rejected('30.0000 CISUM', 'mall:v1:1:3:large', 'MALL_LIMIT')
         rejected('11.0000 CISUM', 'mall:v1:1:1:odd', 'MALL_PAYMENT')
         rejected('10.0000 CISUM', 'mall:v1:1:2:wrong', 'MALL_PAYMENT')
-        rejected('10.0000 CISUM', 'mall:v1:18446744073709551616:1:overflow', 'MALL_MEMO')
+        rejected('10.0000 CISUM', 'mall:v1:18446744073709551616:1:overflow', 'MALL_PRODUCT')
         act('mall.nft', 'transfer', ['alice', 'bob', [nft(1)], 'test'], 'alice', 'sender not in NFT')
         # Neither receiver whitelist nor NFT-wide legacy exemption bypasses strict policy.
         act('mall.nft', 'setxferwl', [6000000001, 'bob', True], 'mall.cisum')
@@ -225,7 +251,7 @@ def main():
         stock_before = rows('mall.nft','mall.nft','issuance')
         pay('20.0000 CISUM','mall:v1:2:2:stock')
         assert rows('mall.nft','mall.nft','issuance') == stock_before
-        admin('regstock',['mall.nft',42,0,'cisum.token',terms()],fail='already registered')
+        admin('regstock',['mall.nft',42,0,'cisum.token',terms()],fail='product_code already exists')
         admin('setstatus',[2,0]);admin('setquota',[2,2]);admin('withdrawnft',[2,'manager',3])
         # Sales are unavailable for airdrops until explicitly allocated.
         act('mall.cisum','airdrop',[1,'cisum.token',[{'to':'bob','quantity':'1.0000 CISUM'}]],'distributor','insufficient airdrop budget')

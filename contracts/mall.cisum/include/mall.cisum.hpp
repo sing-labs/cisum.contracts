@@ -64,11 +64,16 @@ struct [[eosio::table("products"), eosio::contract("mall.cisum")]] product {
     uint8_t status = 0; // 0 offline, 1 on sale, 2 archived
     binary_extension<string> product_code; // Business ID; absent on pre-upgrade rows.
     uint64_t primary_key() const { return id; }
+    checksum256 by_code() const {
+        const auto code = product_code.has_value() ? product_code.value() : string{};
+        return sha256(code.data(), code.size());
+    }
     uint128_t by_asset() const { return (uint128_t(nft_contract.value) << 64) | nft_id; }
     EOSLIB_SERIALIZE(product, (id)(nft_contract)(nft_id)(mint)(pay_contract)(terms)(quota)(sold)(status)(product_code))
 };
 using products = multi_index<"products"_n, product,
-    indexed_by<"byasset"_n, const_mem_fun<product, uint128_t, &product::by_asset>>>;
+    indexed_by<"byasset"_n, const_mem_fun<product, uint128_t, &product::by_asset>>,
+    indexed_by<"bycode"_n, const_mem_fun<product, checksum256, &product::by_code>>>;
 struct [[eosio::table("purchases"), eosio::contract("mall.cisum")]] purchase_row {
     uint64_t product_id;
     int64_t quantity = 0;
@@ -101,12 +106,15 @@ class [[eosio::contract("mall.cisum")]] mall_contract : public contract {
 public:
     using contract::contract;
     ACTION init(name admin);
+    ACTION getproduct(string product_code);
+    ACTION getpurchase(name buyer, string product_code);
+    ACTION setcode(name submitter, uint64_t product_id, string product_code, uint64_t op_id, string reason);
     ACTION addbank(name submitter, name bank, bool nft, symbol sym);
     ACTION advancenft(name submitter, uint64_t next_id, uint64_t op_id, string reason);
     ACTION createnft(name submitter, name bank, string uri, name ipowner, int64_t maximum, int64_t quota,
                      name paybank, sale_terms terms, uint64_t op_id, string reason, string product_code);
     ACTION regstock(name submitter, name bank, uint64_t nft_id, int64_t quota, name paybank,
-                    sale_terms terms, uint64_t op_id, string reason);
+                    sale_terms terms, uint64_t op_id, string reason, string product_code);
     ACTION setsale(name submitter, uint64_t product_id, sale_terms terms, uint64_t op_id, string reason);
     ACTION setquota(name submitter, uint64_t product_id, int64_t quota, uint64_t op_id, string reason);
     ACTION setsupply(name submitter, uint64_t product_id, int64_t maximum, int64_t quota, uint64_t op_id, string reason);
@@ -121,6 +129,8 @@ public:
     [[eosio::on_notify("*::transfer")]] void ontransfer();
 private:
     config_row config() const;
+    product find_code(const string& code) const;
+    void unique_code(const string& code, uint64_t except_id = 0) const;
     name require_perm(name submitter, const string& perm) const;
     void terms_ok(name bank, const sale_terms& terms) const;
     void bank_ok(name bank, bool nft) const;

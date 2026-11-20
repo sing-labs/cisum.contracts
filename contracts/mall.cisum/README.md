@@ -39,7 +39,7 @@ RAM/CPU 预算及目标链 ABI，并完成独立安全审查。本仓库不会�
 
 createnft 自动从 6000000001 开始递增分配 NFT ID，跳过目标合约已占用 ID；每次最多扫描
 100 个。超过时失败，由管理员核对后用 advancenft 向前推进。失败创建不消耗编号。
-createnft 另接收必填字符串 product_code（1–256 字节），用于业务关联，不要求唯一。products.id 仍是数字主键，购买 memo 及其他方法的数字 product_id 参数不变。regstock 的字符串业务编号为空。
+createnft 另接收必填字符串 product_code（1–160 字节），用于业务关联且全局唯一。products.id 仍是数字主键，购买 memo 使用 product_code，其他管理方法的数字 product_id 参数不变。regstock 也必须提供唯一 product_code。
 regstock 保留已有 ID。同一资产用 `(nft_contract, nft_id)` 唯一识别，支付使用本地 product_id。
 本版 nsymbol 完整字段为 nid，不隐含额外 precision。
 
@@ -57,7 +57,7 @@ sale_terms 包含 price、starts（UTC 时间）、per_purchase、per_account。
 
 ## 转账协议
 
-购买：`mall:v1:<product_id>:<expected_quantity>:<request_id>`。
+购买：`mall:v1:<product_code>:<expected_quantity>:<request_id>`。
 request_id 为 1–64 位 ASCII 字母、数字、连字符或下划线。request_id 仅用于业务关联，不再去重；重付前请先核对原交易是否成功。
 金额必须是单价整数倍，计算数量须与预期一致，不自动找零。最小单位整数计算。
 
@@ -106,6 +106,47 @@ setnftcaps 和 setxferwl 已从商城删除，原 nftcaps 数据不再使用。s
 
 升级测试：构建新版前保存上一版 WASM/ABI 为 build/mall-verified/roles.mall.cisum.wasm/.abi，运行 python3 tests/mall.cisum/integration.py --roles-fixture。更早单账户版 fixture 使用 legacy.mall.cisum 文件名和 --upgrade-fixture。
 
-业务编号：products 的字符串 product_id 已更名为 product_code，createnft 参数同步更名。purchases 在尾部追加 product_code（string$），保存业务编号；数字 product_id 保持原意。旧商品字符串值无需迁移；旧购买累计行仍可读取。再次购买时累计行会补齐业务编号。无业务编号的旧商品及库存商品记录空字符串。
+业务编号：products 的字符串 product_id 已更名为 product_code，createnft 参数同步更名。purchases 在尾部追加 product_code（string$），保存业务编号；数字 product_id 保持原意。旧商品字符串值无需迁移；旧购买累计行仍可读取。再次购买时累计行会补齐业务编号。历史空业务编号需要使用 setcode 配置后再购买。
 
 回执表已移除：不再写入 receipts，也不按 request_id 去重。相同请求编号再次付款会按新购买处理，仍受限购和配额检查；request_id 保留格式校验及通知用途。后端应根据交易 ID 和实际成交轨迹确认结果，避免盲目重付。升级不会自动删除历史 receipts 行或返还其 RAM，本次节省的是后续回执及索引写入资源。
+
+
+按业务编号查询：getproduct(product_code) 在 action 控制台输出 product_id: <数字 id>，不要求管理权限，不写表。使用该 id 作为 products 的 lower_bound/upper_bound 查询完整商品；RPC 只读模拟需要节点支持，普通 push action 仍消耗交易资源。当前链不支持 action return value，因此没有 ABI 返回值。
+
+```sh
+fucli push action mall.cisum getproduct '{"product_code":"SKU-001"}' -p alice@active
+# 假设输出 product_id: 1
+fucli get table mall.cisum mall.cisum products --lower 1 --upper 1
+fucli push action mall.cisum setcode '{"submitter":"manager","product_id":1,"product_code":"SKU-001","op_id":1201,"reason":"设置业务编号"}' -p manager@active
+```
+
+setcode 需要 productMgmt（或超级管理员/合约自身）授权，商品必须下架，校验编号格式和全表唯一性。历史空编号或重复编号须先修正；重复编号查询会报 ambiguous legacy product_code，不会任意选择商品。编号更改后旧 memo 不再有效，累计限购仍按数字 id 保留，purchases 在下次购买时更新业务编号。
+
+products 追加第三索引 bycode（SHA-256(product_code)，key_type=sha256）。新建或更新商品会维护索引；旧行未自动建立索引，故 getproduct、购买查找和唯一性校验扫描主表，保证升级兼容，成本随商品数量增长。直接 RPC 查第三索引只适用于已建立该索引的行。
+
+购买 memo 为 mall:v1:SKU-001:2:order1，不再把第三段解释为数字 id；纯数字业务编号也按字符串精确匹配。归档商品仍占用编号。createnft、regstock 和 setcode 均拒绝重复编号。
+
+
+累计购买量查询：getpurchase(buyer, product_code)，buyer 为付款账户，product_code 为当前唯一商品编号。控制台输出 product_id: <数字 id>, quantity: <累计数量>。商品存在但该买家未购买时 quantity 为 0；买家不存在、编号不存在或历史编号重复时拒绝。不要求管理权限、不修改表。
+
+```sh
+fucli push action mall.cisum getpurchase '{"buyer":"cloudwudy123","product_code":"SKU-001"}' -p cloudwudy123@active
+```
+
+接口先按当前 product_code 找到商品 id，再读取买家 scope 下 purchases，因此兼容尚无业务编号字段的旧累计行；setcode 改名后使用新编号仍能查询原累计量。
+
+## Docker 编译并部署
+
+完整环境准备、私钥与钱包处理、部署后 add-code / init，以及底层白名单和 creator 配置见 [部署说明](DEPLOY.md)。
+
+```sh
+bash scripts/deploy-mall.sh --build-only
+bash scripts/deploy-mall.sh \
+  --rpc https://t.flonscan.io \
+  --account nftcreator11 \
+  --wallet-url http://host.docker.internal:8900
+```
+
+脚本使用 Docker CDT 编译 mall.cisum，再用 Docker fucli 部署本次生成的 WASM/ABI；编译失败不会使用旧文件继续部署。钱包服务须从容器可访问、已解锁并持有相应密钥；不会导入私钥、创建账户或调用 init。钱包实际端口不同请修改 --wallet-url；不要把容器 localhost 当作宿主地址。
+
+默认签名权限为部署账户 @active，可用 --permission 指定。添加 --add-code 会在部署成功后为 active 追加自身代码执行权限；若此步骤失败，前面的合约部署不会撤销。首次初始化或 ABI 参数升级请按 API.md 操作。完整选项见 bash scripts/deploy-mall.sh --help。

@@ -1,6 +1,6 @@
 # mall.cisum 合约接口说明
 
-本文对应当前源码及 ABI，面向后台开发、钱包接入和运营人员。包含全部 15 个公开 action，以及转账通知入口。构建与部署步骤见 [README](README.md)。
+本文对应当前源码及 ABI，面向后台开发、钱包接入和运营人员。包含全部 18 个公开 action，以及转账通知入口。构建与部署步骤见 [README](README.md)。
 
 ## 底层合约模式补充
 
@@ -19,7 +19,7 @@
 
 | 名称 | 含义 |
 |---|---|
-| `product_id` | 商城商品编号，首次一般为 1；购买 memo 使用此编号 |
+| `product_id` | 商城数字主键，首次一般为 1；管理接口使用，购买 memo 使用 product_code |
 | `nft_id` | 底层 NFT 编号；新建从 6000000001 递增，已有 NFT 保留原编号 |
 | `maximum` | NFT 历史累计发行上限，不是当前可售库存 |
 | `quota` | 商城累计销售配额，**设置绝对值，不是增加值** |
@@ -127,7 +127,7 @@ fucli push action mall.cisum advancenft '{"submitter":"manager","next_id":600000
 
 | 参数 | 类型 | 意义 |
 |---|---|---|
-| `product_code` | `string` | 业务商品编号，必填，1–256 字节，原样保存；不校验唯一性 |
+| `product_code` | `string` | 业务商品编号，必填，1–160 字节，全局唯一；不能包含冒号、空白或控制字符 |
 | `bank` | `name` | 已登记的兼容 NFT 合约 |
 | `uri` | `string` | NFT 元数据地址；当前底层要求少于 1024 字节且创建时不能与已有 URI 重复 |
 | `ipowner` | `name` | 知识产权归属账户，传存在的账户；底层也允许空账户名 |
@@ -159,6 +159,7 @@ fucli push action ticket.cvnft addwhitelist '{"acct":"mall.cisum"}' -p ticket.cv
 
 | 参数 | 类型 | 意义 |
 |---|---|---|
+| `product_code` | `string` | 必填唯一业务编号，1–160 字节；规则与 createnft 相同 |
 | `bank` | `name` | 已登记的兼容 NFT 合约 |
 | `nft_id` | `uint64` | 已存在 NFT 的原始编号 |
 | `quota` | `int64` | 初始累计配额；不能超过商城可用余额，可设为 0 后再补货 |
@@ -169,7 +170,7 @@ fucli push action ticket.cvnft addwhitelist '{"acct":"mall.cisum"}' -p ticket.cv
 假设商城已持有 NFT 42 共 100 份：
 
 ```sh
-fucli push action mall.cisum regstock '{"submitter":"manager","bank":"ticket.cvnft","nft_id":42,"quota":100,"paybank":"cisum.token","terms":{"price":"10.0000 CISUM","starts":"2026-11-10T00:00:00","per_purchase":5,"per_account":20},"op_id":1003,"reason":"接入现有库存"}' -p manager@active
+fucli push action mall.cisum regstock '{"submitter":"manager","product_code":"STOCK-042","bank":"ticket.cvnft","nft_id":42,"quota":100,"paybank":"cisum.token","terms":{"price":"10.0000 CISUM","starts":"2026-11-10T00:00:00","per_purchase":5,"per_account":20},"op_id":1003,"reason":"接入现有库存"}' -p manager@active
 ```
 
 同一 `(bank, nft_id)` 不能重复登记。登记不检查策略或白名单；发货时由底层检查转出权限。
@@ -341,21 +342,21 @@ fucli push action mall.cisum pause '{"submitter":"guardian","buying":true,"dropp
 | `from` | `name` | 付款账户，须签名，也是 NFT 接收账户 |
 | `to` | `name` | 商城账户，此处为 mall.cisum |
 | `quantity` | `asset` | 实际支付金额，等于单价乘以预期份数 |
-| `memo` | `string` | `mall:v1:<product_id>:<expected_quantity>:<request_id>` |
+| `memo` | `string` | `mall:v1:<product_code>:<expected_quantity>:<request_id>` |
 
 memo 字段：
 
 | 字段 | 意义 |
 |---|---|
 | `mall:v1` | 固定协议前缀和版本 |
-| `product_id` | 正整数商城商品编号，**不是 nft_id** |
+| `product_code` | 商品唯一业务编号，精确匹配，区分大小写 |
 | `expected_quantity` | 预期购买份数，正整数；必须等于金额除以当前单价 |
 | `request_id` | 1–64 位 ASCII 字母、数字、`-`、`_`；仅作业务关联，链上不校验唯一性 |
 
 假设商品 1 已完成转出授权、已到开售时间、单价为 10 CISUM，购买 2 份：
 
 ```sh
-fucli push action cisum.token transfer '{"from":"alice","to":"mall.cisum","quantity":"20.0000 CISUM","memo":"mall:v1:1:2:order-20261110-001"}' -p alice@active
+fucli push action cisum.token transfer '{"from":"alice","to":"mall.cisum","quantity":"20.0000 CISUM","memo":"mall:v1:SKU-001:2:order-20261110-001"}' -p alice@active
 ```
 
 成功时 alice 收到 2 份 NFT，20 CISUM 保留在商城并记入 sales。商品和账户计数同步增加，发出 notifybuy。没有独立 purchase action，无需给商城代扣授权。
@@ -465,9 +466,9 @@ funds.sales/drops 使用最小单位整数；对于 4 位小数 CISUM，10000 �
 
 ## 数据升级与编号说明
 
-products 新增的 product_code 是字符串业务编号；原 id 仍是 uint64 主键。购买 memo、其他管理方法的 product_id 参数、purchases/notifybuy 内的 product_id 仍指数字主键，不改为字符串。例如业务编号 SKU-001 的商品若 id=1，购买 memo 仍为 mall:v1:1:2:order1。
+products 新增的 product_code 是字符串业务编号；原 id 仍是 uint64 主键。其他管理方法的 product_id 参数、purchases/notifybuy 内的 product_id 仍指数字主键，不改为字符串。例如业务编号 SKU-001 的商品若 id=1，购买 memo 仍为 mall:v1:SKU-001:2:order1。
 
-createnft 的 product_code 参数位于参数列表末尾，JSON 对象可按字段名传入；旧客户端必须增加此参数。regstock 接入的库存商品保存空字符串，当前没有单独修改业务编号的接口。
+createnft 的 product_code 参数位于参数列表末尾，JSON 对象可按字段名传入；旧客户端必须增加此参数。regstock 参数末尾增加 product_code；已有商品可在下架后通过 setcode 配置。
 
 为兼容旧链上数据，products.product_code 在 ABI 中为 string$（尾部 binary_extension），旧行可能缺少此字段。config 保留旧四个 name 和 roles 数组的布局，但它们不再参与授权。超级管理员存储在新的 authconfig 表中。
 
@@ -477,6 +478,31 @@ operations 的 before/after 是当时版本的序列化快照，历史记录需�
 
 接口移除：新版 ABI 不再包含 setnftcaps、setxferwl 和 nftcaps 表定义。已有 nftcaps 链上数据不会自动删除，但商城不再读写；旧客户端必须停止调用这两个方法。底层 mall.nft 的 setxferwl 保持可用，请直接在 NFT 合约上配置权限。
 
-业务编号：products 的字符串 product_id 已更名为 product_code，createnft 参数同步更名。purchases 在尾部追加 product_code（string$），保存业务编号；数字 product_id 保持原意。旧商品字符串值无需迁移；旧购买累计行仍可读取。再次购买时累计行会补齐业务编号。无业务编号的旧商品及库存商品记录空字符串。
+业务编号：products 的字符串 product_id 已更名为 product_code，createnft 参数同步更名。purchases 在尾部追加 product_code（string$），保存业务编号；数字 product_id 保持原意。旧商品字符串值无需迁移；旧购买累计行仍可读取。再次购买时累计行会补齐业务编号。历史空业务编号需要使用 setcode 配置后再购买。
 
 回执表已移除：不再写入 receipts，也不按 request_id 去重。相同请求编号再次付款会按新购买处理，仍受限购和配额检查；request_id 保留格式校验及通知用途。后端应根据交易 ID 和实际成交轨迹确认结果，避免盲目重付。升级不会自动删除历史 receipts 行或返还其 RAM，本次节省的是后续回执及索引写入资源。
+
+
+按业务编号查询：getproduct(product_code) 在 action 控制台输出 product_id: <数字 id>，不要求管理权限，不写表。使用该 id 作为 products 的 lower_bound/upper_bound 查询完整商品；RPC 只读模拟需要节点支持，普通 push action 仍消耗交易资源。当前链不支持 action return value，因此没有 ABI 返回值。
+
+```sh
+fucli push action mall.cisum getproduct '{"product_code":"SKU-001"}' -p alice@active
+# 假设输出 product_id: 1
+fucli get table mall.cisum mall.cisum products --lower 1 --upper 1
+fucli push action mall.cisum setcode '{"submitter":"manager","product_id":1,"product_code":"SKU-001","op_id":1201,"reason":"设置业务编号"}' -p manager@active
+```
+
+setcode 需要 productMgmt（或超级管理员/合约自身）授权，商品必须下架，校验编号格式和全表唯一性。历史空编号或重复编号须先修正；重复编号查询会报 ambiguous legacy product_code，不会任意选择商品。编号更改后旧 memo 不再有效，累计限购仍按数字 id 保留，purchases 在下次购买时更新业务编号。
+
+products 追加第三索引 bycode（SHA-256(product_code)，key_type=sha256）。新建或更新商品会维护索引；旧行未自动建立索引，故 getproduct、购买查找和唯一性校验扫描主表，保证升级兼容，成本随商品数量增长。直接 RPC 查第三索引只适用于已建立该索引的行。
+
+购买 memo 为 mall:v1:SKU-001:2:order1，不再把第三段解释为数字 id；纯数字业务编号也按字符串精确匹配。归档商品仍占用编号。createnft、regstock 和 setcode 均拒绝重复编号。
+
+
+累计购买量查询：getpurchase(buyer, product_code)，buyer 为付款账户，product_code 为当前唯一商品编号。控制台输出 product_id: <数字 id>, quantity: <累计数量>。商品存在但该买家未购买时 quantity 为 0；买家不存在、编号不存在或历史编号重复时拒绝。不要求管理权限、不修改表。
+
+```sh
+fucli push action mall.cisum getpurchase '{"buyer":"cloudwudy123","product_code":"SKU-001"}' -p cloudwudy123@active
+```
+
+接口先按当前 product_code 找到商品 id，再读取买家 scope 下 purchases，因此兼容尚无业务编号字段的旧累计行；setcode 改名后使用新编号仍能查询原累计量。
