@@ -110,6 +110,8 @@ public:
     ACTION getpurchase(name buyer, string product_code);
     ACTION setcode(name submitter, uint64_t product_id, string product_code, uint64_t op_id, string reason);
     ACTION addbank(name submitter, name bank, bool nft, symbol sym);
+    ACTION setbank(name submitter, name bank, bool nft, symbol sym);
+    ACTION delbank(name submitter, name bank);
     ACTION advancenft(name submitter, uint64_t next_id, uint64_t op_id, string reason);
     ACTION createnft(name submitter, name bank, string uri, name ipowner, int64_t maximum, int64_t quota,
                      name paybank, sale_terms terms, uint64_t op_id, string reason, string product_code);
@@ -134,6 +136,7 @@ private:
     name require_perm(name submitter, const string& perm) const;
     void terms_ok(name bank, const sale_terms& terms) const;
     void bank_ok(name bank, bool nft) const;
+    void bank_unused(name bank) const;
     int64_t balance(const product& p) const;
     void quota_ok(const product& p, int64_t quota) const;
     void sendnft(const product& p, name to, int64_t amount, const string& memo);

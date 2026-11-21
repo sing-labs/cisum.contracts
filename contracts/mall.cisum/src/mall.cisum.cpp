@@ -167,6 +167,38 @@ void mall_contract::addbank(name submitter, name bank, bool nft, symbol sym) {
         f.emplace(get_self(), [&](auto& r){r.sym=sym;});
     }
 }
+void mall_contract::bank_unused(name bank) const {
+    products goods(get_self(), get_self().value);
+    for (const auto& p : goods)
+        check(p.nft_contract != bank && p.pay_contract != bank,
+              "MALL_BANK: contract referenced by product");
+    funds balances(get_self(), bank.value);
+    for (const auto& f : balances)
+        check(f.sales == 0 && f.drops == 0, "MALL_BANK: unsettled funds");
+}
+void mall_contract::setbank(name submitter, name bank, bool nft, symbol sym) {
+    require_perm(submitter, "productMgmt");
+    banks table(get_self(), get_self().value);
+    const auto& row = table.get(bank.value, "MALL_BANK: unsupported contract");
+    check(nft || sym.is_valid(), "MALL_BANK: invalid symbol");
+    bank_unused(bank);
+    funds balances(get_self(), bank.value);
+    auto it = balances.begin();
+    while (it != balances.end()) it = balances.erase(it);
+    table.modify(row, same_payer, [&](auto& r) { r.nft = nft; });
+    if (!nft) balances.emplace(get_self(), [&](auto& r) { r.sym = sym; });
+}
+void mall_contract::delbank(name submitter, name bank) {
+    require_perm(submitter, "productMgmt");
+    banks table(get_self(), get_self().value);
+    auto it = table.find(bank.value);
+    check(it != table.end(), "MALL_BANK: unsupported contract");
+    bank_unused(bank);
+    funds balances(get_self(), bank.value);
+    auto f = balances.begin();
+    while (f != balances.end()) f = balances.erase(f);
+    table.erase(it);
+}
 void mall_contract::advancenft(name submitter, uint64_t next_id, uint64_t op_id, string reason) {
     auto actor=require_perm(submitter, "productMgmt"); auto c=config(); auto before=pack(c);
     check(next_id > c.next_nft && next_id < std::numeric_limits<uint64_t>::max(), "MALL_ID: must advance");
