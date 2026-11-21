@@ -1,6 +1,6 @@
 # mall.cisum 合约接口说明
 
-本文对应当前源码及 ABI，面向后台开发、钱包接入和运营人员。包含全部 18 个公开 action，以及转账通知入口。构建与部署步骤见 [README](README.md)。
+本文对应当前源码及 ABI，面向后台开发、钱包接入和运营人员。包含全部 20 个公开 action，以及转账通知入口。构建与部署步骤见 [README](README.md)。
 
 ## 底层合约模式补充
 
@@ -66,7 +66,7 @@ fucli push action mall.cisum init '{"admin":"manager"}' -p mall.cisum@active
 
 | 权限字符串 | 对应方法 |
 |---|---|
-| productMgmt | addbank、advancenft、createnft、regstock、setsale、setquota、setsupply、setmeta、setstatus、withdrawnft |
+| productMgmt | addbank、setbank、delbank、advancenft、createnft、regstock、setsale、setquota、setsupply、setmeta、setstatus、withdrawnft |
 | mallTreasury | allocfund |
 | mallAirdrop | airdrop |
 | mallPause | pause |
@@ -102,7 +102,30 @@ fucli push action mall.cisum addbank '{"submitter":"manager","bank":"cisum.token
 fucli push action mall.cisum addbank '{"submitter":"manager","bank":"ticket.cvnft","nft":true,"sym":"4,CISUM"}' -p manager@active
 ```
 
-同一普通代币合约可登记多个不同符号；重复登记同一符号会拒绝。同一合约不能切换普通代币/NFT 类型。当前无删除登记接口，也不会自动验证第三方合约 ABI，必须先人工确认兼容性。
+同一普通代币合约可登记多个不同符号；重复登记同一符号会拒绝。同一合约不能切换普通代币/NFT 类型。可通过 delbank 删除未使用的登记；不会自动验证第三方合约 ABI，必须先人工确认兼容性。
+
+### `setbank`：修改已有资产登记
+
+权限同 addbank：超级管理员、合约自身或具有 `productMgmt` 的 submitter。
+参数为 `submitter:name`（操作人）、`bank:name`（已有合约主键）、`nft:bool`（新的资产类型）、`sym:symbol`（新的普通代币符号及精度；NFT 模式忽略）。
+
+此操作完整替换该 bank 的登记配置：普通代币原有全部币种登记被替换为指定的一个币种，可再用 addbank 追加；改为 NFT 时移除原有空资金行。不修改合约账户名，需要换账户时删除旧登记再新增。
+
+```sh
+fucli push action mall.cisum setbank '{"submitter":"manager","bank":"newtoken111","nft":false,"sym":"4,TOKEN"}' -p manager@active
+```
+
+### `delbank`：删除资产登记
+
+权限同 setbank。参数 `submitter:name` 为操作人，`bank:name` 为要删除的已登记合约。删除 banks 行及其空 funds 行，可之后重新 addbank。
+
+```sh
+fucli push action mall.cisum delbank '{"submitter":"manager","bank":"newtoken111"}' -p manager@active
+```
+
+两种操作都要求 bank 存在，且没有任何商品引用它作为 NFT 或支付合约（包括下架、归档商品），所有 funds 行的 sales 和 drops 均为 0；否则整笔交易失败。它们适合纠正尚未使用的登记，不迁移已有商品和资金。无 op_id/reason 参数，与 addbank 一致。
+
+这里只检查商城登记及资金账本，不查询任意外部合约中的实际资产余额；操作前仍需核对外部余额。删除登记不会销毁代币/NFT，也不会撤销底层白名单或 creator 权限。重新登记后可恢复对该资产的识别；不要将删除登记当作资产提现操作。
 
 ### 2.3 `advancenft`：向前调整新建 NFT 编号游标
 

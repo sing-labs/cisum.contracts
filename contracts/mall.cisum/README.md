@@ -150,3 +150,5 @@ bash scripts/deploy-mall.sh \
 脚本使用 Docker CDT 编译 mall.cisum，再用 Docker fucli 部署本次生成的 WASM/ABI；编译失败不会使用旧文件继续部署。钱包服务须从容器可访问、已解锁并持有相应密钥；不会导入私钥、创建账户或调用 init。钱包实际端口不同请修改 --wallet-url；不要把容器 localhost 当作宿主地址。
 
 默认签名权限为部署账户 @active，可用 --permission 指定。添加 --add-code 会在部署成功后为 active 追加自身代码执行权限；若此步骤失败，前面的合约部署不会撤销。首次初始化或 ABI 参数升级请按 API.md 操作。完整选项见 bash scripts/deploy-mall.sh --help。
+
+资产登记维护：`setbank(submitter, bank, nft, sym)` 替换未使用 bank 的类型及币种登记；`delbank(submitter, bank)` 删除未使用登记。均使用 productMgmt 权限，任何商品引用（含下架、归档）或非零 sales/drops 均阻止操作。setbank 普通代币配置会替换原全部币种，详情见 [API](API.md)。
