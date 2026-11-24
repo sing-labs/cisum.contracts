@@ -2,6 +2,7 @@
 
 #include <flon/consts.hpp>
 #include <flon/flon.token.hpp>
+#include <flon.auth/flon.auth.hpp>
 #include "base/utils.hpp"
 
 namespace flon {
@@ -11,6 +12,40 @@ using eosio::check;
 using eosio::is_account;
 using eosio::name;
 using std::string;
+
+void cisum_vault::require_paytype_perm(const name& submitter) const {
+  require_auth(submitter);
+  flonauth::checkrole_action checkrole(CISUMAUTH_CONTRACT, {get_self(), "active"_n});
+  checkrole.send(get_self(), submitter, "paytypeManage");
+}
+
+bool cisum_vault::paytype_exists(const name& pay_type) const {
+  paytypes_idx types(get_self(), get_self().value);
+  const auto bytype = types.get_index<"bytype"_n>();
+  return bytype.find(pay_type.value) != bytype.end();
+}
+
+void cisum_vault::addpaytype(const name& submitter, const name& pay_type, const string& desc) {
+  require_paytype_perm(submitter);
+  CHECKC(pay_type.value != 0, err::INVALID_FORMAT, "payment type cannot be empty");
+  CHECKC(!paytype_exists(pay_type), err::INVALID_FORMAT, "payment type already exists");
+  paytypes_idx types(get_self(), get_self().value);
+  types.emplace(get_self(), [&](auto& row) {
+    row.id = types.available_primary_key();
+    row.pay_type = pay_type;
+    row.desc = desc;
+    row.created_at = current_time_point();
+  });
+}
+
+void cisum_vault::delpaytype(const name& submitter, const name& pay_type) {
+  require_paytype_perm(submitter);
+  paytypes_idx types(get_self(), get_self().value);
+  auto bytype = types.get_index<"bytype"_n>();
+  const auto itr = bytype.find(pay_type.value);
+  CHECKC(itr != bytype.end(), err::RECORD_NO_FOUND, "payment type not found");
+  bytype.erase(itr);
+}
 
 void cisum_vault::require_admin() const {
   CHECKC(_gstate.admin.value != 0, err::RECORD_NO_FOUND, "admin not set");
@@ -91,7 +126,7 @@ void cisum_vault::ontransfer(const name& from, const name& to, const asset& quan
   if (op == "mallpay") {
     return;
   }
-  if (op == "supportclub"){
+  if(paytype_exists(name{op})){
     return;
   }
 

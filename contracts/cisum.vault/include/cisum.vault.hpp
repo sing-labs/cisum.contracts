@@ -38,6 +38,9 @@ public:
 
   ACTION setpause(const bool& paused);
 
+  ACTION addpaytype(const name& submitter, const name& pay_type, const string& desc);
+  ACTION delpaytype(const name& submitter, const name& pay_type);
+
   [[eosio::on_notify("cisum.token::transfer")]]
   void ontransfer(const name& from, const name& to, const asset& quantity, const string& memo);
 
@@ -47,6 +50,8 @@ private:
   bool             _save_state = true;
 
   void require_admin() const;
+  void require_paytype_perm(const name& submitter) const;
+  bool paytype_exists(const name& pay_type) const;
 };
 
 } // namespace flon
